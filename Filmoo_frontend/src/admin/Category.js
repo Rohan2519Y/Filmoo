@@ -6,6 +6,9 @@ export default function Category() {
             <div className={classes.root}>
                 <div className={classes.box}>
                 </div>
+                <div>
+                    sahil
+                </div>
             </div>
         </div>
     )
