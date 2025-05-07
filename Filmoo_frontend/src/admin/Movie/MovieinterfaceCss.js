@@ -8,15 +8,16 @@ const useStyles = makeStyles(() => ({
         alignItems:'center'
     },
     box:{
-        height:'40vh',
+        height:'auto',
         width:'40vw',
         border:'2px solid black',
         display:'flex',
-        borderRadius:'15px'
+        borderRadius:'15px',
+        flexDirection:'column'
     },
     title:{
         height:'8vh',
-        width:'100vw',
+        width:'40vw',
         background:'#f1c40f',
         borderRadius:'14px 14px 0px 0px',
         display:'flex',
@@ -32,7 +33,7 @@ const useStyles = makeStyles(() => ({
         margin:'auto',
         height:'auto',
         width:'auto',
-        fontSize:'1.6rem'
+        fontSize:'1.6rem',
     }
 }))
 export{useStyles}
