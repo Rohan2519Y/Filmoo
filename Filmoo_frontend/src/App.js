@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Category from "./admin/Category";
+import Category from "./admin/Category/Category";
 function App() {
   return (
     <div>
