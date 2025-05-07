@@ -9,15 +9,30 @@ const useStyles = makeStyles(() => ({
     },
     box:{
         height:'40vh',
-        width:'50vw',
+        width:'40vw',
         border:'2px solid black',
-        display:'flex'
+        display:'flex',
+        borderRadius:'15px'
     },
     title:{
-        height:'7vh',
+        height:'8vh',
         width:'100vw',
-        border:'1px solid black',
-        background:''
+        background:'#f1c40f',
+        borderRadius:'14px 14px 0px 0px',
+        display:'flex',
+        padding:0,
+        margin:0
+    },
+    image:{
+        margin:'3px',
+        height:'7vh',
+        width:'auto'
+    },
+    name:{
+        margin:'auto',
+        height:'auto',
+        width:'auto',
+        fontSize:'1.6rem'
     }
 }))
 export{useStyles}
