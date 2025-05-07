@@ -1,8 +1,9 @@
 import { useStyles } from "./MovieinterfaceCss"
 import { useEffect, useState } from "react";
-import { Button, Grid, MenuItem, Radio, TextField } from "@mui/material"
+import {FormGroup,Checkbox, Button, Grid, MenuItem, Radio, TextField, InputLabel, Select } from "@mui/material"
 import ReactQuill from "react-quill-new";
 import 'react-quill-new/dist/quill.snow.css';
+import { getData } from "../../backendservices/FetchNodeServices";
 import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
@@ -10,35 +11,50 @@ import FormLabel from '@mui/material/FormLabel';
 export default function MovieInterface() {
     const classes = useStyles()
     const [quality, setQuality] = useState('')
-    const [description,setDescription]=useState('')
-    const [categoryList,setCategoryList]=useState([])
-    
-    const fetchAllCategory=async()=>{
-        var res=await getData("category/fetch_category")
+    const [category, setCategory] = useState('')
+    const [description, setDescription] = useState('')
+    const [categoryList, setCategoryList] = useState([])
+    const [selectedGenres, setSelectedGenres] = useState([]);
+    const genresList = [
+        "Action", "Adventure", "Animation", "Biography", "Comedy", "Crime", "Documentary",
+        "Drama", "Family", "Fantasy", "Historical", "Horror", "Music", "Mystery",
+        "Romance", "Sci-Fi", "Sport", "Thriller", "War", "Western"
+    ];
+    const handleGenreChange = (event) => {
+        const value = event.target.name;
+        if (selectedGenres.includes(value)) {
+            setSelectedGenres(selectedGenres.filter((genre) => genre !== value));
+        } else {
+            setSelectedGenres([...selectedGenres, value]);
+        }
+    };
+
+    const fetchAllCategory = async () => {
+        var res = await getData("category/fetch_categories")
         setCategoryList(res.data)
     }
-    useEffect(function(){
+    useEffect(function () {
         fetchAllCategory()
-    })
-    const fillCategory=()=>{
-        return categoryList.map((item)=>{
-            return<MenuItem value={item.categoryid}>{item.categoryname}</MenuItem>
-        })
+    }, [])
+    const fillCategory = () => {
+        return (categoryList.map((item) => {
+            return <MenuItem value={item.categoryid}>{item.categoryname}</MenuItem>
+        }))
     }
-    
+
     const handleQuality = () => {
         switch (quality) {
             case "480P":
                 return (
                     <>
-                    <Grid size={12}>
-                        <TextField label='480P Link' fullWidth></TextField>
-                    </Grid>
-                    <Grid size={12}>
-                    <TextField label='480P Size' fullWidth></TextField>
-                </Grid>
-                </>
-                    )
+                        <Grid size={12}>
+                            <TextField label='480P Link' fullWidth></TextField>
+                        </Grid>
+                        <Grid size={12}>
+                            <TextField label='480P Size' fullWidth></TextField>
+                        </Grid>
+                    </>
+                )
 
             case "720P":
                 return (
@@ -80,7 +96,7 @@ export default function MovieInterface() {
                         </Grid>
                     </>
                 )
-                case "4K":
+            case "4K":
                 return (
                     <>
                         <Grid size={3}>
@@ -114,7 +130,7 @@ export default function MovieInterface() {
         }
     }
     return (
-        
+
         <div className={classes.back}>
             <div className={classes.box}>
                 <div className={classes.title}>
@@ -125,13 +141,35 @@ export default function MovieInterface() {
                 <div style={{ margin: 10 }}>
                     <Grid container spacing={2}>
                         <Grid size={6}>
-                            <TextField label='Category' fullWidth></TextField>
+                            <FormControl fullWidth>
+                                <InputLabel>Category</InputLabel>
+                                <Select value={category} onChange={(e) => setCategory(e.target.value)} label="Category" >
+                                    {fillCategory()}
+                                </Select>
+                            </FormControl>
                         </Grid>
                         <Grid size={6}>
                             <TextField label="Name" fullWidth></TextField>
                         </Grid>
-                        <Grid size={6}>
-                            <TextField label='Genre' fullWidth></TextField>
+                        <Grid size={12}>
+                            <FormControl component="fieldset" fullWidth>
+                                <FormLabel component="legend">Genre</FormLabel>
+                                <FormGroup row>
+                                    {genresList.map((genre) => (
+                                        <FormControlLabel
+                                            key={genre}
+                                            control={
+                                                <Checkbox
+                                                    checked={selectedGenres.includes(genre)}
+                                                    onChange={handleGenreChange}
+                                                    name={genre}
+                                                />
+                                            }
+                                            label={genre}
+                                        />
+                                    ))}
+                                </FormGroup>
+                            </FormControl>
                         </Grid>
                         <Grid size={6}>
                             <TextField label='Photo' fullWidth></TextField>
@@ -143,9 +181,9 @@ export default function MovieInterface() {
                             <TextField label='Year' fullWidth></TextField>
                         </Grid>
                         <Grid size={12} >
-                        <FormLabel style={{ marginBottom: 8 }}>Description</FormLabel>
+                            <FormLabel style={{ marginBottom: 8 }}>Description</FormLabel>
                             <ReactQuill
-                            label="Description"
+                                label="Description"
                                 value={description}
                                 onChange={setDescription}
                                 modules={{
@@ -163,8 +201,8 @@ export default function MovieInterface() {
                                 ]}
                             />
                         </Grid>
-                        <Grid size={12} style={{display:'flex',justifyContent:'center',alignItems:'center'}}>
-                        <FormLabel style={{marginRight:'auto'}}>Quality</FormLabel>
+                        <Grid size={12} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                            <FormLabel style={{ marginRight: 'auto' }}>Quality</FormLabel>
                             <FormControl >
                                 <RadioGroup
                                     row
@@ -180,9 +218,7 @@ export default function MovieInterface() {
                                 </RadioGroup>
                             </FormControl>
                         </Grid>
-
                         {handleQuality()}
-
                         <Grid size={6}>
                             <Button variant="contained" fullWidth>Submit</Button>
                         </Grid>
