@@ -1,35 +1,188 @@
 import { useStyles } from "./MovieinterfaceCss"
-import {Button, Grid, TextField} from "@mui/material"
+import { useEffect, useState } from "react";
+import { Button, Grid, MenuItem, Radio, TextField } from "@mui/material"
+import ReactQuill from "react-quill-new";
+import 'react-quill-new/dist/quill.snow.css';
+import RadioGroup from '@mui/material/RadioGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormControl from '@mui/material/FormControl';
+import FormLabel from '@mui/material/FormLabel';
 export default function MovieInterface() {
     const classes = useStyles()
+    const [quality, setQuality] = useState('')
+    const [description,setDescription]=useState('')
+    const [categoryList,setCategoryList]=useState([])
+    
+    const fetchAllCategory=async()=>{
+        var res=await getData("category/fetch_category")
+        setCategoryList(res.data)
+    }
+    useEffect(function(){
+        fetchAllCategory()
+    })
+    const fillCategory=()=>{
+        return categoryList.map((item)=>{
+            return<MenuItem value={item.categoryid}>{item.categoryname}</MenuItem>
+        })
+    }
+    
+    const handleQuality = () => {
+        switch (quality) {
+            case "480P":
+                return (
+                    <>
+                    <Grid size={12}>
+                        <TextField label='480P Link' fullWidth></TextField>
+                    </Grid>
+                    <Grid size={12}>
+                    <TextField label='480P Size' fullWidth></TextField>
+                </Grid>
+                </>
+                    )
+
+            case "720P":
+                return (
+                    <>
+                        <Grid size={6}>
+                            <TextField label='480P Link' fullWidth></TextField>
+                        </Grid>
+                        <Grid size={6}>
+                            <TextField label='720P Link' fullWidth></TextField>
+                        </Grid>
+                        <Grid size={6}>
+                            <TextField label='480P Size' fullWidth></TextField>
+                        </Grid>
+                        <Grid size={6}>
+                            <TextField label='720P Size' fullWidth></TextField>
+                        </Grid>
+                    </>)
+
+            case "1080P":
+                return (
+                    <>
+                        <Grid size={4}>
+                            <TextField label='480P Link' fullWidth></TextField>
+                        </Grid>
+                        <Grid size={4}>
+                            <TextField label='720P Link' fullWidth></TextField>
+                        </Grid>
+                        <Grid size={4}>
+                            <TextField label='1080P Link' fullWidth></TextField>
+                        </Grid>
+                        <Grid size={4}>
+                            <TextField label='480P Size' fullWidth></TextField>
+                        </Grid>
+                        <Grid size={4}>
+                            <TextField label='720P Size' fullWidth></TextField>
+                        </Grid>
+                        <Grid size={4}>
+                            <TextField label='1080P Size' fullWidth></TextField>
+                        </Grid>
+                    </>
+                )
+                case "4K":
+                return (
+                    <>
+                        <Grid size={3}>
+                            <TextField label='480P Link' fullWidth></TextField>
+                        </Grid>
+                        <Grid size={3}>
+                            <TextField label='720P Link' fullWidth></TextField>
+                        </Grid>
+                        <Grid size={3}>
+                            <TextField label='1080P Link' fullWidth></TextField>
+                        </Grid>
+                        <Grid size={3}>
+                            <TextField label='4K Link' fullWidth></TextField>
+                        </Grid>
+                        <Grid size={3}>
+                            <TextField label='480P Size' fullWidth></TextField>
+                        </Grid>
+                        <Grid size={3}>
+                            <TextField label='720P Size' fullWidth></TextField>
+                        </Grid>
+                        <Grid size={3}>
+                            <TextField label='1080P Size' fullWidth></TextField>
+                        </Grid>
+                        <Grid size={3}>
+                            <TextField label='4K Size' fullWidth></TextField>
+                        </Grid>
+                    </>
+                )
+            default:
+                return null;
+        }
+    }
     return (
+        
         <div className={classes.back}>
             <div className={classes.box}>
                 <div className={classes.title}>
                     <img className={classes.image} src='/logo.png' />
                     <div className={classes.name}>Add Movie</div>
-                    <img src="/verification.png" style={{height:'8vh'}}></img>
+                    <img src="/verification.png" style={{ height: '8vh' }}></img>
                 </div>
-                <div style={{margin:10}}>
+                <div style={{ margin: 10 }}>
                     <Grid container spacing={2}>
-                        <Grid  size={6}>
+                        <Grid size={6}>
+                            <TextField label='Category' fullWidth></TextField>
+                        </Grid>
+                        <Grid size={6}>
                             <TextField label="Name" fullWidth></TextField>
-                        </Grid>
-                        <Grid  size={6}>
-                            <TextField label='Description' fullWidth></TextField>
-                        </Grid>
-                        <Grid  size={6}>
-                            <TextField label='Photo' fullWidth></TextField>
                         </Grid>
                         <Grid size={6}>
                             <TextField label='Genre' fullWidth></TextField>
                         </Grid>
                         <Grid size={6}>
-                            <TextField label='Year' fullWidth></TextField>
+                            <TextField label='Photo' fullWidth></TextField>
                         </Grid>
                         <Grid size={6}>
-                            <TextField label='Category' fullWidth></TextField>
+                            <TextField label='Language' fullWidth></TextField>
                         </Grid>
+                        <Grid size={6}>
+                            <TextField label='Year' fullWidth></TextField>
+                        </Grid>
+                        <Grid size={12} >
+                        <FormLabel style={{ marginBottom: 8 }}>Description</FormLabel>
+                            <ReactQuill
+                            label="Description"
+                                value={description}
+                                onChange={setDescription}
+                                modules={{
+                                    toolbar: [
+                                        ['bold', 'italic', 'underline', 'strike'],
+                                        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                                        ['link', 'image', 'video'],
+                                        ['clean']
+                                    ],
+                                }}
+                                formats={[
+                                    'bold', 'italic', 'underline', 'strike',
+                                    'list', 'bullet',
+                                    'link', 'image'
+                                ]}
+                            />
+                        </Grid>
+                        <Grid size={12} style={{display:'flex',justifyContent:'center',alignItems:'center'}}>
+                        <FormLabel style={{marginRight:'auto'}}>Quality</FormLabel>
+                            <FormControl >
+                                <RadioGroup
+                                    row
+                                    aria-labelledby="demo-row-radio-buttons-group-label"
+                                    name="row-radio-buttons-group"
+                                    value={quality}
+                                    onChange={(e) => setQuality(e.target.value)}
+                                >
+                                    <FormControlLabel name="quality" value="480P" control={<Radio />} label="480P" />
+                                    <FormControlLabel name="quality" value="720P" control={<Radio />} label="720P" />
+                                    <FormControlLabel name="quality" value="1080P" control={<Radio />} label="1080P" />
+                                    <FormControlLabel name="quality" value="4K" control={<Radio />} label="4K" />
+                                </RadioGroup>
+                            </FormControl>
+                        </Grid>
+
+                        {handleQuality()}
+
                         <Grid size={6}>
                             <Button variant="contained" fullWidth>Submit</Button>
                         </Grid>
