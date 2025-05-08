@@ -180,8 +180,20 @@ export default function MovieInterface() {
                         <Grid size={6}>
                             <TextField label='Year' fullWidth></TextField>
                         </Grid>
+                        <Grid size={2} >
+                            <img src="/film.png" width={50} />
+                        </Grid>
+                        <Grid size={4}  >
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 70, flexDirection: 'column' }}>
+                                <Button fullWidth component="label" variant="outlined">
+                                    Upload
+                                    <input  type="file" accept="image/*" hidden multiple />
+                                </Button>
+                                
+                            </div>
+                        </Grid>
                         <Grid size={12} >
-                            <FormLabel style={{ marginBottom: 8 }}>Description</FormLabel>
+                            <FormLabel >Description</FormLabel>
                             <ReactQuill
                                 label="Description"
                                 value={description}
