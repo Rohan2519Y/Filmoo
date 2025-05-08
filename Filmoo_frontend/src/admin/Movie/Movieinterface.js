@@ -13,6 +13,7 @@ export default function MovieInterface() {
     const [quality, setQuality] = useState('')
     const [category, setCategory] = useState('')
     const [description, setDescription] = useState('')
+    const [image,setImage]=useState({filename:'/film.png',bytes:''})
     const [categoryList, setCategoryList] = useState([])
     const [selectedGenres, setSelectedGenres] = useState([]);
     const genresList = [
@@ -40,6 +41,13 @@ export default function MovieInterface() {
         return (categoryList.map((item) => {
             return <MenuItem value={item.categoryid}>{item.categoryname}</MenuItem>
         }))
+    }
+
+    const handleImageChange=(e)=>{
+        const file=e.target.files[0]
+        if(file){
+            setImage({filename:URL.createObjectURL(file),bytes:file})
+        }
     }
 
     const handleQuality = () => {
@@ -181,13 +189,13 @@ export default function MovieInterface() {
                             <TextField label='Year' fullWidth></TextField>
                         </Grid>
                         <Grid size={2} >
-                            <img src="/film.png" width={50} />
+                            <img src={image.filename} width={50} />
                         </Grid>
                         <Grid size={4}  >
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 70, flexDirection: 'column' }}>
                                 <Button fullWidth component="label" variant="outlined">
                                     Upload
-                                    <input  type="file" accept="image/*" hidden multiple />
+                                    <input onChange={handleImageChange} type="file" accept="image/*" hidden multiple />
                                 </Button>
                                 
                             </div>
