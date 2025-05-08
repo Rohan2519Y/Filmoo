@@ -1,22 +1,27 @@
 import { useStyles } from "./MovieinterfaceCss"
 import { useEffect, useState } from "react";
-import {FormGroup,Checkbox, Button, Grid, MenuItem, Radio, TextField, InputLabel, Select } from "@mui/material"
+import { FormGroup, Checkbox, Button, Grid, MenuItem, Radio, TextField, InputLabel, Select } from "@mui/material"
 import ReactQuill from "react-quill-new";
 import 'react-quill-new/dist/quill.snow.css';
-import { postData,getData } from "../../backendservices/FetchNodeServices";
+import { postData, getData } from "../../backendservices/FetchNodeServices";
 import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
 export default function MovieInterface() {
     const classes = useStyles()
-    const [category, setCategory] = useState('')
+    const [categoryId, setCategoryId] = useState('')
+    const [name, setName] = useState('')
+    const [year, setYear] = useState('')
+    const [link, setLink] = useState('')
+    const [size, setSize] = useState('')
     const [description, setDescription] = useState('')
-    const [screenshot,setScreenshot]=useState([])
-    const [image,setImage]=useState({filename:'/film.png',bytes:''})
+    const [screenshot, setScreenshot] = useState([])
+    const [image, setImage] = useState({ filename: '/film.png', bytes: '' })
     const [quality, setQuality] = useState('')
     const [categoryList, setCategoryList] = useState([])
     const [selectedGenres, setSelectedGenres] = useState([]);
+    const [selectedLanguage, setSelectedLanguage] = useState([]);
     const genresList = [
         "Action", "Adventure", "Animation", "Biography", "Comedy", "Crime", "Documentary",
         "Drama", "Family", "Fantasy", "Historical", "Horror", "Music", "Mystery",
@@ -31,6 +36,18 @@ export default function MovieInterface() {
         }
     };
 
+    const languageList = [
+        'Hindi', 'English', 'Tamil', 'Telgu', 'Gujarati', 'Marathi', 'Japanese', 'Chinese'
+    ]
+    const handleLanguageChange = (e) => {
+        const value = e.target.name
+        if (selectedLanguage.includes(value)) {
+            setSelectedLanguage(selectedLanguage.filter((language) => language !== value));
+        } else {
+            setSelectedLanguage([...selectedLanguage, value]);
+        }
+    }
+
     const fetchAllCategory = async () => {
         var res = await getData("category/fetch_categories")
         setCategoryList(res.data)
@@ -44,31 +61,55 @@ export default function MovieInterface() {
         }))
     }
 
-    const handleImageChange=(e)=>{
-        const file=e.target.files[0]
-        if(file){
-            setImage({filename:URL.createObjectURL(file),bytes:file})
+    const handleClick = async () => {
+        
+            const formData = new FormData();
+
+            // Append basic fields
+            formData.append('categoryid', categoryId);
+            formData.append('name', name);
+            formData.append('year', year);
+            formData.append('language', selectedLanguage.join(','));
+            formData.append('genre', selectedGenres.join(','));
+            formData.append('description', description);
+            formData.append('quality', quality);
+            formData.append('link', link);
+            formData.append('size', size);
+            if (image.bytes) {
+                formData.append('image', image.bytes);
+              }
+              screenshot.forEach((file, index) => {
+                formData.append(`screenshot`, file); 
+              });
+            const result = await postData('movie/insert_movies', formData)
+        
+    };
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0]
+        if (file) {
+            setImage({ filename: URL.createObjectURL(file), bytes: file })
         }
     }
-    const handleMultipleImage=(e)=>{
-        var images=Object.values(e.target.files)
+    const handleMultipleImage = (e) => {
+        var images = Object.values(e.target.files)
         setScreenshot(images.length > 0 ? images : []);
     }
-    const showImage=()=>{
+    const showImage = () => {
         if (screenshot.length === 0) {
-        return (
-            <div style={{ margin: 2 }}>
-                <img src="/film.png" style={{ width: 50, height: 'auto' }} />
-            </div>
-        );
-    }
-    return screenshot.map((item) => {
-        return (
-            <div style={{ margin: 2 }}>
-                <img src={URL.createObjectURL(item)} style={{ width: 30, height: 30 }} />
-            </div>
-        );
-    });
+            return (
+                <div style={{ margin: 2 }}>
+                    <img src="/film.png" style={{ width: 50, height: 'auto' }} />
+                </div>
+            );
+        }
+        return screenshot.map((item) => {
+            return (
+                <div style={{ margin: 2 }}>
+                    <img src={URL.createObjectURL(item)} style={{ width: 30, height: 30 }} />
+                </div>
+            );
+        });
     }
 
     const handleQuality = () => {
@@ -169,26 +210,22 @@ export default function MovieInterface() {
                 </div>
                 <div style={{ margin: 10 }}>
                     <Grid container spacing={2}>
-                        <Grid size={6}>
+                        <Grid size={4}>
                             <FormControl fullWidth>
                                 <InputLabel>Category</InputLabel>
-                                <Select size="small" value={category} onChange={(e) => setCategory(e.target.value)} label="Category" >
+                                <Select size="small" value={categoryId} onChange={(e) => setCategoryId(e.target.value)} label="Category" >
                                     {fillCategory()}
                                 </Select>
                             </FormControl>
                         </Grid>
-                        <Grid size={6}>
-                            <TextField size="small" label="Name" fullWidth></TextField>
+                        <Grid size={4}>
+                            <TextField size="small" label="Name" onChange={(e)=>setName(e.target.value)} fullWidth></TextField>
                         </Grid>
-                        
-                        <Grid size={6}>
-                            <TextField size="small" label='Language' fullWidth></TextField>
-                        </Grid>
-                        <Grid size={6}>
-                            <TextField size="small" label='Year' fullWidth></TextField>
+                        <Grid size={4}>
+                            <TextField size="small" label='Year' onChange={(e)=>setYear(e.target.value)} fullWidth></TextField>
                         </Grid>
                         <Grid size={2}  >
-                            <img style={{margin:0}} src={image.filename} width={50} />
+                            <img style={{ margin: 0 }} src={image.filename} width={50} />
                         </Grid>
                         <Grid size={4}  >
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 50, flexDirection: 'column' }}>
@@ -196,36 +233,40 @@ export default function MovieInterface() {
                                     Upload Image
                                     <input onChange={handleImageChange} type="file" accept="image/*" hidden multiple />
                                 </Button>
-                                
+
                             </div>
                         </Grid>
                         <Grid size={2} >
-                          <div style={{display:'flex',flexWrap:'wrap'}}>
-                            {showImage()}
-                          </div>
+                            <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+                                {showImage()}
+                            </div>
                         </Grid>
                         <Grid size={4}  >
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 50, flexDirection: 'column' }}>
                                 <Button size="small" fullWidth component="label" variant="outlined">
                                     Upload ScreenShots
                                     <input onChange={handleMultipleImage} type="file" accept="image/*" hidden multiple />
-                                </Button>   
+                                </Button>
                             </div>
+                        </Grid>
+                        <Grid size={12}>
+                            <FormControl component="fieldset" fullWidth>
+                                <FormLabel component="legend">Language</FormLabel>
+                                <FormGroup row>
+                                    {languageList.map((language) => (
+                                        <FormControlLabel key={language} control={<Checkbox size="small" checked={selectedLanguage.includes(language)} onChange={handleLanguageChange} name={language} />}
+                                            label={language}
+                                        />
+                                    ))}
+                                </FormGroup>
+                            </FormControl>
                         </Grid>
                         <Grid size={12}>
                             <FormControl component="fieldset" fullWidth>
                                 <FormLabel component="legend">Genre</FormLabel>
                                 <FormGroup row>
                                     {genresList.map((genre) => (
-                                        <FormControlLabel
-                                            key={genre}
-                                            control={
-                                                <Checkbox size="small"
-                                                    checked={selectedGenres.includes(genre)}
-                                                    onChange={handleGenreChange}
-                                                    name={genre}
-                                                />
-                                            }
+                                        <FormControlLabel key={genre} control={<Checkbox size="small" checked={selectedGenres.includes(genre)} onChange={handleGenreChange} name={genre} />}
                                             label={genre}
                                         />
                                     ))}
@@ -263,16 +304,16 @@ export default function MovieInterface() {
                                     value={quality}
                                     onChange={(e) => setQuality(e.target.value)}
                                 >
-                                    <FormControlLabel name="quality" value="480P" control={<Radio />} label="480P" />
-                                    <FormControlLabel name="quality" value="720P" control={<Radio />} label="720P" />
-                                    <FormControlLabel name="quality" value="1080P" control={<Radio />} label="1080P" />
-                                    <FormControlLabel name="quality" value="4K" control={<Radio />} label="4K" />
+                                    <FormControlLabel onChange={(e)=>setLink(e.target.value)} onChange={(e)=>setSize(e.target.value)} name="quality" value="480P" control={<Radio />} label="480P" />
+                                    <FormControlLabel onChange={(e)=>setLink(e.target.value)} onChange={(e)=>setSize(e.target.value)} name="quality" value="720P" control={<Radio />} label="720P" />
+                                    <FormControlLabel onChange={(e)=>setLink(e.target.value)} onChange={(e)=>setSize(e.target.value)} name="quality" value="1080P" control={<Radio />} label="1080P" />
+                                    <FormControlLabel onChange={(e)=>setLink(e.target.value)} onChange={(e)=>setSize(e.target.value)} name="quality" value="4K" control={<Radio />} label="4K" />
                                 </RadioGroup>
                             </FormControl>
                         </Grid>
                         {handleQuality()}
                         <Grid size={6}>
-                            <Button variant="contained" fullWidth>Submit</Button>
+                            <Button variant="contained" onClick={handleClick} fullWidth>Submit</Button>
                         </Grid>
                         <Grid size={6}>
                             <Button variant="contained" fullWidth>Reset</Button>
