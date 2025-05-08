@@ -3,18 +3,18 @@ import { useEffect, useState } from "react";
 import {FormGroup,Checkbox, Button, Grid, MenuItem, Radio, TextField, InputLabel, Select } from "@mui/material"
 import ReactQuill from "react-quill-new";
 import 'react-quill-new/dist/quill.snow.css';
-import { getData } from "../../backendservices/FetchNodeServices";
+import { postData,getData } from "../../backendservices/FetchNodeServices";
 import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
 export default function MovieInterface() {
     const classes = useStyles()
-    const [quality, setQuality] = useState('')
     const [category, setCategory] = useState('')
     const [description, setDescription] = useState('')
-    const [image,setImage]=useState({filename:'/film.png',bytes:''})
     const [screenshot,setScreenshot]=useState([])
+    const [image,setImage]=useState({filename:'/film.png',bytes:''})
+    const [quality, setQuality] = useState('')
     const [categoryList, setCategoryList] = useState([])
     const [selectedGenres, setSelectedGenres] = useState([]);
     const genresList = [
