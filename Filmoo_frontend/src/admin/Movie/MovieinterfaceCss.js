@@ -5,19 +5,22 @@ const useStyles = makeStyles(() => ({
         width:'100vw',
         display:'flex',
         justifyContent:'center',
-        alignItems:'center'
+        alignItems:'center',
+        overflowX:'hidden'
     },
     box:{
+        margin:'auto',
         height:'auto',
-        width:'40vw',
+        width:'60vw',
         border:'2px solid black',
         display:'flex',
         borderRadius:'15px',
-        flexDirection:'column'
+        flexDirection:'column',
+        overflow:'hidden'
     },
     title:{
         height:'8vh',
-        width:'40vw',
+        width:'auto',
         background:'#f1c40f',
         borderRadius:'14px 14px 0px 0px',
         display:'flex',

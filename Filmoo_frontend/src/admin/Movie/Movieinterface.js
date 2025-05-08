@@ -14,6 +14,7 @@ export default function MovieInterface() {
     const [category, setCategory] = useState('')
     const [description, setDescription] = useState('')
     const [image,setImage]=useState({filename:'/film.png',bytes:''})
+    const [screenshot,setScreenshot]=useState([])
     const [categoryList, setCategoryList] = useState([])
     const [selectedGenres, setSelectedGenres] = useState([]);
     const genresList = [
@@ -49,6 +50,26 @@ export default function MovieInterface() {
             setImage({filename:URL.createObjectURL(file),bytes:file})
         }
     }
+    const handleMultipleImage=(e)=>{
+        var images=Object.values(e.target.files)
+        setScreenshot(images.length > 0 ? images : []);
+    }
+    const showImage=()=>{
+        if (screenshot.length === 0) {
+        return (
+            <div style={{ margin: 2 }}>
+                <img src="/film.png" style={{ width: 50, height: 'auto' }} />
+            </div>
+        );
+    }
+    return screenshot.map((item) => {
+        return (
+            <div style={{ margin: 2 }}>
+                <img src={URL.createObjectURL(item)} style={{ width: 30, height: 30 }} />
+            </div>
+        );
+    });
+    }
 
     const handleQuality = () => {
         switch (quality) {
@@ -56,10 +77,10 @@ export default function MovieInterface() {
                 return (
                     <>
                         <Grid size={12}>
-                            <TextField label='480P Link' fullWidth></TextField>
+                            <TextField size="small" label='480P Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={12}>
-                            <TextField label='480P Size' fullWidth></TextField>
+                            <TextField size="small" label='480P Size' fullWidth></TextField>
                         </Grid>
                     </>
                 )
@@ -68,16 +89,16 @@ export default function MovieInterface() {
                 return (
                     <>
                         <Grid size={6}>
-                            <TextField label='480P Link' fullWidth></TextField>
+                            <TextField size="small" label='480P Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={6}>
-                            <TextField label='720P Link' fullWidth></TextField>
+                            <TextField size="small" label='720P Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={6}>
-                            <TextField label='480P Size' fullWidth></TextField>
+                            <TextField size="small" label='480P Size' fullWidth></TextField>
                         </Grid>
                         <Grid size={6}>
-                            <TextField label='720P Size' fullWidth></TextField>
+                            <TextField size="small" label='720P Size' fullWidth></TextField>
                         </Grid>
                     </>)
 
@@ -85,22 +106,22 @@ export default function MovieInterface() {
                 return (
                     <>
                         <Grid size={4}>
-                            <TextField label='480P Link' fullWidth></TextField>
+                            <TextField size="small" label='480P Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={4}>
-                            <TextField label='720P Link' fullWidth></TextField>
+                            <TextField size="small" label='720P Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={4}>
-                            <TextField label='1080P Link' fullWidth></TextField>
+                            <TextField size="small" label='1080P Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={4}>
-                            <TextField label='480P Size' fullWidth></TextField>
+                            <TextField size="small" label='480P Size' fullWidth></TextField>
                         </Grid>
                         <Grid size={4}>
-                            <TextField label='720P Size' fullWidth></TextField>
+                            <TextField size="small" label='720P Size' fullWidth></TextField>
                         </Grid>
                         <Grid size={4}>
-                            <TextField label='1080P Size' fullWidth></TextField>
+                            <TextField size="small" label='1080P Size' fullWidth></TextField>
                         </Grid>
                     </>
                 )
@@ -108,28 +129,28 @@ export default function MovieInterface() {
                 return (
                     <>
                         <Grid size={3}>
-                            <TextField label='480P Link' fullWidth></TextField>
+                            <TextField size="small" label='480P Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={3}>
-                            <TextField label='720P Link' fullWidth></TextField>
+                            <TextField size="small" label='720P Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={3}>
-                            <TextField label='1080P Link' fullWidth></TextField>
+                            <TextField size="small" label='1080P Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={3}>
-                            <TextField label='4K Link' fullWidth></TextField>
+                            <TextField size="small" label='4K Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={3}>
-                            <TextField label='480P Size' fullWidth></TextField>
+                            <TextField size="small" label='480P Size' fullWidth></TextField>
                         </Grid>
                         <Grid size={3}>
-                            <TextField label='720P Size' fullWidth></TextField>
+                            <TextField size="small" label='720P Size' fullWidth></TextField>
                         </Grid>
                         <Grid size={3}>
-                            <TextField label='1080P Size' fullWidth></TextField>
+                            <TextField size="small" label='1080P Size' fullWidth></TextField>
                         </Grid>
                         <Grid size={3}>
-                            <TextField label='4K Size' fullWidth></TextField>
+                            <TextField size="small" label='4K Size' fullWidth></TextField>
                         </Grid>
                     </>
                 )
@@ -151,13 +172,45 @@ export default function MovieInterface() {
                         <Grid size={6}>
                             <FormControl fullWidth>
                                 <InputLabel>Category</InputLabel>
-                                <Select value={category} onChange={(e) => setCategory(e.target.value)} label="Category" >
+                                <Select size="small" value={category} onChange={(e) => setCategory(e.target.value)} label="Category" >
                                     {fillCategory()}
                                 </Select>
                             </FormControl>
                         </Grid>
                         <Grid size={6}>
-                            <TextField label="Name" fullWidth></TextField>
+                            <TextField size="small" label="Name" fullWidth></TextField>
+                        </Grid>
+                        
+                        <Grid size={6}>
+                            <TextField size="small" label='Language' fullWidth></TextField>
+                        </Grid>
+                        <Grid size={6}>
+                            <TextField size="small" label='Year' fullWidth></TextField>
+                        </Grid>
+                        <Grid size={2}  >
+                            <img style={{margin:0}} src={image.filename} width={50} />
+                        </Grid>
+                        <Grid size={4}  >
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 50, flexDirection: 'column' }}>
+                                <Button size="small" fullWidth component="label" variant="outlined">
+                                    Upload Image
+                                    <input onChange={handleImageChange} type="file" accept="image/*" hidden multiple />
+                                </Button>
+                                
+                            </div>
+                        </Grid>
+                        <Grid size={2} >
+                          <div style={{display:'flex',flexWrap:'wrap'}}>
+                            {showImage()}
+                          </div>
+                        </Grid>
+                        <Grid size={4}  >
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 50, flexDirection: 'column' }}>
+                                <Button size="small" fullWidth component="label" variant="outlined">
+                                    Upload ScreenShots
+                                    <input onChange={handleMultipleImage} type="file" accept="image/*" hidden multiple />
+                                </Button>   
+                            </div>
                         </Grid>
                         <Grid size={12}>
                             <FormControl component="fieldset" fullWidth>
@@ -167,7 +220,7 @@ export default function MovieInterface() {
                                         <FormControlLabel
                                             key={genre}
                                             control={
-                                                <Checkbox
+                                                <Checkbox size="small"
                                                     checked={selectedGenres.includes(genre)}
                                                     onChange={handleGenreChange}
                                                     name={genre}
@@ -179,30 +232,9 @@ export default function MovieInterface() {
                                 </FormGroup>
                             </FormControl>
                         </Grid>
-                        <Grid size={6}>
-                            <TextField label='Photo' fullWidth></TextField>
-                        </Grid>
-                        <Grid size={6}>
-                            <TextField label='Language' fullWidth></TextField>
-                        </Grid>
-                        <Grid size={6}>
-                            <TextField label='Year' fullWidth></TextField>
-                        </Grid>
-                        <Grid size={2} >
-                            <img src={image.filename} width={50} />
-                        </Grid>
-                        <Grid size={4}  >
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 70, flexDirection: 'column' }}>
-                                <Button fullWidth component="label" variant="outlined">
-                                    Upload
-                                    <input onChange={handleImageChange} type="file" accept="image/*" hidden multiple />
-                                </Button>
-                                
-                            </div>
-                        </Grid>
                         <Grid size={12} >
                             <FormLabel >Description</FormLabel>
-                            <ReactQuill
+                            <ReactQuill size="small"
                                 label="Description"
                                 value={description}
                                 onChange={setDescription}
@@ -224,7 +256,7 @@ export default function MovieInterface() {
                         <Grid size={12} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                             <FormLabel style={{ marginRight: 'auto' }}>Quality</FormLabel>
                             <FormControl >
-                                <RadioGroup
+                                <RadioGroup size="small"
                                     row
                                     aria-labelledby="demo-row-radio-buttons-group-label"
                                     name="row-radio-buttons-group"
