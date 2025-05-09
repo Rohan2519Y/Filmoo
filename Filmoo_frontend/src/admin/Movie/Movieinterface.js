@@ -304,10 +304,10 @@ export default function MovieInterface() {
                                     value={quality}
                                     onChange={(e) => setQuality(e.target.value)}
                                 >
-                                    <FormControlLabel onChange={(e)=>setLink(e.target.value)} onChange={(e)=>setSize(e.target.value)} name="quality" value="480P" control={<Radio />} label="480P" />
-                                    <FormControlLabel onChange={(e)=>setLink(e.target.value)} onChange={(e)=>setSize(e.target.value)} name="quality" value="720P" control={<Radio />} label="720P" />
-                                    <FormControlLabel onChange={(e)=>setLink(e.target.value)} onChange={(e)=>setSize(e.target.value)} name="quality" value="1080P" control={<Radio />} label="1080P" />
-                                    <FormControlLabel onChange={(e)=>setLink(e.target.value)} onChange={(e)=>setSize(e.target.value)} name="quality" value="4K" control={<Radio />} label="4K" />
+                                    <FormControlLabel  name="quality" value="480P" control={<Radio />} label="480P" />
+                                    <FormControlLabel  name="quality" value="720P" control={<Radio />} label="720P" />
+                                    <FormControlLabel  name="quality" value="1080P" control={<Radio />} label="1080P" />
+                                    <FormControlLabel  name="quality" value="4K" control={<Radio />} label="4K" />
                                 </RadioGroup>
                             </FormControl>
                         </Grid>
