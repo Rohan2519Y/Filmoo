@@ -8,6 +8,7 @@ import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
+import Swal from "sweetalert2";
 export default function MovieInterface() {
     const classes = useStyles()
     const [categoryId, setCategoryId] = useState('')
@@ -69,9 +70,10 @@ export default function MovieInterface() {
 
     const handleClick = async () => {
 
+        var err = false
+        if(err==false){
         const formData = new FormData();
 
-        // Append basic fields
         formData.append('categoryid', categoryId);
         formData.append('name', name);
         formData.append('year', year);
@@ -95,7 +97,23 @@ export default function MovieInterface() {
             formData.append(`screenshot`, file);
         });
         const result = await postData('movie/insert_movies', formData)
-
+        if (result.status) {
+            Swal.fire({
+                icon: "success",
+                title: "Movie Register",
+                text: result.message,
+                toast: true
+            });
+        }
+        else {
+            Swal.fire({
+                icon: "error",
+                title: "Movie Register",
+                text: result.message,
+                toast: true
+            });
+        }
+    }
     };
     const handleReset = () => {
         setCategoryId('');

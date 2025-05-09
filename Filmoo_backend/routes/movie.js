@@ -27,14 +27,14 @@ router.post('/insert_movies', upload.fields([{ name: 'image', maxCount: 1 }, { n
                 req.body.genre, 
                 req.body.description, 
                 req.body.quality, 
-                req.body.link480p, 
-                req.body.link720p, 
-                req.body.link1080p, 
-                req.body.link4k, 
-                req.body.size480p,
-                req.body.size720p, 
-                req.body.size1080p, 
-                req.body.size4k
+                req.body.link480p || null, 
+                req.body.link720p || null, 
+                req.body.link1080p || null, 
+                req.body.link4k || null, 
+                req.body.size480p || null,
+                req.body.size720p || null, 
+                req.body.size1080p || null, 
+                req.body.size4k || null
             ], 
             function (error, result) {
                 if (error) {
