@@ -13,8 +13,14 @@ export default function MovieInterface() {
     const [categoryId, setCategoryId] = useState('')
     const [name, setName] = useState('')
     const [year, setYear] = useState('')
-    const [link, setLink] = useState('')
-    const [size, setSize] = useState('')
+    const [link480P, setLink480P] = useState('')
+    const [size480P, setSize480P] = useState('')
+    const [link720P, setLink720P] = useState('')
+    const [size720P, setSize720P] = useState('')
+    const [link1080P, setLink1080P] = useState('')
+    const [size1080P, setSize1080P] = useState('')
+    const [link4k, setLink4k] = useState('')
+    const [size4k, setSize4k] = useState('')
     const [description, setDescription] = useState('')
     const [screenshot, setScreenshot] = useState([])
     const [image, setImage] = useState({ filename: '/film.png', bytes: '' })
@@ -62,27 +68,34 @@ export default function MovieInterface() {
     }
 
     const handleClick = async () => {
-        
-            const formData = new FormData();
 
-            // Append basic fields
-            formData.append('categoryid', categoryId);
-            formData.append('name', name);
-            formData.append('year', year);
-            formData.append('language', selectedLanguage.join(','));
-            formData.append('genre', selectedGenres.join(','));
-            formData.append('description', description);
-            formData.append('quality', quality);
-            formData.append('link', link);
-            formData.append('size', size);
-            if (image.bytes) {
-                formData.append('image', image.bytes);
-              }
-              screenshot.forEach((file, index) => {
-                formData.append(`screenshot`, file); 
-              });
-            const result = await postData('movie/insert_movies', formData)
-        
+        const formData = new FormData();
+
+        // Append basic fields
+        formData.append('categoryid', categoryId);
+        formData.append('name', name);
+        formData.append('year', year);
+        formData.append('language', selectedLanguage.join(','));
+        formData.append('genre', selectedGenres.join(','));
+        formData.append('description', description);
+        formData.append('quality', quality);
+        formData.append('link480p', link480P);
+        formData.append('size480p', size480P);
+        formData.append('link720p', link720P);
+        formData.append('size720p', size720P);
+        formData.append('link1080p', link1080P);
+        formData.append('size1080p', size1080P);
+        formData.append('link4k', link4k);
+        formData.append('size4k', size4k);
+
+        if (image.bytes) {
+            formData.append('image', image.bytes);
+        }
+        screenshot.forEach((file, index) => {
+            formData.append(`screenshot`, file);
+        });
+        const result = await postData('movie/insert_movies', formData)
+
     };
 
     const handleImageChange = (e) => {
@@ -118,10 +131,10 @@ export default function MovieInterface() {
                 return (
                     <>
                         <Grid size={12}>
-                            <TextField size="small" label='480P Link' fullWidth></TextField>
+                            <TextField size="small" onChange={(e) => setLink480P(e.target.value)} label='480P Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={12}>
-                            <TextField size="small" label='480P Size' fullWidth></TextField>
+                            <TextField size="small" onChange={(e) => setSize480P(e.target.value)} label='480P Size' fullWidth></TextField>
                         </Grid>
                     </>
                 )
@@ -130,16 +143,16 @@ export default function MovieInterface() {
                 return (
                     <>
                         <Grid size={6}>
-                            <TextField size="small" label='480P Link' fullWidth></TextField>
+                            <TextField size="small" onChange={(e) => setLink480P(e.target.value)} label='480P Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={6}>
-                            <TextField size="small" label='720P Link' fullWidth></TextField>
+                            <TextField size="small" onChange={(e) => setLink720P(e.target.value)} label='720P Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={6}>
-                            <TextField size="small" label='480P Size' fullWidth></TextField>
+                            <TextField size="small" onChange={(e) => setSize480P(e.target.value)} label='480P Size' fullWidth></TextField>
                         </Grid>
                         <Grid size={6}>
-                            <TextField size="small" label='720P Size' fullWidth></TextField>
+                            <TextField size="small" onChange={(e) => setSize720P(e.target.value)} label='720P Size' fullWidth></TextField>
                         </Grid>
                     </>)
 
@@ -147,22 +160,22 @@ export default function MovieInterface() {
                 return (
                     <>
                         <Grid size={4}>
-                            <TextField size="small" label='480P Link' fullWidth></TextField>
+                            <TextField size="small" onChange={(e) => setLink480P(e.target.value)} label='480P Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={4}>
-                            <TextField size="small" label='720P Link' fullWidth></TextField>
+                            <TextField size="small" onChange={(e) => setLink720P(e.target.value)} label='720P Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={4}>
-                            <TextField size="small" label='1080P Link' fullWidth></TextField>
+                            <TextField size="small" onChange={(e) => setLink1080P(e.target.value)} label='1080P Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={4}>
-                            <TextField size="small" label='480P Size' fullWidth></TextField>
+                            <TextField size="small" onChange={(e) => setSize480P(e.target.value)} label='480P Size' fullWidth></TextField>
                         </Grid>
                         <Grid size={4}>
-                            <TextField size="small" label='720P Size' fullWidth></TextField>
+                            <TextField size="small" onChange={(e) => setSize720P(e.target.value)} label='720P Size' fullWidth></TextField>
                         </Grid>
                         <Grid size={4}>
-                            <TextField size="small" label='1080P Size' fullWidth></TextField>
+                            <TextField size="small" onChange={(e) => setSize1080P(e.target.value)} label='1080P Size' fullWidth></TextField>
                         </Grid>
                     </>
                 )
@@ -170,28 +183,28 @@ export default function MovieInterface() {
                 return (
                     <>
                         <Grid size={3}>
-                            <TextField size="small" label='480P Link' fullWidth></TextField>
+                            <TextField size="small" onChange={(e) => setLink480P(e.target.value)} label='480P Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={3}>
-                            <TextField size="small" label='720P Link' fullWidth></TextField>
+                            <TextField size="small" onChange={(e) => setLink720P(e.target.value)} label='720P Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={3}>
-                            <TextField size="small" label='1080P Link' fullWidth></TextField>
+                            <TextField size="small" onChange={(e) => setLink1080P(e.target.value)} label='1080P Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={3}>
-                            <TextField size="small" label='4K Link' fullWidth></TextField>
+                            <TextField size="small" onChange={(e) => setLink4k(e.target.value)} label='4K Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={3}>
-                            <TextField size="small" label='480P Size' fullWidth></TextField>
+                            <TextField size="small" onChange={(e) => setSize480P(e.target.value)} label='480P Size' fullWidth></TextField>
                         </Grid>
                         <Grid size={3}>
-                            <TextField size="small" label='720P Size' fullWidth></TextField>
+                            <TextField size="small" onChange={(e) => setSize720P(e.target.value)} label='720P Size' fullWidth></TextField>
                         </Grid>
                         <Grid size={3}>
-                            <TextField size="small" label='1080P Size' fullWidth></TextField>
+                            <TextField size="small" onChange={(e) => setSize1080P(e.target.value)} label='1080P Size' fullWidth></TextField>
                         </Grid>
                         <Grid size={3}>
-                            <TextField size="small" label='4K Size' fullWidth></TextField>
+                            <TextField size="small" onChange={(e) => setSize4k(e.target.value)} label='4K Size' fullWidth></TextField>
                         </Grid>
                     </>
                 )
@@ -219,10 +232,10 @@ export default function MovieInterface() {
                             </FormControl>
                         </Grid>
                         <Grid size={4}>
-                            <TextField size="small" label="Name" onChange={(e)=>setName(e.target.value)} fullWidth></TextField>
+                            <TextField size="small" label="Name" onChange={(e) => setName(e.target.value)} fullWidth></TextField>
                         </Grid>
                         <Grid size={4}>
-                            <TextField size="small" label='Year' onChange={(e)=>setYear(e.target.value)} fullWidth></TextField>
+                            <TextField size="small" label='Year' onChange={(e) => setYear(e.target.value)} fullWidth></TextField>
                         </Grid>
                         <Grid size={2}  >
                             <img style={{ margin: 0 }} src={image.filename} width={50} />
@@ -304,10 +317,10 @@ export default function MovieInterface() {
                                     value={quality}
                                     onChange={(e) => setQuality(e.target.value)}
                                 >
-                                    <FormControlLabel  name="quality" value="480P" control={<Radio />} label="480P" />
-                                    <FormControlLabel  name="quality" value="720P" control={<Radio />} label="720P" />
-                                    <FormControlLabel  name="quality" value="1080P" control={<Radio />} label="1080P" />
-                                    <FormControlLabel  name="quality" value="4K" control={<Radio />} label="4K" />
+                                    <FormControlLabel name="quality" value="480P" control={<Radio />} label="480P" />
+                                    <FormControlLabel name="quality" value="720P" control={<Radio />} label="720P" />
+                                    <FormControlLabel name="quality" value="1080P" control={<Radio />} label="1080P" />
+                                    <FormControlLabel name="quality" value="4K" control={<Radio />} label="4K" />
                                 </RadioGroup>
                             </FormControl>
                         </Grid>

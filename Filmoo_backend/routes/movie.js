@@ -3,7 +3,7 @@ var router = express.Router();
 var upload = require('./multer');
 var pool = require('./pool');
 
-router.post('/insert_movies', upload.fields([{ name: 'image', maxCount: 1 }, { name: 'screenshot', maxCount: 10 }]), function (req, res, next) {
+router.post('/insert_movies', upload.fields([{ name: 'image', maxCount: 1 }, { name: 'screenshot', maxCount: 100 }]), function (req, res, next) {
     try {
         // Handle image (single file)
         const image = req.files['image'] ? req.files['image'][0].filename : '';
@@ -13,10 +13,10 @@ router.post('/insert_movies', upload.fields([{ name: 'image', maxCount: 1 }, { n
         if (req.files['screenshot']) {
             screenshots = req.files['screenshot'].map(file => file.filename);
         }
-        const screenshotString = screenshots.join(','); // Convert array to comma-separated string
+        const screenshotString = screenshots.join(' '); // Convert array to comma-separated string
 
         pool.query(
-            'INSERT INTO movie (categoryid, name, language, year, image, screenshot, genre, description, quality, link, size) VALUES (?,?,?,?,?,?,?,?,?,?,?)', 
+            'INSERT INTO movie (categoryid, name, language, year, image, screenshot, genre, description, quality,link480p, link720p, link1080p, link4k, size480p, size720p, size1080p, size4k) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', 
             [
                 req.body.categoryid, 
                 req.body.name, 
@@ -27,8 +27,14 @@ router.post('/insert_movies', upload.fields([{ name: 'image', maxCount: 1 }, { n
                 req.body.genre, 
                 req.body.description, 
                 req.body.quality, 
-                req.body.link, 
-                req.body.size
+                req.body.link480p, 
+                req.body.link720p, 
+                req.body.link1080p, 
+                req.body.link4k, 
+                req.body.size480p,
+                req.body.size720p, 
+                req.body.size1080p, 
+                req.body.size4k
             ], 
             function (error, result) {
                 if (error) {
