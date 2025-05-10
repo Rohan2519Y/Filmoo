@@ -9,6 +9,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
 import Swal from "sweetalert2";
+import FormHelperText from '@mui/material/FormHelperText';
 export default function MovieInterface() {
     const classes = useStyles()
     const [categoryId, setCategoryId] = useState('')
@@ -29,6 +30,7 @@ export default function MovieInterface() {
     const [categoryList, setCategoryList] = useState([])
     const [selectedGenres, setSelectedGenres] = useState([]);
     const [selectedLanguage, setSelectedLanguage] = useState([]);
+    const [error,setError]=useState({})
     const genresList = [
         "Action", "Adventure", "Animation", "Biography", "Comedy", "Crime", "Documentary",
         "Drama", "Family", "Fantasy", "Historical", "Horror", "Music", "Mystery",
@@ -68,9 +70,28 @@ export default function MovieInterface() {
         }))
     }
 
+    const handleErrorMessage = (label, errorMessage) => {
+        setError((prev) => ({ ...prev, [label]: errorMessage }))
+    }
     const handleClick = async () => {
 
         var err = false
+        if(categoryId.length == 0){
+            err=true
+            handleErrorMessage('categoryId','Please Select Category...')
+        }
+        if(name.length == 0){
+            err=true
+            handleErrorMessage('name','Please Input Name...')
+        }
+        if(year.length == 0){
+            err=true
+            handleErrorMessage('year','Please Input Year...')
+        }
+        if(selectedLanguage.length == 0){
+            err=true
+            handleErrorMessage('selectedLanguage','Please Select Language...')
+        }
         if(err==false){
         const formData = new FormData();
 
@@ -263,11 +284,12 @@ export default function MovieInterface() {
                 <div style={{ margin: 10 }}>
                     <Grid container spacing={2}>
                         <Grid size={4}>
-                            <FormControl fullWidth>
+                            <FormControl error={error.categoryId} onFocus={() => handleErrorMessage('categoryId', null)} fullWidth>
                                 <InputLabel>Category</InputLabel>
-                                <Select  value={categoryId} onChange={(e) => setCategoryId(e.target.value)} label="Category" >
+                                <Select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} label="Category" >
                                     {fillCategory()}
                                 </Select>
+                                 <FormHelperText>{error.categoryId}</FormHelperText>
                             </FormControl>
                         </Grid>
                         <Grid size={4}>
