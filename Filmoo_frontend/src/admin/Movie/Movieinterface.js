@@ -189,6 +189,7 @@ export default function MovieInterface() {
     const handleMultipleImage = (e) => {
         var images = Object.values(e.target.files)
         setScreenshot(images.length > 0 ? images : []);
+        handleErrorMessage('screenshot', null)
     }
     const showImage = () => {
         if (screenshot.length === 0) {
