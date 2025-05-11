@@ -175,6 +175,7 @@ export default function MovieInterface() {
         setSize4k('');
         setImage({ filename: '/film.png', bytes: '' });
         setScreenshot([]);
+        
     };
 
 
@@ -182,6 +183,7 @@ export default function MovieInterface() {
         const file = e.target.files[0]
         if (file) {
             setImage({ filename: URL.createObjectURL(file), bytes: file })
+            handleErrorMessage('image', null)
         }
     }
     const handleMultipleImage = (e) => {
@@ -340,24 +342,25 @@ export default function MovieInterface() {
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 50, flexDirection: 'column' }}>
                                     <Button fullWidth component="label" variant="outlined">
                                         Upload ScreenShots
-                                        <input onChange={handleMultipleImage} type="file" accept="image/*" hidden multiple />
+                                        <input onFocus={() => handleErrorMessage(screenshot, '')} onChange={handleMultipleImage} type="file" accept="image/*" hidden multiple />
                                     </Button>
+                                    <div className={classes.helperTextStyle}>{error.screenshot}</div>
                                 </div>
                             </Grid>
                             <Grid size={12}>
-                                <FormControl component="fieldset" fullWidth>
+                                <FormControl error={error.selectedLanguage} onFocus={() => handleErrorMessage('selectedLanguage', null)} component="fieldset" fullWidth>
                                     <FormLabel component="legend">Language</FormLabel>
                                     <FormGroup row>
                                         {languageList.map((language) => (
                                             <FormControlLabel key={language} control={<Checkbox checked={selectedLanguage.includes(language)} onChange={handleLanguageChange} name={language} />}
-                                                label={language}
-                                            />
+                                                label={language} />
                                         ))}
                                     </FormGroup>
+                                    <FormHelperText>{error.selectedLanguage}</FormHelperText>
                                 </FormControl>
                             </Grid>
                             <Grid size={12}>
-                                <FormControl component="fieldset" fullWidth>
+                                <FormControl error={error.selectedGenres} onFocus={() => handleErrorMessage('selectedGenres', null)} component="fieldset" fullWidth>
                                     <FormLabel component="legend">Genre</FormLabel>
                                     <FormGroup row>
                                         {genresList.map((genre) => (
@@ -366,11 +369,13 @@ export default function MovieInterface() {
                                             />
                                         ))}
                                     </FormGroup>
+                                    <FormHelperText>{error.selectedGenres}</FormHelperText>
                                 </FormControl>
                             </Grid>
                             <Grid size={12} >
+                                <FormControl error={error.description} onFocus={() => handleErrorMessage('description', null)} fullWidth>
                                 <FormLabel >Description</FormLabel>
-                                <ReactQuill
+                                <ReactQuill 
                                     label="Description"
                                     value={description}
                                     onChange={setDescription}
@@ -388,22 +393,25 @@ export default function MovieInterface() {
                                         'link', 'image'
                                     ]}
                                 />
+                                <div className={classes.helperTextStyle}>{error.description}</div>
+                                </FormControl>
+                                
                             </Grid>
                             <Grid size={12} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                                 <FormLabel style={{ marginRight: 'auto' }}>Quality</FormLabel>
-                                <FormControl >
+                                <FormControl error={error.quality} onFocus={() => handleErrorMessage('quality', null)}  >
                                     <RadioGroup
                                         row
                                         aria-labelledby="demo-row-radio-buttons-group-label"
                                         name="row-radio-buttons-group"
                                         value={quality}
-                                        onChange={(e) => setQuality(e.target.value)}
-                                    >
+                                        onChange={(e) => setQuality(e.target.value)}>
                                         <FormControlLabel name="quality" value="480P" control={<Radio />} label="480P" />
                                         <FormControlLabel name="quality" value="720P" control={<Radio />} label="720P" />
                                         <FormControlLabel name="quality" value="1080P" control={<Radio />} label="1080P" />
                                         <FormControlLabel name="quality" value="4K" control={<Radio />} label="4K" />
                                     </RadioGroup>
+                                    <FormHelperText fullWidth>{error.quality}</FormHelperText>
                                 </FormControl>
                             </Grid>
                             {handleQuality()}
@@ -411,7 +419,7 @@ export default function MovieInterface() {
                                 <Button variant="contained" onClick={handleClick} fullWidth>Submit</Button>
                             </Grid>
                             <Grid size={6}>
-                                <Button variant="contained" onClick={handleReset} fullWidth>Reset</Button>
+                                <Button variant="contained" onClick={() => {handleReset();DisplayAll();}} fullWidth>Reset</Button>
                             </Grid>
                         </Grid>
                     </div>
