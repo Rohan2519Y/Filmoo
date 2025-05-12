@@ -8,8 +8,8 @@ import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
-import Swal from "sweetalert2";
 import FormHelperText from '@mui/material/FormHelperText';
+import Swal from "sweetalert2";
 export default function MovieInterface() {
     const classes = useStyles()
     const [categoryId, setCategoryId] = useState('')
@@ -297,7 +297,6 @@ export default function MovieInterface() {
     }
     function DisplayAll() {
         return (
-
             <div className={classes.back}>
                 <div className={classes.box}>
                     <div className={classes.title}>

@@ -67,4 +67,20 @@ router.get('/fetch_movies',function(req,res,next){
     }
 })
 
+router.post('/edit_movies',function(req,res,next){
+    try{
+        pool.query('update movie set categoryid=?, name=?, language=?, year=?, genre=?, description=?, quality=?, link480p=?, link720p=?, link1080p=?, link4k=?, size480p=?, size720p=?, size1080p=?, size4k=? where movieid=?',[req.body.movieid, req.body.categoryid, req.body.name, req.body.language, req.body.year, req.body.genre, req.body.description, req.body.quality, req.body.link480p, req.body.link720p, req.body.link1080p, req.body.link4k, req.body.size480p, req.body.size720p, req.body.size1080p, req.body.size4k],function(error,result){
+             if (error) {
+                res.status(200).json({ status: false, message: 'Database Error,Pls Contact Backend Team' })
+            }
+            else {
+                res.status(200).json({ status: true, message: 'Movie Updated Successfully..' })
+            }
+        })
+    }
+    catch(e){
+         res.status(200).json({status:false,message:'Critical Error,Pls Contact Server Administrator'})
+    }
+})
+
 module.exports = router;
