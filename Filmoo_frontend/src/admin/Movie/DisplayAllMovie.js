@@ -109,10 +109,10 @@ export default function DisplayAllMovie() {
                 return (
                     <>
                         <Grid size={12}>
-                            <TextField onChange={(e) => setLink480P(e.target.value)} label='480P Link' fullWidth></TextField>
+                            <TextField value={link480P} onChange={(e) => setLink480P(e.target.value)} label='480P Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={12}>
-                            <TextField onChange={(e) => setSize480P(e.target.value)} label='480P Size' fullWidth></TextField>
+                            <TextField value={size480P} onChange={(e) => setSize480P(e.target.value)} label='480P Size' fullWidth></TextField>
                         </Grid>
                     </>
                 )
@@ -121,16 +121,16 @@ export default function DisplayAllMovie() {
                 return (
                     <>
                         <Grid size={6}>
-                            <TextField onChange={(e) => setLink480P(e.target.value)} label='480P Link' fullWidth></TextField>
+                            <TextField value={link480P} onChange={(e) => setLink480P(e.target.value)} label='480P Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={6}>
-                            <TextField onChange={(e) => setLink720P(e.target.value)} label='720P Link' fullWidth></TextField>
+                            <TextField value={link720P} onChange={(e) => setLink720P(e.target.value)} label='720P Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={6}>
-                            <TextField onChange={(e) => setSize480P(e.target.value)} label='480P Size' fullWidth></TextField>
+                            <TextField value={size480P} onChange={(e) => setSize480P(e.target.value)} label='480P Size' fullWidth></TextField>
                         </Grid>
                         <Grid size={6}>
-                            <TextField onChange={(e) => setSize720P(e.target.value)} label='720P Size' fullWidth></TextField>
+                            <TextField value={size720P} onChange={(e) => setSize720P(e.target.value)} label='720P Size' fullWidth></TextField>
                         </Grid>
                     </>)
 
@@ -138,22 +138,22 @@ export default function DisplayAllMovie() {
                 return (
                     <>
                         <Grid size={4}>
-                            <TextField onChange={(e) => setLink480P(e.target.value)} label='480P Link' fullWidth></TextField>
+                            <TextField value={link480P} onChange={(e) => setLink480P(e.target.value)} label='480P Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={4}>
-                            <TextField onChange={(e) => setLink720P(e.target.value)} label='720P Link' fullWidth></TextField>
+                            <TextField value={link720P} onChange={(e) => setLink720P(e.target.value)} label='720P Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={4}>
-                            <TextField onChange={(e) => setLink1080P(e.target.value)} label='1080P Link' fullWidth></TextField>
+                            <TextField value={link1080P} onChange={(e) => setLink1080P(e.target.value)} label='1080P Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={4}>
-                            <TextField onChange={(e) => setSize480P(e.target.value)} label='480P Size' fullWidth></TextField>
+                            <TextField value={size480P} onChange={(e) => setSize480P(e.target.value)} label='480P Size' fullWidth></TextField>
                         </Grid>
                         <Grid size={4}>
-                            <TextField onChange={(e) => setSize720P(e.target.value)} label='720P Size' fullWidth></TextField>
+                            <TextField value={size720P} onChange={(e) => setSize720P(e.target.value)} label='720P Size' fullWidth></TextField>
                         </Grid>
                         <Grid size={4}>
-                            <TextField onChange={(e) => setSize1080P(e.target.value)} label='1080P Size' fullWidth></TextField>
+                            <TextField value={size1080P} onChange={(e) => setSize1080P(e.target.value)} label='1080P Size' fullWidth></TextField>
                         </Grid>
                     </>
                 )
@@ -161,28 +161,28 @@ export default function DisplayAllMovie() {
                 return (
                     <>
                         <Grid size={3}>
-                            <TextField onChange={(e) => setLink480P(e.target.value)} label='480P Link' fullWidth></TextField>
+                            <TextField value={link480P} onChange={(e) => setLink480P(e.target.value)} label='480P Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={3}>
-                            <TextField onChange={(e) => setLink720P(e.target.value)} label='720P Link' fullWidth></TextField>
+                            <TextField value={link720P} onChange={(e) => setLink720P(e.target.value)} label='720P Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={3}>
-                            <TextField onChange={(e) => setLink1080P(e.target.value)} label='1080P Link' fullWidth></TextField>
+                            <TextField value={link1080P} onChange={(e) => setLink1080P(e.target.value)} label='1080P Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={3}>
-                            <TextField onChange={(e) => setLink4k(e.target.value)} label='4K Link' fullWidth></TextField>
+                            <TextField value={link4k} onChange={(e) => setLink4k(e.target.value)} label='4K Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={3}>
-                            <TextField onChange={(e) => setSize480P(e.target.value)} label='480P Size' fullWidth></TextField>
+                            <TextField value={size480P} onChange={(e) => setSize480P(e.target.value)} label='480P Size' fullWidth></TextField>
                         </Grid>
                         <Grid size={3}>
-                            <TextField onChange={(e) => setSize720P(e.target.value)} label='720P Size' fullWidth></TextField>
+                            <TextField value={size720P} onChange={(e) => setSize720P(e.target.value)} label='720P Size' fullWidth></TextField>
                         </Grid>
                         <Grid size={3}>
-                            <TextField onChange={(e) => setSize1080P(e.target.value)} label='1080P Size' fullWidth></TextField>
+                            <TextField value={size1080P} onChange={(e) => setSize1080P(e.target.value)} label='1080P Size' fullWidth></TextField>
                         </Grid>
                         <Grid size={3}>
-                            <TextField onChange={(e) => setSize4k(e.target.value)} label='4K Size' fullWidth></TextField>
+                            <TextField value={size4k} onChange={(e) => setSize4k(e.target.value)} label='4K Size' fullWidth></TextField>
                         </Grid>
                     </>
                 )
@@ -193,6 +193,21 @@ export default function DisplayAllMovie() {
 
     const handleOpenDialog = (rowData, state) => {
         setDialogState(state)
+        setCategoryId(rowData.categoryid)
+        setName(rowData.name)
+        setYear(rowData.year)
+        setSelectedLanguage(rowData.language)
+        setSelectedGenres(rowData.genre)
+        setDescription(rowData.description)
+        setQuality(rowData.quality)
+        setLink480P(rowData.link480p)
+        setLink720P(rowData.link720p)
+        setLink1080P(rowData.link1080p)
+        setLink4k(rowData.link4k)
+        setSize480P(rowData.size480p)
+        setSize720P(rowData.size720p)
+        setSize1080P(rowData.size1080p)
+        setSize4k(rowData.size4k)
         setOpen(true)
     }
     const handleCloseDialog = () => {
@@ -201,7 +216,6 @@ export default function DisplayAllMovie() {
 
     const openDialog = () => {
         return <Dialog open={open}>
-            <DialogTitle>Movie Form</DialogTitle>
             <DialogContent>{dialogState == 'data' ? movieForm() : pictureForm()}</DialogContent>\
             <DialogActions>
                 <Button onClick={handleCloseDialog}>Close</Button>
@@ -211,8 +225,8 @@ export default function DisplayAllMovie() {
 
     const movieForm = () => {
         return (
-            <div className={classes.back}>
-                <div className={classes.box}>
+            
+                <div className={classes.box2}>
                     <div className={classes.title}>
                         <img className={classes.image} src='/logo.png' />
                         <div className={classes.name}>Add Movie</div>
@@ -312,7 +326,7 @@ export default function DisplayAllMovie() {
                         </Grid>
                     </div>
                 </div>
-            </div>
+           
         )
     }
     const pictureForm = () => {

@@ -18,6 +18,16 @@ const useStyles = makeStyles(() => ({
         flexDirection:'column',
         overflow:'hidden'
     },
+    box2:{
+       
+        height:'auto',
+        width:'auto',
+        border:'2px solid black',
+        display:'flex',
+        borderRadius:'15px',
+        flexDirection:'column',
+       
+    },
     title:{
         height:'8vh',
         width:'auto',
