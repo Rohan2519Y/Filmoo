@@ -119,8 +119,8 @@ export default function MovieInterface() {
             formData.append('categoryid', categoryId);
             formData.append('name', name);
             formData.append('year', year);
-            formData.append('language', selectedLanguage.join(','));
-            formData.append('genre', selectedGenres.join(','));
+            formData.append('language', selectedLanguage.join(', '));
+            formData.append('genre', selectedGenres.join(', '));
             formData.append('description', description);
             formData.append('quality', quality);
             formData.append('link480p', link480P);
