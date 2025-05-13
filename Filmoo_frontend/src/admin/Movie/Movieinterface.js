@@ -1,5 +1,6 @@
 import { useStyles } from "./MovieinterfaceCss"
 import { useEffect, useState } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 import { FormGroup, Checkbox, Button, Grid, MenuItem, Radio, TextField, InputLabel, Select } from "@mui/material"
 import ReactQuill from "react-quill-new";
 import 'react-quill-new/dist/quill.snow.css';
@@ -12,6 +13,7 @@ import FormHelperText from '@mui/material/FormHelperText';
 import Swal from "sweetalert2";
 export default function MovieInterface() {
     const classes = useStyles()
+    const navigate=useNavigate()
     const [categoryId, setCategoryId] = useState('')
     const [name, setName] = useState('')
     const [year, setYear] = useState('')
@@ -175,7 +177,7 @@ export default function MovieInterface() {
         setSize4k('');
         setImage({ filename: '/film.png', bytes: '' });
         setScreenshot([]);
-        
+
     };
 
 
@@ -302,7 +304,9 @@ export default function MovieInterface() {
                     <div className={classes.title}>
                         <img className={classes.image} src='/logo.png' />
                         <div className={classes.name}>Add Movie</div>
-                        <img src="/verification.png" style={{ height: '8vh' }}></img>
+                        <div style={{ cursor: 'pointer' }} onClick={() => navigate("/displayallmovie")}>
+                            <img src="/verification.png" style={{height:'8vh'}} />
+                        </div>
                     </div>
                     <div style={{ margin: 10 }}>
                         <Grid container spacing={2}>
@@ -374,28 +378,28 @@ export default function MovieInterface() {
                             </Grid>
                             <Grid size={12} >
                                 <FormControl error={error.description} onFocus={() => handleErrorMessage('description', null)} fullWidth>
-                                <FormLabel >Description</FormLabel>
-                                <ReactQuill 
-                                    label="Description"
-                                    value={description}
-                                    onChange={setDescription}
-                                    modules={{
-                                        toolbar: [
-                                            ['bold', 'italic', 'underline', 'strike'],
-                                            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-                                            ['link', 'image', 'video'],
-                                            ['clean']
-                                        ],
-                                    }}
-                                    formats={[
-                                        'bold', 'italic', 'underline', 'strike',
-                                        'list', 'bullet',
-                                        'link', 'image'
-                                    ]}
-                                />
-                                <div className={classes.helperTextStyle}>{error.description}</div>
+                                    <FormLabel >Description</FormLabel>
+                                    <ReactQuill
+                                        label="Description"
+                                        value={description}
+                                        onChange={setDescription}
+                                        modules={{
+                                            toolbar: [
+                                                ['bold', 'italic', 'underline', 'strike'],
+                                                [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                                                ['link', 'image', 'video'],
+                                                ['clean']
+                                            ],
+                                        }}
+                                        formats={[
+                                            'bold', 'italic', 'underline', 'strike',
+                                            'list', 'bullet',
+                                            'link', 'image'
+                                        ]}
+                                    />
+                                    <div className={classes.helperTextStyle}>{error.description}</div>
                                 </FormControl>
-                                
+
                             </Grid>
                             <Grid size={12} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                                 <FormLabel style={{ marginRight: 'auto' }}>Quality</FormLabel>
@@ -419,7 +423,7 @@ export default function MovieInterface() {
                                 <Button variant="contained" onClick={handleClick} fullWidth>Submit</Button>
                             </Grid>
                             <Grid size={6}>
-                                <Button variant="contained" onClick={() => {handleReset();DisplayAll();}} fullWidth>Reset</Button>
+                                <Button variant="contained" onClick={() => { handleReset(); DisplayAll(); }} fullWidth>Reset</Button>
                             </Grid>
                         </Grid>
                     </div>

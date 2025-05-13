@@ -1,7 +1,8 @@
 import { useStyles } from "./MovieinterfaceCss";
+import { useNavigate } from "react-router-dom";
 import MaterialTable from "@material-table/core";
 import DeleteIcon from '@mui/icons-material/Delete';
-import SaveIcon from '@mui/icons-material/Save';
+import AddIcon from '@mui/icons-material/Add';
 import { FormGroup, Checkbox, Button, Grid, MenuItem, Radio, TextField, InputLabel, Select } from "@mui/material"
 import ReactQuill from "react-quill-new";
 import 'react-quill-new/dist/quill.snow.css';
@@ -20,6 +21,7 @@ export default function DisplayAllMovie() {
     const [listMovies, setListMovies] = useState([])
     const [open, setOpen] = useState(false)
     const [dialogState, setDialogState] = useState('')
+    const navigate = useNavigate()
 
     const [categoryId, setCategoryId] = useState('')
     const [name, setName] = useState('')
@@ -214,6 +216,70 @@ export default function DisplayAllMovie() {
         setOpen(false)
     }
 
+    const handleClick = async () => {
+        var err = false
+        if (categoryId.length == 0) {
+            err = true
+            handleErrorMessage('categoryId', 'Please Select Category...')
+        }
+        if (name.length == 0) {
+            err = true
+            handleErrorMessage('name', 'Please Input Name...')
+        }
+        if (year.length == 0) {
+            err = true
+            handleErrorMessage('year', 'Please Input Year...')
+        }
+        if (selectedLanguage.length == 0) {
+            err = true
+            handleErrorMessage('selectedLanguage', 'Please Select Language...')
+        }
+        if (selectedGenres.length == 0) {
+            err = true
+            handleErrorMessage('selectedGenres', 'Please Select Genre...')
+        }
+        if (description.length == 0) {
+            err = true
+            handleErrorMessage('description', 'Please Input Description...')
+        }
+        if (quality.length == 0) {
+            err = true
+            handleErrorMessage('quality', 'Please Select Quality...')
+        }
+        
+        if (err == false) {
+            var body = {
+                'categoryid': categoryId,
+                'name': name,
+                'language': selectedLanguage,
+                'year': year,
+                'genre': selectedGenres,
+                'description': description,
+                'quality': quality,
+                'link480p': link480P, 'link720p': link720P, 'link1080p': link1080P, 'link4k': link4k,
+                'size480p': size480P, 'size720p': size720P, 'size1080p': size1080P, 'size4k': size4k
+            }
+            var result = await postData('movie/edit_movies', body)
+            if (result.status) {
+                Swal.fire({
+                    icon: "success",
+                    title: "Movie Register",
+                    text: result.message,
+                    toast: true
+                });
+                fetchAllMovies()
+            }
+            else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Movie Register",
+                    text: result.message,
+                    toast: true
+                });
+            }
+        }
+    }
+
     const openDialog = () => {
         return <Dialog open={open}>
             <DialogContent>{dialogState == 'data' ? movieForm() : pictureForm()}</DialogContent>\
@@ -225,108 +291,106 @@ export default function DisplayAllMovie() {
 
     const movieForm = () => {
         return (
-            
-                <div className={classes.box2}>
-                    <div className={classes.title}>
-                        <img className={classes.image} src='/logo.png' />
-                        <div className={classes.name}>Add Movie</div>
-                        <img src="/verification.png" style={{ height: '8vh' }}></img>
-                    </div>
-                    <div style={{ margin: 10 }}>
-                        <Grid container spacing={2}>
-                            <Grid size={4}>
-                                <FormControl error={error.categoryId} onFocus={() => handleErrorMessage('categoryId', null)} fullWidth>
-                                    <InputLabel>Category</InputLabel>
-                                    <Select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} label="Category" >
-                                        {fillCategory()}
-                                    </Select>
-                                    <FormHelperText>{error.categoryId}</FormHelperText>
-                                </FormControl>
-                            </Grid>
-                            <Grid size={4}>
-                                <TextField error={error.name} helperText={error.name} onFocus={() => handleErrorMessage('name', null)} label="Name" value={name} onChange={(e) => setName(e.target.value)} fullWidth></TextField>
-                            </Grid>
-                            <Grid size={4}>
-                                <TextField error={error.year} helperText={error.year} onFocus={() => handleErrorMessage('year', null)} label='Year' value={year} onChange={(e) => setYear(e.target.value)} fullWidth></TextField>
-                            </Grid>
-                            <Grid size={12}>
-                                <FormControl error={error.selectedLanguage} onFocus={() => handleErrorMessage('selectedLanguage', null)} component="fieldset" fullWidth>
-                                    <FormLabel component="legend">Language</FormLabel>
-                                    <FormGroup row>
-                                        {languageList.map((language) => (
-                                            <FormControlLabel key={language} control={<Checkbox checked={selectedLanguage.includes(language)} onChange={handleLanguageChange} name={language} />}
-                                                label={language} />
-                                        ))}
-                                    </FormGroup>
-                                    <FormHelperText>{error.selectedLanguage}</FormHelperText>
-                                </FormControl>
-                            </Grid>
-                            <Grid size={12}>
-                                <FormControl error={error.selectedGenres} onFocus={() => handleErrorMessage('selectedGenres', null)} component="fieldset" fullWidth>
-                                    <FormLabel component="legend">Genre</FormLabel>
-                                    <FormGroup row>
-                                        {genresList.map((genre) => (
-                                            <FormControlLabel key={genre} control={<Checkbox checked={selectedGenres.includes(genre)} onChange={handleGenreChange} name={genre} />}
-                                                label={genre}
-                                            />
-                                        ))}
-                                    </FormGroup>
-                                    <FormHelperText>{error.selectedGenres}</FormHelperText>
-                                </FormControl>
-                            </Grid>
-                            <Grid size={12} >
-                                <FormControl error={error.description} onFocus={() => handleErrorMessage('description', null)} fullWidth>
-                                    <FormLabel >Description</FormLabel>
-                                    <ReactQuill
-                                        label="Description"
-                                        value={description}
-                                        onChange={setDescription}
-                                        modules={{
-                                            toolbar: [
-                                                ['bold', 'italic', 'underline', 'strike'],
-                                                [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-                                                ['link', 'image', 'video'],
-                                                ['clean']
-                                            ],
-                                        }}
-                                        formats={[
-                                            'bold', 'italic', 'underline', 'strike',
-                                            'list', 'bullet',
-                                            'link', 'image'
-                                        ]}
-                                    />
-                                    <div className={classes.helperTextStyle}>{error.description}</div>
-                                </FormControl>
-
-                            </Grid>
-                            <Grid size={12} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                                <FormLabel style={{ marginRight: 'auto' }}>Quality</FormLabel>
-                                <FormControl error={error.quality} onFocus={() => handleErrorMessage('quality', null)}  >
-                                    <RadioGroup
-                                        row
-                                        aria-labelledby="demo-row-radio-buttons-group-label"
-                                        name="row-radio-buttons-group"
-                                        value={quality}
-                                        onChange={(e) => setQuality(e.target.value)}>
-                                        <FormControlLabel name="quality" value="480P" control={<Radio />} label="480P" />
-                                        <FormControlLabel name="quality" value="720P" control={<Radio />} label="720P" />
-                                        <FormControlLabel name="quality" value="1080P" control={<Radio />} label="1080P" />
-                                        <FormControlLabel name="quality" value="4K" control={<Radio />} label="4K" />
-                                    </RadioGroup>
-                                    <FormHelperText fullWidth>{error.quality}</FormHelperText>
-                                </FormControl>
-                            </Grid>
-                            {handleQuality()}
-                            <Grid size={6}>
-                                <Button variant="contained" fullWidth>Submit</Button>
-                            </Grid>
-                            <Grid size={6}>
-                                <Button variant="contained" onClick={handleReset} fullWidth>Reset</Button>
-                            </Grid>
-                        </Grid>
-                    </div>
+            <div className={classes.box2}>
+                <div className={classes.title}>
+                    <img className={classes.image} src='/logo.png' />
+                    <div className={classes.name}>Add Movie</div>
+                    <img src="/verification.png" style={{ height: '8vh' }}></img>
                 </div>
-           
+                <div style={{ margin: 10 }}>
+                    <Grid container spacing={2}>
+                        <Grid size={4}>
+                            <FormControl error={error.categoryId} onFocus={() => handleErrorMessage('categoryId', null)} fullWidth>
+                                <InputLabel>Category</InputLabel>
+                                <Select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} label="Category" >
+                                    {fillCategory()}
+                                </Select>
+                                <FormHelperText>{error.categoryId}</FormHelperText>
+                            </FormControl>
+                        </Grid>
+                        <Grid size={4}>
+                            <TextField error={error.name} helperText={error.name} onFocus={() => handleErrorMessage('name', null)} label="Name" value={name} onChange={(e) => setName(e.target.value)} fullWidth></TextField>
+                        </Grid>
+                        <Grid size={4}>
+                            <TextField error={error.year} helperText={error.year} onFocus={() => handleErrorMessage('year', null)} label='Year' value={year} onChange={(e) => setYear(e.target.value)} fullWidth></TextField>
+                        </Grid>
+                        <Grid size={12}>
+                            <FormControl error={error.selectedLanguage} onFocus={() => handleErrorMessage('selectedLanguage', null)} component="fieldset" fullWidth>
+                                <FormLabel component="legend">Language</FormLabel>
+                                <FormGroup row>
+                                    {languageList.map((language) => (
+                                        <FormControlLabel key={language} control={<Checkbox checked={selectedLanguage.includes(language)} onChange={handleLanguageChange} name={language} />}
+                                            label={language} />
+                                    ))}
+                                </FormGroup>
+                                <FormHelperText>{error.selectedLanguage}</FormHelperText>
+                            </FormControl>
+                        </Grid>
+                        <Grid size={12}>
+                            <FormControl error={error.selectedGenres} onFocus={() => handleErrorMessage('selectedGenres', null)} component="fieldset" fullWidth>
+                                <FormLabel component="legend">Genre</FormLabel>
+                                <FormGroup row>
+                                    {genresList.map((genre) => (
+                                        <FormControlLabel key={genre} control={<Checkbox checked={selectedGenres.includes(genre)} onChange={handleGenreChange} name={genre} />}
+                                            label={genre}
+                                        />
+                                    ))}
+                                </FormGroup>
+                                <FormHelperText>{error.selectedGenres}</FormHelperText>
+                            </FormControl>
+                        </Grid>
+                        <Grid size={12} >
+                            <FormControl error={error.description} onFocus={() => handleErrorMessage('description', null)} fullWidth>
+                                <FormLabel >Description</FormLabel>
+                                <ReactQuill
+                                    label="Description"
+                                    value={description}
+                                    onChange={setDescription}
+                                    modules={{
+                                        toolbar: [
+                                            ['bold', 'italic', 'underline', 'strike'],
+                                            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                                            ['link', 'image', 'video'],
+                                            ['clean']
+                                        ],
+                                    }}
+                                    formats={[
+                                        'bold', 'italic', 'underline', 'strike',
+                                        'list', 'bullet',
+                                        'link', 'image'
+                                    ]}
+                                />
+                                <div className={classes.helperTextStyle}>{error.description}</div>
+                            </FormControl>
+
+                        </Grid>
+                        <Grid size={12} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                            <FormLabel style={{ marginRight: 'auto' }}>Quality</FormLabel>
+                            <FormControl error={error.quality} onFocus={() => handleErrorMessage('quality', null)}  >
+                                <RadioGroup
+                                    row
+                                    aria-labelledby="demo-row-radio-buttons-group-label"
+                                    name="row-radio-buttons-group"
+                                    value={quality}
+                                    onChange={(e) => setQuality(e.target.value)}>
+                                    <FormControlLabel name="quality" value="480P" control={<Radio />} label="480P" />
+                                    <FormControlLabel name="quality" value="720P" control={<Radio />} label="720P" />
+                                    <FormControlLabel name="quality" value="1080P" control={<Radio />} label="1080P" />
+                                    <FormControlLabel name="quality" value="4K" control={<Radio />} label="4K" />
+                                </RadioGroup>
+                                <FormHelperText fullWidth>{error.quality}</FormHelperText>
+                            </FormControl>
+                        </Grid>
+                        {handleQuality()}
+                        <Grid size={6}>
+                            <Button variant="contained" onClick={handleClick} fullWidth>Submit</Button>
+                        </Grid>
+                        <Grid size={6}>
+                            <Button variant="contained" onClick={handleReset} fullWidth>Reset</Button>
+                        </Grid>
+                    </Grid>
+                </div>
+            </div>
         )
     }
     const pictureForm = () => {
@@ -378,7 +442,7 @@ export default function DisplayAllMovie() {
                                     </div>
                             },
                             {
-                                title: 'Sizes', render: (rowData) =>
+                                title: 'Sizes', width: '5%', render: (rowData) =>
                                     <div>
                                         <div>{rowData.size480p}</div>
                                         <div>{rowData.size720p}</div>
@@ -404,7 +468,7 @@ export default function DisplayAllMovie() {
                                                     src={`${serverURL}/images/${item}`}
                                                     style={{ width: 40, height: 40, borderRadius: 10 }}
                                                     alt={`screenshot-${index}`}
-                                                    onError={(e) => { e.target.style.display = 'none'; }} // hides broken images
+
                                                 />
                                             ))}
                                         </div>
@@ -426,10 +490,10 @@ export default function DisplayAllMovie() {
                                 onClick: (event, rowData) => alert("Delete movie: " + rowData.name)
                             },
                             {
-                                icon: () => <SaveIcon />,
+                                icon: () => <AddIcon />,
                                 tooltip: 'Add New Movie',
                                 isFreeAction: true,
-                                onClick: () => alert("Add new movie")
+                                onClick: () => navigate('/movieinterface')
                             }
                         ]}
 
