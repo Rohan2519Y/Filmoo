@@ -81,6 +81,7 @@ export default function DisplayAllMovie() {
 
     const handleLanguageChange = (e) => {
         const value = e.target.name
+        setSelectedLanguage([])
         if (selectedLanguage.includes(value)) {
             setSelectedLanguage(selectedLanguage.filter((language) => language !== value));
         } else {
