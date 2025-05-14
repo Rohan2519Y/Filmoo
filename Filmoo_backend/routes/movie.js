@@ -90,9 +90,9 @@ router.post('/edit_movies',function(req,res,next){
             [
                 req.body.categoryid, 
                 req.body.name, 
-                req.body.language, 
+                req.body.language.join(', '), 
                 req.body.year, 
-                req.body.genre, 
+                req.body.genre.join(', '), 
                 req.body.description, 
                 req.body.quality, 
                 req.body.link480p, 
@@ -103,18 +103,20 @@ router.post('/edit_movies',function(req,res,next){
                 req.body.size720p, 
                 req.body.size1080p, 
                 req.body.size4k,
-                req.body.movieid  // This should be LAST to match the WHERE clause
+                req.body.movieid  
             ],function(error,result){
              if (error) {
                 console.log(error)
                 res.status(200).json({ status: false, message: 'Database Error,Pls Contact Backend Team' })
             }
             else {
+                console.log(result)
                 res.status(200).json({ status: true, message: 'Movie Updated Successfully..' })
             }
         })
     }
     catch(e){
+        console.log(e)
          res.status(200).json({status:false,message:'Critical Error,Pls Contact Server Administrator'})
     }
 })

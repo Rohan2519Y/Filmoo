@@ -23,6 +23,7 @@ export default function DisplayAllMovie() {
     const [dialogState, setDialogState] = useState('')
     const navigate = useNavigate()
 
+    const [movieId, setMovieId] = useState('')
     const [categoryId, setCategoryId] = useState('')
     const [name, setName] = useState('')
     const [year, setYear] = useState('')
@@ -61,31 +62,34 @@ export default function DisplayAllMovie() {
         fetchAllMovies()
     }, [])
 
-    const handleGenreChange = (event) => {
-        const value = event.target.name;
-        if (selectedGenres.includes(value)) {
-            setSelectedGenres(selectedGenres.filter((genre) => genre !== value));
-        } else {
-            setSelectedGenres([...selectedGenres, value]);
-        }
-    };
-
+    
     const languageList = [
         'Hindi', 'English', 'Tamil', 'Telgu', 'Gujarati', 'Marathi', 'Japanese', 'Chinese'
-    ]
+    ];
     const genresList = [
         "Action", "Adventure", "Animation", "Biography", "Comedy", "Crime", "Documentary",
         "Drama", "Family", "Fantasy", "Historical", "Horror", "Music", "Mystery",
         "Romance", "Sci-Fi", "Sport", "Thriller", "War", "Western"
     ];
-
+    
+     const handleGenreChange = (e) => {
+        const value = e.target.name
+        if (selectedGenres.includes(value)) {
+            setSelectedGenres(selectedGenres.filter((genre) => genre !== value));
+        } else {
+            var arr = []
+            arr.push(...selectedGenres,value)
+            setSelectedGenres(arr);
+        }
+    }
     const handleLanguageChange = (e) => {
         const value = e.target.name
-        setSelectedLanguage([])
         if (selectedLanguage.includes(value)) {
             setSelectedLanguage(selectedLanguage.filter((language) => language !== value));
         } else {
-            setSelectedLanguage([...selectedLanguage, value]);
+            var arr = []
+            arr.push(...selectedLanguage,value)
+            setSelectedLanguage(arr);
         }
     }
 
@@ -196,11 +200,12 @@ export default function DisplayAllMovie() {
 
     const handleOpenDialog = (rowData, state) => {
         setDialogState(state)
+        setMovieId(rowData.movieid)
         setCategoryId(rowData.categoryid)
         setName(rowData.name)
         setYear(rowData.year)
-        setSelectedLanguage(rowData.language)
-        setSelectedGenres(rowData.genre)
+        setSelectedLanguage([])
+        setSelectedGenres([])
         setDescription(rowData.description)
         setQuality(rowData.quality)
         setLink480P(rowData.link480p)
@@ -247,9 +252,10 @@ export default function DisplayAllMovie() {
             err = true
             handleErrorMessage('quality', 'Please Select Quality...')
         }
-        
+
         if (err == false) {
             var body = {
+                'movieid': movieId,
                 'categoryid': categoryId,
                 'name': name,
                 'language': selectedLanguage,
@@ -268,7 +274,8 @@ export default function DisplayAllMovie() {
                     text: result.message,
                     toast: true
                 });
-                fetchAllMovies()
+                fetchAllMovies();
+                setOpen(false)
             }
             else {
                 Swal.fire({

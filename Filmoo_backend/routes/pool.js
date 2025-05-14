@@ -1,10 +1,10 @@
 var mysql = require("mysql")
 var pool = mysql.createPool({
-    host: 'sql12.freesqldatabase.com',
+    host: 'localhost',
     port: 3306,
-    user: 'sql12777181',
-    password: '6GB6UwB9sq',
-    database: 'sql12777181',
+    user: 'root',
+    password: '1234',
+    database: 'filmoo',
     multipleStatements: true,
     connectionLimit: 100
 
