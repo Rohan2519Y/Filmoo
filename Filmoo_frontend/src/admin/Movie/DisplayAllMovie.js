@@ -62,7 +62,7 @@ export default function DisplayAllMovie() {
         fetchAllMovies()
     }, [])
 
-    
+
     const languageList = [
         'Hindi', 'English', 'Tamil', 'Telgu', 'Gujarati', 'Marathi', 'Japanese', 'Chinese'
     ];
@@ -71,14 +71,14 @@ export default function DisplayAllMovie() {
         "Drama", "Family", "Fantasy", "Historical", "Horror", "Music", "Mystery",
         "Romance", "Sci-Fi", "Sport", "Thriller", "War", "Western"
     ];
-    
-     const handleGenreChange = (e) => {
+
+    const handleGenreChange = (e) => {
         const value = e.target.name
         if (selectedGenres.includes(value)) {
             setSelectedGenres(selectedGenres.filter((genre) => genre !== value));
         } else {
             var arr = []
-            arr.push(...selectedGenres,value)
+            arr.push(...selectedGenres, value)
             setSelectedGenres(arr);
         }
     }
@@ -88,7 +88,7 @@ export default function DisplayAllMovie() {
             setSelectedLanguage(selectedLanguage.filter((language) => language !== value));
         } else {
             var arr = []
-            arr.push(...selectedLanguage,value)
+            arr.push(...selectedLanguage, value)
             setSelectedLanguage(arr);
         }
     }
@@ -216,6 +216,8 @@ export default function DisplayAllMovie() {
         setSize720P(rowData.size720p)
         setSize1080P(rowData.size1080p)
         setSize4k(rowData.size4k)
+        setImage({ filename: `${serverURL}/images/${rowData.image}`, bytes: '' })
+        
         setOpen(true)
     }
     const handleCloseDialog = () => {
@@ -290,7 +292,10 @@ export default function DisplayAllMovie() {
 
     const openDialog = () => {
         return <Dialog open={open}>
-            <DialogContent>{dialogState == 'data' ? movieForm() : pictureForm()}</DialogContent>\
+            <DialogContent>
+                {dialogState === 'data' ? movieForm() : dialogState === 'picture' ? pictureForm() : screenshotForm()}
+            </DialogContent>
+
             <DialogActions>
                 <Button onClick={handleCloseDialog}>Close</Button>
             </DialogActions>
@@ -401,9 +406,99 @@ export default function DisplayAllMovie() {
             </div>
         )
     }
-    const pictureForm = () => {
 
+    const handleImageChange = (e) => {
+        const file = e.target.files[0]
+        if (file) {
+            setImage({ filename: URL.createObjectURL(file), bytes: file })
+            handleErrorMessage('image', null)
+        }
     }
+    const handleMultipleImage = (e) => {
+        var images = Object.values(e.target.files)
+        setScreenshot(images.length > 0 ? images : []);
+        handleErrorMessage('screenshot', null)
+    }
+    const showImage = () => {
+        if (screenshot.length === 0) {
+            return (
+                <div style={{ margin: 2 }}>
+                    <img src="/film.png" style={{ width: 50, height: 'auto' }} />
+                </div>
+            );
+        }
+        return screenshot.map((item) => {
+            return (
+                <div style={{ margin: 2 }}>
+                    <img src={URL.createObjectURL(item)} style={{ width: 40, height: 40 }} />
+                </div>
+            );
+        });
+    }
+    const pictureForm = () => {
+        return (
+            <div className={classes.box2}>
+                <div className={classes.title}>
+                    <img className={classes.image} src='/logo.png' />
+                    <div className={classes.name}>Add Movie</div>
+                    <img src="/verification.png" style={{ height: '8vh' }}></img>
+                </div>
+                <div style={{ margin: 10 }}>
+                    <Grid container spacing={2}>
+                        <Grid size={6}  >
+                            <img style={{ margin: 0 }} src={image.filename} width={150} />
+                        </Grid>
+                        <Grid size={6}  >
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 50, flexDirection: 'column' }}>
+                                <Button fullWidth component="label" variant="outlined">
+                                    Upload Image
+                                    <input onChange={handleImageChange} onFocus={() => handleErrorMessage(image, '')} type="file" accept="image/*" hidden multiple />
+                                </Button>
+                                <div className={classes.helperTextStyle}>{error.image}</div>
+                            </div>
+                        </Grid>
+                        <Grid size={6}>
+                            <Button variant="contained" onClick={handleClick} fullWidth>Submit</Button>
+                        </Grid>
+                        <Grid size={6}>
+                            <Button variant="contained" onClick={handleReset} fullWidth>Reset</Button>
+                        </Grid>
+                    </Grid>
+                </div>
+            </div>
+        )
+    }
+   
+
+    const screenshotForm = () => {
+        return (
+            <div className={classes.box2}>
+                <div className={classes.title}>
+                    <img className={classes.image} src='/logo.png' />
+                    <div className={classes.name}>Add Movie</div>
+                    <img src="/verification.png" style={{ height: '8vh' }}></img>
+                </div>
+                <div style={{ margin: 10 }}>
+                    <Grid size={12} >
+                        <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+                            {showImage()}
+                        </div>
+                    </Grid>
+                    <Grid size={12}  >
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 50, flexDirection: 'column' }}>
+                            <Button fullWidth component="label" variant="outlined">
+                                Upload ScreenShots
+                                <input onFocus={() => handleErrorMessage(screenshot, '')} onChange={handleMultipleImage} type="file" accept="image/*" hidden multiple />
+                            </Button>
+                            <div className={classes.helperTextStyle}>{error.screenshot}</div>
+                        </div>
+                    </Grid>
+
+                </div>
+            </div>
+        )
+    }
+    
 
     const handleReset = () => {
         setCategoryId('');
@@ -429,7 +524,7 @@ export default function DisplayAllMovie() {
     function DisplayAll() {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100vw', height: '100vh' }}>
-                <div style={{ padding: 10 }}>
+                <div style={{ padding: 10, margin: 10 }}>
                     <MaterialTable
                         title="Movie"
                         columns={[
@@ -458,7 +553,7 @@ export default function DisplayAllMovie() {
                                         <div>{rowData.size4k}</div>
                                     </div>
                             },
-                            { title: 'Image', width: '4%', render: (rowData) => <div><img src={`${serverURL}/images/${rowData.image}`} style={{ width: 40, height: 40, borderRadius: 10 }} /></div> },
+                            { title: 'Image', width: '4%', render: (rowData) => <div style={{ cursor: 'pointer' }} onClick={() => handleOpenDialog(rowData, 'image')}><img src={`${serverURL}/images/${rowData.image}`} style={{ width: 40, height: 40, borderRadius: 10 }} /></div> },
                             {
                                 title: 'Screenshots',
                                 render: (rowData) => {
@@ -469,16 +564,18 @@ export default function DisplayAllMovie() {
                                             : [];
 
                                     return (
-                                        <div style={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                                            {screenshots.map((item, index) => (
-                                                <img
-                                                    key={index}
-                                                    src={`${serverURL}/images/${item}`}
-                                                    style={{ width: 40, height: 40, borderRadius: 10 }}
-                                                    alt={`screenshot-${index}`}
+                                        <div style={{ cursor: 'pointer' }} onClick={() => handleOpenDialog(rowData, 'image')}>
+                                            <div style={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                                                {screenshots.map((item, index) => (
+                                                    <img
+                                                        key={index}
+                                                        src={`${serverURL}/images/${item}`}
+                                                        style={{ width: 40, height: 40, borderRadius: 10 }}
+                                                        alt={`screenshot-${index}`}
 
-                                                />
-                                            ))}
+                                                    />
+                                                ))}
+                                            </div>
                                         </div>
                                     );
                                 }
