@@ -217,7 +217,7 @@ export default function DisplayAllMovie() {
         setSize1080P(rowData.size1080p)
         setSize4k(rowData.size4k)
         setImage({ filename: `${serverURL}/images/${rowData.image}`, bytes: '' })
-        
+
         setOpen(true)
     }
     const handleCloseDialog = () => {
@@ -293,7 +293,7 @@ export default function DisplayAllMovie() {
     const openDialog = () => {
         return <Dialog open={open}>
             <DialogContent>
-                {dialogState === 'data' ? movieForm() : dialogState === 'picture' ? pictureForm() : screenshotForm()}
+                {dialogState === 'data' ? movieForm() : dialogState === 'image' ? pictureForm() : null}
             </DialogContent>
 
             <DialogActions>
@@ -301,6 +301,16 @@ export default function DisplayAllMovie() {
             </DialogActions>
         </Dialog>
     }
+    const openDialog2 = () => {
+        return <Dialog open={open} >
+            <DialogContent>
+                {dialogState === 'screenshot' && screenshotForm()}
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={handleCloseDialog}>Close</Button>
+            </DialogActions>
+        </Dialog>
+    };
 
     const movieForm = () => {
         return (
@@ -414,7 +424,34 @@ export default function DisplayAllMovie() {
             handleErrorMessage('image', null)
         }
     }
+    const handleImageSave = async () => {
+
+        var formData = new FormData()
+        formData.append('movieid', movieId)
+        formData.append('image', image.bytes)
+
+        var result = await postData('movie/update_icon', formData)
+        if (result.status) {
+            Swal.fire({
+                icon: "success",
+                title: "Movie Register",
+                text: result.message,
+                toast: true
+            });
+            fetchAllMovies()
+        }
+        else {
+            Swal.fire({
+                icon: "error",
+                title: "Movie Register",
+                text: result.message,
+                toast: true
+            });
+        }
+    }
+
     const handleMultipleImage = (e) => {
+        setDialogState('screenshot')
         var images = Object.values(e.target.files)
         setScreenshot(images.length > 0 ? images : []);
         handleErrorMessage('screenshot', null)
@@ -440,7 +477,7 @@ export default function DisplayAllMovie() {
             <div className={classes.box2}>
                 <div className={classes.title}>
                     <img className={classes.image} src='/logo.png' />
-                    <div className={classes.name}>Add Movie</div>
+                    <div className={classes.name}>Edit Image</div>
                     <img src="/verification.png" style={{ height: '8vh' }}></img>
                 </div>
                 <div style={{ margin: 10 }}>
@@ -458,7 +495,7 @@ export default function DisplayAllMovie() {
                             </div>
                         </Grid>
                         <Grid size={6}>
-                            <Button variant="contained" onClick={handleClick} fullWidth>Submit</Button>
+                            <Button variant="contained" onClick={handleImageSave} fullWidth>Submit</Button>
                         </Grid>
                         <Grid size={6}>
                             <Button variant="contained" onClick={handleReset} fullWidth>Reset</Button>
@@ -468,14 +505,14 @@ export default function DisplayAllMovie() {
             </div>
         )
     }
-   
+
 
     const screenshotForm = () => {
         return (
             <div className={classes.box2}>
                 <div className={classes.title}>
                     <img className={classes.image} src='/logo.png' />
-                    <div className={classes.name}>Add Movie</div>
+                    <div className={classes.name}>Edit ScreenShots</div>
                     <img src="/verification.png" style={{ height: '8vh' }}></img>
                 </div>
                 <div style={{ margin: 10 }}>
@@ -488,7 +525,7 @@ export default function DisplayAllMovie() {
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 50, flexDirection: 'column' }}>
                             <Button fullWidth component="label" variant="outlined">
                                 Upload ScreenShots
-                                <input onFocus={() => handleErrorMessage(screenshot, '')} onChange={handleMultipleImage} type="file" accept="image/*" hidden multiple />
+                                <input onFocus={() => handleErrorMessage(screenshot, '')}  onChange={handleMultipleImage} type="file" accept="image/*" hidden multiple />
                             </Button>
                             <div className={classes.helperTextStyle}>{error.screenshot}</div>
                         </div>
@@ -498,7 +535,7 @@ export default function DisplayAllMovie() {
             </div>
         )
     }
-    
+
 
     const handleReset = () => {
         setCategoryId('');
@@ -613,6 +650,7 @@ export default function DisplayAllMovie() {
                 {DisplayAll()}
             </div>
             {openDialog()}
+            {openDialog2()}
         </div>
     )
 }
