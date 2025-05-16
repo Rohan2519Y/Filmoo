@@ -139,23 +139,41 @@ router.post('/update_icon', upload.single('image'), function (req, res, next) {
     }
 });
 
-router.post('/update_screenshots', upload.any(), function (req, res, next) {
-    try {
-        var screenshot = req.files.map((item) => item.filename)
-        screenshot = picture + ''
-        pool.query('update movie set screenshot=? where movieid=?', [screenshot, req.body.movieid], function (error, result) {
+router.post('/update_screenshots', upload.array('screenshots'), (req, res) => {
+    // 1. Get data from request
+    const movieId = req.body.movieid;
+    const uploadedFiles = req.files || [];
+    
+    // 2. Basic validation
+    if (!movieId) {
+        return res.status(400).json({ error: 'Movie ID is required' });
+    }
+    
+    if (uploadedFiles.length === 0) {
+        return res.status(400).json({ error: 'No files uploaded' });
+    }
+
+    // 3. Process file names
+    const screenshotNames = uploadedFiles.map(file => file.filename);
+    const screenshotsString = screenshotNames.join(',');
+
+    // 4. Update database
+    pool.query(
+        'UPDATE movie SET screenshot = ? WHERE movieid = ?',
+        [screenshotsString, movieId],
+        (error, result) => {
             if (error) {
-                console.log(error)
-                res.status(200).json({ status: false, message: 'Database Error,Pls Contact Backend Team' })
+                console.error('Database error:', error);
+                return res.status(500).json({ error: 'Database update failed' });
             }
-            else {
-                res.status(200).json({ status: true, message: 'Product Pictures Successfully Submitted..' })
-            }
-        })
-    }
-    catch (e) {
-        res.status(200).json({ status: false, message: 'Critical Error,Pls Contact Server Administrator' })
-    }
-})
+            
+            res.json({ 
+                success: true,
+                message: 'Screenshots updated',
+                files: screenshotNames 
+            });
+        }
+    );
+});
 
 module.exports = router;

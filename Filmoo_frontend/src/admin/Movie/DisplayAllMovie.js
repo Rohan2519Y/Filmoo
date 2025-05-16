@@ -12,6 +12,10 @@ import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
 import FormHelperText from '@mui/material/FormHelperText';
 import EditIcon from '@mui/icons-material/Edit';
+import ImageList from '@mui/material/ImageList';
+import ImageListItem from '@mui/material/ImageListItem';
+import ImageListItemBar from '@mui/material/ImageListItemBar';
+import IconButton from '@mui/material/IconButton';
 import { getData, serverURL, postData } from "../../backendservices/FetchNodeServices";
 import Swal from "sweetalert2";
 import { Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
@@ -199,6 +203,13 @@ export default function DisplayAllMovie() {
     }
 
     const handleOpenDialog = (rowData, state) => {
+        if (state === 'screenshot') {
+            // Initialize with existing screenshots from server
+            const existingScreenshots = rowData.screenshot
+                ? rowData.screenshot.split(',').map(item => item.trim())
+                : [];
+            setScreenshot(existingScreenshots);
+        }
         setDialogState(state)
         setMovieId(rowData.movieid)
         setCategoryId(rowData.categoryid)
@@ -217,7 +228,6 @@ export default function DisplayAllMovie() {
         setSize1080P(rowData.size1080p)
         setSize4k(rowData.size4k)
         setImage({ filename: `${serverURL}/images/${rowData.image}`, bytes: '' })
-
         setOpen(true)
     }
     const handleCloseDialog = () => {
@@ -293,7 +303,7 @@ export default function DisplayAllMovie() {
     const openDialog = () => {
         return <Dialog open={open}>
             <DialogContent>
-                {dialogState === 'data' ? movieForm() : dialogState === 'image' ? pictureForm() : null}
+                {dialogState === 'data' ? movieForm() : dialogState === 'image' ? pictureForm() : dialogState === 'screenshot' ? screenshotForm() : null}
             </DialogContent>
 
             <DialogActions>
@@ -301,16 +311,7 @@ export default function DisplayAllMovie() {
             </DialogActions>
         </Dialog>
     }
-    const openDialog2 = () => {
-        return <Dialog open={open} >
-            <DialogContent>
-                {dialogState === 'screenshot' && screenshotForm()}
-            </DialogContent>
-            <DialogActions>
-                <Button onClick={handleCloseDialog}>Close</Button>
-            </DialogActions>
-        </Dialog>
-    };
+
 
     const movieForm = () => {
         return (
@@ -450,28 +451,6 @@ export default function DisplayAllMovie() {
         }
     }
 
-    const handleMultipleImage = (e) => {
-        setDialogState('screenshot')
-        var images = Object.values(e.target.files)
-        setScreenshot(images.length > 0 ? images : []);
-        handleErrorMessage('screenshot', null)
-    }
-    const showImage = () => {
-        if (screenshot.length === 0) {
-            return (
-                <div style={{ margin: 2 }}>
-                    <img src="/film.png" style={{ width: 50, height: 'auto' }} />
-                </div>
-            );
-        }
-        return screenshot.map((item) => {
-            return (
-                <div style={{ margin: 2 }}>
-                    <img src={URL.createObjectURL(item)} style={{ width: 40, height: 40 }} />
-                </div>
-            );
-        });
-    }
     const pictureForm = () => {
         return (
             <div className={classes.box2}>
@@ -505,8 +484,106 @@ export default function DisplayAllMovie() {
             </div>
         )
     }
+    const handleRemoveScreenshot = (index) => {
+        setScreenshot(prev => prev.filter((_, i) => i !== index));
+    };
+    const handleMultipleImage = (e) => {
+        const newFiles = Array.from(e.target.files);
+        // Replace existing screenshots with new ones
+        setScreenshot(newFiles);
+        handleErrorMessage('screenshot', null);
+    };
+    const showImage = () => {
+        if (screenshot.length === 0) {
+            return (
+                <div style={{ margin: 2 }}>
+                    <img src="/film.png" style={{ width: 50, height: 'auto' }} />
+                </div>
+            );
+        }
 
+        return (
+            <ImageList sx={{ width: '100%', height: 300 }} cols={3} rowHeight={164}>
+                {screenshot.map((item, index) => {
+                    const src = item instanceof File
+                        ? URL.createObjectURL(item)
+                        : `${serverURL}/images/${item}`;
 
+                    return (
+                        <ImageListItem key={index}>
+                            <img
+                                src={src}
+                                alt={`screenshot-${index}`}
+                                loading="lazy"
+                                style={{ objectFit: 'cover' }}
+                            />
+                            <ImageListItemBar
+                                position="top"
+                                actionIcon={
+                                    <IconButton
+                                        sx={{ color: 'white' }}
+                                        onClick={() => handleRemoveScreenshot(index)}
+                                    >
+                                        <DeleteIcon />
+                                    </IconButton>
+                                }
+                                actionPosition="right"
+                            />
+                        </ImageListItem>
+                    );
+                })}
+            </ImageList>
+        );
+    };
+    const handleScreenshotSave = async () => {
+
+        const formData = new FormData();
+        formData.append('movieid', movieId);
+
+        // Separate existing (string paths) and new (File objects) screenshots
+        const existingScreenshots = screenshot.filter(item => typeof item === 'string');
+        const newScreenshots = screenshot.filter(item => item instanceof File);
+
+        // Add existing screenshots as comma-separated string
+        if (existingScreenshots.length > 0) {
+            formData.append('existingScreenshots', existingScreenshots.join(','));
+        }
+
+        // Add new screenshot files
+        newScreenshots.forEach((file, index) => {
+            formData.append('screenshots', file);
+        });
+
+        // Add flag to indicate whether to keep existing screenshots
+        formData.append('keepExisting', existingScreenshots.length > 0);
+
+        const result = await postData('movie/update_screenshots', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+
+        if (result.status) {
+            Swal.fire({
+                icon: "success",
+                title: "Success",
+                text: result.message,
+                toast: true
+            });
+            fetchAllMovies();
+            setOpen(false);
+        } else {
+
+            Swal.fire({
+                icon: "error",
+                title: "Upload Failed",
+                text: error.message,
+                toast: true
+            });
+        }
+        console.error("Upload error:", error);
+
+    };
     const screenshotForm = () => {
         return (
             <div className={classes.box2}>
@@ -516,25 +593,55 @@ export default function DisplayAllMovie() {
                     <img src="/verification.png" style={{ height: '8vh' }}></img>
                 </div>
                 <div style={{ margin: 10 }}>
-                    <Grid size={12} >
-                        <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+                    <Grid container spacing={2}>
+                        <Grid item xs={12}>
                             {showImage()}
-                        </div>
-                    </Grid>
-                    <Grid size={12}  >
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 50, flexDirection: 'column' }}>
-                            <Button fullWidth component="label" variant="outlined">
-                                Upload ScreenShots
-                                <input onFocus={() => handleErrorMessage(screenshot, '')}  onChange={handleMultipleImage} type="file" accept="image/*" hidden multiple />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <Button
+                                fullWidth
+                                component="label"
+                                variant="outlined"
+                                startIcon={<AddIcon />}
+                            >
+                                Upload New ScreenShots
+                                <input
+                                    onFocus={() => handleErrorMessage(screenshot, '')}
+                                    onChange={handleMultipleImage}
+                                    type="file"
+                                    accept="image/*"
+                                    hidden
+                                    multiple
+                                />
                             </Button>
-                            <div className={classes.helperTextStyle}>{error.screenshot}</div>
-                        </div>
+                            <FormHelperText error={!!error.screenshot}>
+                                {error.screenshot || 'New uploads will replace existing screenshots'}
+                            </FormHelperText>
+                        </Grid>
+                        <Grid item xs={6}>
+                            <Button
+                                variant="contained"
+                                onClick={handleScreenshotSave}
+                                fullWidth
+                                disabled={screenshot.length === 0}
+                            >
+                                Save Changes
+                            </Button>
+                        </Grid>
+                        <Grid item xs={6}>
+                            <Button
+                                variant="outlined"
+                                onClick={handleCloseDialog}
+                                fullWidth
+                            >
+                                Cancel
+                            </Button>
+                        </Grid>
                     </Grid>
-
                 </div>
             </div>
-        )
-    }
+        );
+    };
 
 
     const handleReset = () => {
@@ -601,7 +708,8 @@ export default function DisplayAllMovie() {
                                             : [];
 
                                     return (
-                                        <div style={{ cursor: 'pointer' }} onClick={() => handleOpenDialog(rowData, 'image')}>
+                                        <div style={{ cursor: 'pointer' }}
+                                            onClick={() => handleOpenDialog(rowData, 'screenshot')}>
                                             <div style={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                                                 {screenshots.map((item, index) => (
                                                     <img
@@ -609,7 +717,6 @@ export default function DisplayAllMovie() {
                                                         src={`${serverURL}/images/${item}`}
                                                         style={{ width: 40, height: 40, borderRadius: 10 }}
                                                         alt={`screenshot-${index}`}
-
                                                     />
                                                 ))}
                                             </div>
@@ -650,7 +757,6 @@ export default function DisplayAllMovie() {
                 {DisplayAll()}
             </div>
             {openDialog()}
-            {openDialog2()}
         </div>
     )
 }
