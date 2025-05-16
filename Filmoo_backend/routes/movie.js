@@ -16,7 +16,7 @@ router.post('/insert_movies', upload.fields([{ name: 'image', maxCount: 1 }, { n
         const screenshotString = screenshots.join(', '); // Convert array to comma-separated string
 
         pool.query(
-            'INSERT INTO movie (categoryid, name, language, year, image, screenshot, genre, description, quality,link480p, link720p, link1080p, link4k, size480p, size720p, size1080p, size4k) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+            'INSERT INTO movie (categoryid, name, language, year, image, screenshot, genre, description, quality,link480p, link720p, link1080p, link4k, size480p, size720p, size1080p, size4k,title) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
             [
                 req.body.categoryid,
                 req.body.name,
@@ -34,12 +34,13 @@ router.post('/insert_movies', upload.fields([{ name: 'image', maxCount: 1 }, { n
                 req.body.size480p || null,
                 req.body.size720p || null,
                 req.body.size1080p || null,
-                req.body.size4k || null
+                req.body.size4k || null,
+                req.body.title
             ],
             function (error, result) {
                 if (error) {
                     console.error('Database Error:', error);
-                    return res.status(500).json({ status: false, message: 'Database Error, Please Contact Backend Team' });
+                    return res.status(200).json({ status: false, message: 'Database Error, Please Contact Backend Team' });
                 }
                 res.status(200).json({ status: true, message: 'Movie Added Successfully' });
             }
@@ -85,7 +86,8 @@ router.post('/edit_movies', function (req, res, next) {
                 size480p = ?, 
                 size720p = ?, 
                 size1080p = ?, 
-                size4k = ? 
+                size4k = ?,
+                title=? 
             WHERE movieid = ?`,
             [
                 req.body.categoryid,
@@ -103,6 +105,7 @@ router.post('/edit_movies', function (req, res, next) {
                 req.body.size720p,
                 req.body.size1080p,
                 req.body.size4k,
+                req.body.title,
                 req.body.movieid
             ], function (error, result) {
                 if (error) {
