@@ -535,55 +535,60 @@ export default function DisplayAllMovie() {
             </ImageList>
         );
     };
-    const handleScreenshotSave = async () => {
+  const handleScreenshotSave = async () => {
+  try {
+    // 1. Validate movieId
+    if (!movieId) {
+      throw new Error('Movie ID is missing');
+    }
 
-        const formData = new FormData();
-        formData.append('movieid', movieId);
+    // 2. Prepare FormData
+    const formData = new FormData();
+    formData.append('movieid', movieId);
 
-        // Separate existing (string paths) and new (File objects) screenshots
-        const existingScreenshots = screenshot.filter(item => typeof item === 'string');
-        const newScreenshots = screenshot.filter(item => item instanceof File);
+    // 3. Process screenshots
+    const existingScreenshots = screenshot.filter(item => typeof item === 'string');
+    const newScreenshots = screenshot.filter(item => item instanceof File);
 
-        // Add existing screenshots as comma-separated string
-        if (existingScreenshots.length > 0) {
-            formData.append('existingScreenshots', existingScreenshots.join(','));
-        }
+    // 4. Add existing screenshots
+    if (existingScreenshots.length > 0) {
+      formData.append('existingScreenshots', existingScreenshots.join(','));
+    }
 
-        // Add new screenshot files
-        newScreenshots.forEach((file, index) => {
-            formData.append('screenshots', file);
-        });
+    // 5. Add new screenshots
+    newScreenshots.forEach(file => {
+      formData.append('screenshots', file);
+    });
 
-        // Add flag to indicate whether to keep existing screenshots
-        formData.append('keepExisting', existingScreenshots.length > 0);
+    // 6. Make API call
+    const result = await postData('movie/update_screenshots', formData);
 
-        const result = await postData('movie/update_screenshots', formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data'
-            }
-        });
+    if (!result) {
+      throw new Error('No response from server');
+    }
 
-        if (result.status) {
-            Swal.fire({
-                icon: "success",
-                title: "Success",
-                text: result.message,
-                toast: true
-            });
-            fetchAllMovies();
-            setOpen(false);
-        } else {
-
-            Swal.fire({
-                icon: "error",
-                title: "Upload Failed",
-                text: error.message,
-                toast: true
-            });
-        }
-        console.error("Upload error:", error);
-
-    };
+    if (result.status) {
+      Swal.fire({
+        icon: "success",
+        title: "Success",
+        text: result.message || 'Screenshots updated',
+        toast: true
+      });
+      fetchAllMovies();
+      setOpen(false);
+    } else {
+      throw new Error(result.message || 'Upload failed');
+    }
+  } catch (error) {
+    console.error("Upload error:", error);
+    Swal.fire({
+      icon: "error",
+      title: "Upload Failed",
+      text: error.message || 'An unknown error occurred',
+      toast: true
+    });
+  }
+};
     const screenshotForm = () => {
         return (
             <div className={classes.box2}>

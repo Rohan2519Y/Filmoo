@@ -139,41 +139,68 @@ router.post('/update_icon', upload.single('image'), function (req, res, next) {
     }
 });
 
-router.post('/update_screenshots', upload.array('screenshots'), (req, res) => {
-    // 1. Get data from request
-    const movieId = req.body.movieid;
-    const uploadedFiles = req.files || [];
-    
-    // 2. Basic validation
-    if (!movieId) {
-        return res.status(400).json({ error: 'Movie ID is required' });
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const dir = 'uploads/screenshots/';
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
+        cb(null, dir);
+    },
+    filename: (req, file, cb) => {
+        const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1E9)}${path.extname(file.originalname)}`;
+        cb(null, uniqueName);
     }
-    
-    if (uploadedFiles.length === 0) {
-        return res.status(400).json({ error: 'No files uploaded' });
-    }
+});
 
-    // 3. Process file names
-    const screenshotNames = uploadedFiles.map(file => file.filename);
-    const screenshotsString = screenshotNames.join(',');
-
-    // 4. Update database
-    pool.query(
-        'UPDATE movie SET screenshot = ? WHERE movieid = ?',
-        [screenshotsString, movieId],
-        (error, result) => {
-            if (error) {
-                console.error('Database error:', error);
-                return res.status(500).json({ error: 'Database update failed' });
-            }
-            
-            res.json({ 
-                success: true,
-                message: 'Screenshots updated',
-                files: screenshotNames 
+router.post('/update_screenshots', upload.array('screenshots'), async (req, res) => {
+    try {
+        if (!req.body.movieid) {
+            return res.status(400).json({
+                status: false,
+                message: 'Movie ID is required'
             });
         }
-    );
+        const newFiles = req.files?.map(file => file.filename) || [];
+        const existingFiles = req.body.existingScreenshots?.split(',')?.filter(Boolean) || [];
+        const allScreenshots = [...existingFiles, ...newFiles];
+        if (allScreenshots.length === 0) {
+            return res.status(400).json({
+                status: false,
+                message: 'No screenshots provided'
+            });
+        }
+        pool.query(
+            'UPDATE movie SET screenshot = ? WHERE movieid = ?',
+            [allScreenshots.join(','), req.body.movieid],
+            (error, result) => {
+                if (error) {
+                    console.error('Database error:', error);
+                    req.files?.forEach(file => {
+                        fs.unlinkSync(path.join('uploads/screenshots/', file.filename));
+                    });
+                    return res.status(500).json({
+                        status: false,
+                        message: 'Database error'
+                    });
+                }
+                res.json({
+                    status: true,
+                    message: 'Screenshots updated',
+                    screenshots: allScreenshots
+                });
+            }
+        );
+    } catch (e) {
+        console.error('Server error:', e);
+        res.status(500).json({
+            status: false,
+            message: 'Internal server error'
+        });
+    }
 });
 
 module.exports = router;
