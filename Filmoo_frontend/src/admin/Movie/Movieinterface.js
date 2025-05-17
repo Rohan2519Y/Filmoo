@@ -17,6 +17,7 @@ export default function MovieInterface() {
     const [categoryId, setCategoryId] = useState('')
     const [name, setName] = useState('')
     const [year, setYear] = useState('')
+    const [title,setTitle]=useState('')
     const [link480P, setLink480P] = useState('')
     const [size480P, setSize480P] = useState('')
     const [link720P, setLink720P] = useState('')
@@ -90,6 +91,10 @@ export default function MovieInterface() {
             err = true
             handleErrorMessage('year', 'Please Input Year...')
         }
+        if (title.length == 0) {
+            err = true
+            handleErrorMessage('title', 'Please Input Title...')
+        }
         if (selectedLanguage.length == 0) {
             err = true
             handleErrorMessage('selectedLanguage', 'Please Select Language...')
@@ -121,6 +126,7 @@ export default function MovieInterface() {
             formData.append('categoryid', categoryId);
             formData.append('name', name);
             formData.append('year', year);
+            formData.append('title', title);
             formData.append('language', selectedLanguage.join(', '));
             formData.append('genre', selectedGenres.join(', '));
             formData.append('description', description);
@@ -163,6 +169,7 @@ export default function MovieInterface() {
         setCategoryId('');
         setName('');
         setYear('');
+        setTitle('');
         setSelectedLanguage([]);
         setSelectedGenres([]);
         setDescription('');
@@ -310,7 +317,7 @@ export default function MovieInterface() {
                     </div>
                     <div style={{ margin: 10 }}>
                         <Grid container spacing={2}>
-                            <Grid size={4}>
+                            <Grid size={3}>
                                 <FormControl error={error.categoryId} onFocus={() => handleErrorMessage('categoryId', null)} fullWidth>
                                     <InputLabel>Category</InputLabel>
                                     <Select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} label="Category" >
@@ -319,11 +326,14 @@ export default function MovieInterface() {
                                     <FormHelperText>{error.categoryId}</FormHelperText>
                                 </FormControl>
                             </Grid>
-                            <Grid size={4}>
+                            <Grid size={3}>
                                 <TextField error={error.name} helperText={error.name} onFocus={() => handleErrorMessage('name', null)} label="Name" value={name} onChange={(e) => setName(e.target.value)} fullWidth></TextField>
                             </Grid>
-                            <Grid size={4}>
+                            <Grid size={3}>
                                 <TextField error={error.year} helperText={error.year} onFocus={() => handleErrorMessage('year', null)} label='Year' value={year} onChange={(e) => setYear(e.target.value)} fullWidth></TextField>
+                            </Grid>
+                            <Grid size={3}>
+                                <TextField error={error.title} helperText={error.title} onFocus={() => handleErrorMessage('title', null)} label='Title' value={title} onChange={(e) => setTitle(e.target.value)} fullWidth></TextField>
                             </Grid>
                             <Grid size={2}  >
                                 <img style={{ margin: 0 }} src={image.filename} width={50} />

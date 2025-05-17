@@ -31,6 +31,7 @@ export default function DisplayAllMovie() {
     const [categoryId, setCategoryId] = useState('')
     const [name, setName] = useState('')
     const [year, setYear] = useState('')
+    const [title,setTitle]=useState('')
     const [link480P, setLink480P] = useState('')
     const [size480P, setSize480P] = useState('')
     const [link720P, setLink720P] = useState('')
@@ -215,6 +216,7 @@ export default function DisplayAllMovie() {
         setCategoryId(rowData.categoryid)
         setName(rowData.name)
         setYear(rowData.year)
+        setTitle(rowData.title)
         setSelectedLanguage([])
         setSelectedGenres([])
         setDescription(rowData.description)
@@ -248,6 +250,10 @@ export default function DisplayAllMovie() {
             err = true
             handleErrorMessage('year', 'Please Input Year...')
         }
+        if (title.length == 0) {
+            err = true
+            handleErrorMessage('title', 'Please Input Title...')
+        }
         if (selectedLanguage.length == 0) {
             err = true
             handleErrorMessage('selectedLanguage', 'Please Select Language...')
@@ -276,7 +282,8 @@ export default function DisplayAllMovie() {
                 'description': description,
                 'quality': quality,
                 'link480p': link480P, 'link720p': link720P, 'link1080p': link1080P, 'link4k': link4k,
-                'size480p': size480P, 'size720p': size720P, 'size1080p': size1080P, 'size4k': size4k
+                'size480p': size480P, 'size720p': size720P, 'size1080p': size1080P, 'size4k': size4k,
+                'title':title
             }
             var result = await postData('movie/edit_movies', body)
             if (result.status) {
@@ -323,7 +330,7 @@ export default function DisplayAllMovie() {
                 </div>
                 <div style={{ margin: 10 }}>
                     <Grid container spacing={2}>
-                        <Grid size={4}>
+                        <Grid size={3}>
                             <FormControl error={error.categoryId} onFocus={() => handleErrorMessage('categoryId', null)} fullWidth>
                                 <InputLabel>Category</InputLabel>
                                 <Select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} label="Category" >
@@ -332,11 +339,14 @@ export default function DisplayAllMovie() {
                                 <FormHelperText>{error.categoryId}</FormHelperText>
                             </FormControl>
                         </Grid>
-                        <Grid size={4}>
+                        <Grid size={3}>
                             <TextField error={error.name} helperText={error.name} onFocus={() => handleErrorMessage('name', null)} label="Name" value={name} onChange={(e) => setName(e.target.value)} fullWidth></TextField>
                         </Grid>
-                        <Grid size={4}>
+                        <Grid size={3}>
                             <TextField error={error.year} helperText={error.year} onFocus={() => handleErrorMessage('year', null)} label='Year' value={year} onChange={(e) => setYear(e.target.value)} fullWidth></TextField>
+                        </Grid>
+                        <Grid size={3}>
+                            <TextField error={error.title} helperText={error.title} onFocus={() => handleErrorMessage('title', null)} label='Title' value={title} onChange={(e) => setTitle(e.target.value)} fullWidth></TextField>
                         </Grid>
                         <Grid size={12}>
                             <FormControl error={error.selectedLanguage} onFocus={() => handleErrorMessage('selectedLanguage', null)} component="fieldset" fullWidth>
@@ -535,60 +545,60 @@ export default function DisplayAllMovie() {
             </ImageList>
         );
     };
-  const handleScreenshotSave = async () => {
-  try {
-    // 1. Validate movieId
-    if (!movieId) {
-      throw new Error('Movie ID is missing');
-    }
+    const handleScreenshotSave = async () => {
+        try {
+            // 1. Validate movieId
+            if (!movieId) {
+                throw new Error('Movie ID is missing');
+            }
 
-    // 2. Prepare FormData
-    const formData = new FormData();
-    formData.append('movieid', movieId);
+            // 2. Prepare FormData
+            const formData = new FormData();
+            formData.append('movieid', movieId);
 
-    // 3. Process screenshots
-    const existingScreenshots = screenshot.filter(item => typeof item === 'string');
-    const newScreenshots = screenshot.filter(item => item instanceof File);
+            // 3. Process screenshots
+            const existingScreenshots = screenshot.filter(item => typeof item === 'string');
+            const newScreenshots = screenshot.filter(item => item instanceof File);
 
-    // 4. Add existing screenshots
-    if (existingScreenshots.length > 0) {
-      formData.append('existingScreenshots', existingScreenshots.join(','));
-    }
+            // 4. Add existing screenshots
+            if (existingScreenshots.length > 0) {
+                formData.append('existingScreenshots', existingScreenshots.join(','));
+            }
 
-    // 5. Add new screenshots
-    newScreenshots.forEach(file => {
-      formData.append('screenshots', file);
-    });
+            // 5. Add new screenshots
+            newScreenshots.forEach(file => {
+                formData.append('screenshots', file);
+            });
 
-    // 6. Make API call
-    const result = await postData('movie/update_screenshots', formData);
+            // 6. Make API call
+            const result = await postData('movie/update_screenshots', formData);
 
-    if (!result) {
-      throw new Error('No response from server');
-    }
+            if (!result) {
+                throw new Error('No response from server');
+            }
 
-    if (result.status) {
-      Swal.fire({
-        icon: "success",
-        title: "Success",
-        text: result.message || 'Screenshots updated',
-        toast: true
-      });
-      fetchAllMovies();
-      setOpen(false);
-    } else {
-      throw new Error(result.message || 'Upload failed');
-    }
-  } catch (error) {
-    console.error("Upload error:", error);
-    Swal.fire({
-      icon: "error",
-      title: "Upload Failed",
-      text: error.message || 'An unknown error occurred',
-      toast: true
-    });
-  }
-};
+            if (result.status) {
+                Swal.fire({
+                    icon: "success",
+                    title: "Success",
+                    text: result.message || 'Screenshots updated',
+                    toast: true
+                });
+                fetchAllMovies();
+                setOpen(false);
+            } else {
+                throw new Error(result.message || 'Upload failed');
+            }
+        } catch (error) {
+            console.error("Upload error:", error);
+            Swal.fire({
+                icon: "error",
+                title: "Upload Failed",
+                text: error.message || 'An unknown error occurred',
+                toast: true
+            });
+        }
+    };
     const screenshotForm = () => {
         return (
             <div className={classes.box2}>
@@ -680,6 +690,7 @@ export default function DisplayAllMovie() {
                             { title: 'ID', field: 'movieid', width: '3%' },
                             { title: 'Category', field: 'categoryname', width: '7%' },
                             { title: 'Name', field: 'name', width: '5%' },
+                            { title: 'Title', field: 'title', width: '10%' },
                             { title: 'Language', field: 'language', width: '10%' },
                             { title: 'Year', field: 'year', width: '4%' },
                             { title: 'Genre', field: 'genre', width: '18%' },
