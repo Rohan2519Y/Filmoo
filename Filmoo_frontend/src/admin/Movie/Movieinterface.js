@@ -33,6 +33,7 @@ export default function MovieInterface() {
     const [categoryList, setCategoryList] = useState([])
     const [selectedGenres, setSelectedGenres] = useState([]);
     const [selectedLanguage, setSelectedLanguage] = useState([]);
+    const [contentType, setContentType] = useState("movie"); // or "series"
     const [error, setError] = useState({})
     const genresList = [
         "Action", "Adventure", "Animation", "Biography", "Comedy", "Crime", "Documentary",
@@ -304,6 +305,17 @@ export default function MovieInterface() {
                 return null;
         }
     }
+
+    const handleSeries = () => {
+        return (
+            <>
+                <Grid size={12}>
+                    <TextField fullWidth label="Number of Episodes" variant="outlined" />
+                </Grid>
+            </>
+        );
+    }
+
     function DisplayAll() {
         return (
             <div className={classes.back}>
@@ -411,25 +423,44 @@ export default function MovieInterface() {
                                 </FormControl>
 
                             </Grid>
-                            <Grid size={12} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                                <FormLabel style={{ marginRight: 'auto' }}>Quality</FormLabel>
-                                <FormControl error={error.quality} onFocus={() => handleErrorMessage('quality', null)}  >
-                                    <RadioGroup
-                                        row
-                                        aria-labelledby="demo-row-radio-buttons-group-label"
-                                        name="row-radio-buttons-group"
-                                        value={quality}
-                                        onChange={(e) => setQuality(e.target.value)}>
-                                        <FormControlLabel name="quality" value="series" control={<Radio />} label="Series" />
-                                        <FormControlLabel name="quality" value="480P" control={<Radio />} label="480P" />
-                                        <FormControlLabel name="quality" value="720P" control={<Radio />} label="720P" />
-                                        <FormControlLabel name="quality" value="1080P" control={<Radio />} label="1080P" />
-                                        <FormControlLabel name="quality" value="4K" control={<Radio />} label="4K" />
-                                    </RadioGroup>
-                                    <FormHelperText fullWidth>{error.quality}</FormHelperText>
-                                </FormControl>
-                            </Grid>
+
+                            <FormControl component="fieldset">
+                                <FormLabel component="legend">Content Type</FormLabel>
+                                <RadioGroup
+                                    row
+                                    value={contentType}
+                                    onChange={(e) => setContentType(e.target.value)}
+                                >
+                                    <FormControlLabel value="movie" control={<Radio />} label="Movie" />
+                                    <FormControlLabel value="series" control={<Radio />} label="Series" />
+                                </RadioGroup>
+                            </FormControl>
+
+
+                            {quality !== 'series' && (
+                                <Grid item xs={12} style={{ display: 'flex', alignItems: 'center' }}>
+                                    <FormLabel style={{ marginRight: '16px' }}>Quality</FormLabel>
+                                    <FormControl error={error.quality}>
+                                        <RadioGroup
+                                            row
+                                            name="quality"
+                                            value={quality}
+                                            onChange={(e) => setQuality(e.target.value)}
+                                            onFocus={() => handleErrorMessage('quality', null)}
+                                        >
+                                            <FormControlLabel value="480P" control={<Radio />} label="480P" />
+                                            <FormControlLabel value="720P" control={<Radio />} label="720P" />
+                                            <FormControlLabel value="1080P" control={<Radio />} label="1080P" />
+                                            <FormControlLabel value="4K" control={<Radio />} label="4K" />
+                                        </RadioGroup>
+                                        <FormHelperText>{error.quality}</FormHelperText>
+                                    </FormControl>
+                                </Grid>
+                            )}
                             {handleQuality()}
+                            {contentType === "series" && handleSeries()}
+
+                            
                             <Grid size={6}>
                                 <Button variant="contained" onClick={handleClick} fullWidth>Submit</Button>
                             </Grid>
