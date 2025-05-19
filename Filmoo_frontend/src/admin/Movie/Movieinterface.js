@@ -35,6 +35,13 @@ export default function MovieInterface() {
     const [selectedLanguage, setSelectedLanguage] = useState([]);
     const [contentType, setContentType] = useState("movie"); // or "series"
     const [error, setError] = useState({})
+    
+    // --- Added for episodes management ---
+    const [numberOfEpisodes, setNumberOfEpisodes] = useState(1);
+    // Array of episodes objects { link480P, size480P, link720P, size720P... }
+    const [episodesLinks, setEpisodesLinks] = useState([]);
+    // --------------------------------------
+
     const genresList = [
         "Action", "Adventure", "Animation", "Biography", "Comedy", "Crime", "Documentary",
         "Drama", "Family", "Fantasy", "Historical", "Horror", "Music", "Mystery",
@@ -70,16 +77,43 @@ export default function MovieInterface() {
     }, [])
     const fillCategory = () => {
         return (categoryList.map((item) => {
-            return <MenuItem value={item.categoryid}>{item.categoryname}</MenuItem>
+            return <MenuItem key={item.categoryid} value={item.categoryid}>{item.categoryname}</MenuItem>
         }))
     }
 
     const handleErrorMessage = (label, errorMessage) => {
         setError((prev) => ({ ...prev, [label]: errorMessage }))
     }
+
+    // --- Added handler for number of episodes input change ---
+    const handleNumberOfEpisodesChange = (e) => {
+        let val = e.target.value;
+        if (!val || val < 1) {
+            val = 1;
+        } else {
+            val = parseInt(val);
+        }
+        setNumberOfEpisodes(val);
+        // Adjust episodesLinks array length accordingly
+        let arr = [...episodesLinks];
+        while (arr.length < val) arr.push({});
+        while (arr.length > val) arr.pop();
+        setEpisodesLinks(arr);
+    }
+    // --- End of new handler ---
+
+    // --- Added handler for changing episode's individual link/size fields ---
+    const handleEpisodeFieldChange = (index, field, value) => {
+        let arr = [...episodesLinks];
+        if (!arr[index]) arr[index] = {};
+        arr[index][field] = value;
+        setEpisodesLinks(arr);
+    }
+    // --- End ---
+
     const handleClick = async () => {
 
-        var err = false
+        let err = false
         if (categoryId.length == 0) {
             err = true
             handleErrorMessage('categoryId', 'Please Select Category...')
@@ -121,6 +155,60 @@ export default function MovieInterface() {
             handleErrorMessage('screenshot', 'Please Upload Screenshot')
         }
 
+        // Validation for series episodes links/sizes
+        if (contentType === "series") {
+            for (let i = 0; i < numberOfEpisodes; i++) {
+                let ep = episodesLinks[i] || {};
+                switch (quality) {
+                    case "480P":
+                        if (!ep.link480P || !ep.size480P) {
+                            err = true;
+                            Swal.fire({
+                                icon: 'error',
+                                title: `Episode ${i + 1} is missing 480P link or size!`
+                            });
+                            break;
+                        }
+                        break;
+                    case "720P":
+                        if (!ep.link480P || !ep.size480P || !ep.link720P || !ep.size720P) {
+                            err = true;
+                            Swal.fire({
+                                icon: 'error',
+                                title: `Episode ${i + 1} is missing 480P or 720P link or size!`
+                            });
+                            break;
+                        }
+                        break;
+                    case "1080P":
+                        if (!ep.link480P || !ep.size480P || !ep.link720P || !ep.size720P
+                            || !ep.link1080P || !ep.size1080P) {
+                            err = true;
+                            Swal.fire({
+                                icon: 'error',
+                                title: `Episode ${i + 1} is missing one or more links or sizes for 480P, 720P or 1080P!`
+                            });
+                            break;
+                        }
+                        break;
+                    case "4K":
+                        if (!ep.link480P || !ep.size480P || !ep.link720P || !ep.size720P
+                            || !ep.link1080P || !ep.size1080P || !ep.link4k || !ep.size4k) {
+                            err = true;
+                            Swal.fire({
+                                icon: 'error',
+                                title: `Episode ${i + 1} is missing one or more links or sizes for 480P, 720P, 1080P, or 4K!`
+                            });
+                            break;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+                if (err) break;
+            }
+        }
+
         if (err == false) {
             const formData = new FormData();
 
@@ -132,14 +220,22 @@ export default function MovieInterface() {
             formData.append('genre', selectedGenres.join(', '));
             formData.append('description', description);
             formData.append('quality', quality);
-            formData.append('link480p', link480P);
-            formData.append('size480p', size480P);
-            formData.append('link720p', link720P);
-            formData.append('size720p', size720P);
-            formData.append('link1080p', link1080P);
-            formData.append('size1080p', size1080P);
-            formData.append('link4k', link4k);
-            formData.append('size4k', size4k);
+            
+            // For movie normal quality inputs
+            if (contentType !== "series") {
+                formData.append('link480p', link480P);
+                formData.append('size480p', size480P);
+                formData.append('link720p', link720P);
+                formData.append('size720p', size720P);
+                formData.append('link1080p', link1080P);
+                formData.append('size1080p', size1080P);
+                formData.append('link4k', link4k);
+                formData.append('size4k', size4k);
+            } else {
+                // Append episodes links JSON for series
+                formData.append('episodesLinks', JSON.stringify(episodesLinks));
+                formData.append('numberOfEpisodes', numberOfEpisodes);
+            }
 
             if (image.bytes) {
                 formData.append('image', image.bytes);
@@ -185,7 +281,8 @@ export default function MovieInterface() {
         setSize4k('');
         setImage({ filename: '/film.png', bytes: '' });
         setScreenshot([]);
-
+        setNumberOfEpisodes(1);
+        setEpisodesLinks([]);
     };
 
 
@@ -209,9 +306,9 @@ export default function MovieInterface() {
                 </div>
             );
         }
-        return screenshot.map((item) => {
+        return screenshot.map((item, index) => {
             return (
-                <div style={{ margin: 2 }}>
+                <div key={index} style={{ margin: 2 }}>
                     <img src={URL.createObjectURL(item)} style={{ width: 30, height: 30 }} />
                 </div>
             );
@@ -219,6 +316,52 @@ export default function MovieInterface() {
     }
 
     const handleQuality = () => {
+        if (contentType === "series") {
+            return (
+                <>
+                    <Grid size={6}>
+                        <TextField
+                            label="Number of Episodes"
+                            type="number"
+                            value={numberOfEpisodes}
+                            onChange={handleNumberOfEpisodesChange}
+                            inputProps={{ min: 1 }}
+                            fullWidth
+                            style={{ marginBottom: 10 }}
+                        />
+                    </Grid>
+                    {
+                        Array.from({ length: numberOfEpisodes }, (_, idx) => {
+                            // which fields to show per quality
+                            const fieldsByQuality = {
+                                '480P': ['link480P', 'size480P'],
+                                '720P': ['link480P', 'size480P', 'link720P', 'size720P'],
+                                '1080P': ['link480P', 'size480P', 'link720P', 'size720P', 'link1080P', 'size1080P'],
+                                '4K': ['link480P', 'size480P', 'link720P', 'size720P', 'link1080P', 'size1080P', 'link4k', 'size4k']
+                            };
+                            const fields = fieldsByQuality[quality] || [];
+                            return (
+                                <div key={idx} style={{ marginBottom: '20px', border: '1px solid #ccc', padding: '10px',display:'flex' }}>
+                                    <div>Episode {idx + 1}:</div>
+                                    {fields.map(field => (
+                                        <Grid size={4} key={field} style={{ marginTop: 10 }}>
+                                            <TextField
+                                                label={field.replace(/link|size/g, (m) => m.toUpperCase())}
+                                                value={(episodesLinks[idx] && episodesLinks[idx][field]) || ''}
+                                                onChange={(e) => handleEpisodeFieldChange(idx, field, e.target.value)}
+                                                fullWidth
+                                            />
+                                        </Grid>
+                                    ))}
+                                </div>
+                            )
+                        })
+                    }
+                </>
+            )
+        } 
+
+        // for non-series content type, keep your existing quality inputs:
         switch (quality) {
             case "480P":
                 return (
@@ -306,25 +449,17 @@ export default function MovieInterface() {
         }
     }
 
-    const handleSeries = () => {
-        return (
-            <>
-                <Grid size={8}>
-                    <TextField fullWidth label="Number of Episodes" variant="outlined" />
-                </Grid>
-            </>
-        );
-    }
+    
 
     function DisplayAll() {
         return (
             <div className={classes.back}>
                 <div className={classes.box}>
                     <div className={classes.title}>
-                        <img className={classes.image} src='/logo.png' />
+                        <img className={classes.image} src='/logo.png' alt="logo" />
                         <div className={classes.name}>Add Movie</div>
                         <div style={{ cursor: 'pointer' }} onClick={() => navigate("/displayallmovie")}>
-                            <img src="/verification.png" style={{ height: '8vh' }} />
+                            <img src="/verification.png" alt="navigate" style={{ height: '8vh' }} />
                         </div>
                     </div>
                     <div style={{ margin: 10 }}>
@@ -348,13 +483,13 @@ export default function MovieInterface() {
                                 <TextField error={error.title} helperText={error.title} onFocus={() => handleErrorMessage('title', null)} label='Title' value={title} onChange={(e) => setTitle(e.target.value)} fullWidth></TextField>
                             </Grid>
                             <Grid size={2}  >
-                                <img style={{ margin: 0 }} src={image.filename} width={50} />
+                                <img style={{ margin: 0 }} src={image.filename} width={50} alt="preview" />
                             </Grid>
                             <Grid size={4}  >
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 50, flexDirection: 'column' }}>
                                     <Button fullWidth component="label" variant="outlined">
                                         Upload Image
-                                        <input onChange={handleImageChange} onFocus={() => handleErrorMessage(image, '')} type="file" accept="image/*" hidden multiple />
+                                        <input onChange={handleImageChange} onFocus={() => handleErrorMessage('image', '')} type="file" accept="image/*" hidden multiple />
                                     </Button>
                                     <div className={classes.helperTextStyle}>{error.image}</div>
                                 </div>
@@ -368,7 +503,7 @@ export default function MovieInterface() {
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 50, flexDirection: 'column' }}>
                                     <Button fullWidth component="label" variant="outlined">
                                         Upload ScreenShots
-                                        <input onFocus={() => handleErrorMessage(screenshot, '')} onChange={handleMultipleImage} type="file" accept="image/*" hidden multiple />
+                                        <input onFocus={() => handleErrorMessage('screenshot', '')} onChange={handleMultipleImage} type="file" accept="image/*" hidden multiple />
                                     </Button>
                                     <div className={classes.helperTextStyle}>{error.screenshot}</div>
                                 </div>
@@ -437,24 +572,21 @@ export default function MovieInterface() {
                                 </FormControl>
                             </Grid>
 
-                            {contentType !== "series" && (
-                                <Grid size={8}>
-                                    <FormControl error={error.quality} onFocus={() => handleErrorMessage('quality', null)} fullWidth>
-                                        <FormLabel>Quality</FormLabel>
-                                        <RadioGroup row value={quality} onChange={(e) => setQuality(e.target.value)}>
-                                            <FormControlLabel value="480P" control={<Radio />} label="480P" />
-                                            <FormControlLabel value="720P" control={<Radio />} label="720P" />
-                                            <FormControlLabel value="1080P" control={<Radio />} label="1080P" />
-                                            <FormControlLabel value="4K" control={<Radio />} label="4K" />
-                                        </RadioGroup>
-                                        <FormHelperText>{error.quality}</FormHelperText>
-                                    </FormControl>
-                                </Grid>
-                            )}
+                            <Grid size={8}>
+                                <FormControl error={error.quality} onFocus={() => handleErrorMessage('quality', null)} fullWidth>
+                                    <FormLabel>Quality</FormLabel>
+                                    <RadioGroup row value={quality} onChange={(e) => setQuality(e.target.value)}>
+                                        <FormControlLabel value="480P" control={<Radio />} label="480P" />
+                                        <FormControlLabel value="720P" control={<Radio />} label="720P" />
+                                        <FormControlLabel value="1080P" control={<Radio />} label="1080P" />
+                                        <FormControlLabel value="4K" control={<Radio />} label="4K" />
+                                    </RadioGroup>
+                                    <FormHelperText>{error.quality}</FormHelperText>
+                                </FormControl>
+                            </Grid>
 
-                            {contentType !== "series" && handleQuality()}
-                            {contentType === "series" && handleSeries()}
-
+                            {/* Render quality inputs based on selected contentType */}
+                            {handleQuality()}
 
                             <Grid size={6}>
                                 <Button variant="contained" onClick={handleClick} fullWidth>Submit</Button>
@@ -475,3 +607,4 @@ export default function MovieInterface() {
         </div>
     )
 }
+
