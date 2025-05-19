@@ -6,7 +6,7 @@ function App() {
     <div>
       <Router>
         <Routes>
-          <Route element={<MovieInterface/>} path="/movieinterface"/>
+          <Route element={<MovieInterface/>} path="/movieinterface"/>         
           <Route element={<DisplayAllMovie/>} path="/displayallmovie"/>
         </Routes>
       </Router>

@@ -13,11 +13,11 @@ import FormHelperText from '@mui/material/FormHelperText';
 import Swal from "sweetalert2";
 export default function MovieInterface() {
     const classes = useStyles()
-    const navigate=useNavigate()
+    const navigate = useNavigate()
     const [categoryId, setCategoryId] = useState('')
     const [name, setName] = useState('')
     const [year, setYear] = useState('')
-    const [title,setTitle]=useState('')
+    const [title, setTitle] = useState('')
     const [link480P, setLink480P] = useState('')
     const [size480P, setSize480P] = useState('')
     const [link720P, setLink720P] = useState('')
@@ -312,7 +312,7 @@ export default function MovieInterface() {
                         <img className={classes.image} src='/logo.png' />
                         <div className={classes.name}>Add Movie</div>
                         <div style={{ cursor: 'pointer' }} onClick={() => navigate("/displayallmovie")}>
-                            <img src="/verification.png" style={{height:'8vh'}} />
+                            <img src="/verification.png" style={{ height: '8vh' }} />
                         </div>
                     </div>
                     <div style={{ margin: 10 }}>
@@ -420,6 +420,7 @@ export default function MovieInterface() {
                                         name="row-radio-buttons-group"
                                         value={quality}
                                         onChange={(e) => setQuality(e.target.value)}>
+                                        <FormControlLabel name="quality" value="series" control={<Radio />} label="Series" />
                                         <FormControlLabel name="quality" value="480P" control={<Radio />} label="480P" />
                                         <FormControlLabel name="quality" value="720P" control={<Radio />} label="720P" />
                                         <FormControlLabel name="quality" value="1080P" control={<Radio />} label="1080P" />
