@@ -309,7 +309,7 @@ export default function MovieInterface() {
     const handleSeries = () => {
         return (
             <>
-                <Grid size={12}>
+                <Grid size={8}>
                     <TextField fullWidth label="Number of Episodes" variant="outlined" />
                 </Grid>
             </>
@@ -423,31 +423,25 @@ export default function MovieInterface() {
                                 </FormControl>
 
                             </Grid>
+                            <Grid size={4}>
+                                <FormControl component="fieldset">
+                                    <FormLabel component="legend">Content Type</FormLabel>
+                                    <RadioGroup
+                                        row
+                                        value={contentType}
+                                        onChange={(e) => setContentType(e.target.value)}
+                                    >
+                                        <FormControlLabel value="movie" control={<Radio />} label="Movie" />
+                                        <FormControlLabel value="series" control={<Radio />} label="Series" />
+                                    </RadioGroup>
+                                </FormControl>
+                            </Grid>
 
-                            <FormControl component="fieldset">
-                                <FormLabel component="legend">Content Type</FormLabel>
-                                <RadioGroup
-                                    row
-                                    value={contentType}
-                                    onChange={(e) => setContentType(e.target.value)}
-                                >
-                                    <FormControlLabel value="movie" control={<Radio />} label="Movie" />
-                                    <FormControlLabel value="series" control={<Radio />} label="Series" />
-                                </RadioGroup>
-                            </FormControl>
-
-
-                            {quality !== 'series' && (
-                                <Grid item xs={12} style={{ display: 'flex', alignItems: 'center' }}>
-                                    <FormLabel style={{ marginRight: '16px' }}>Quality</FormLabel>
-                                    <FormControl error={error.quality}>
-                                        <RadioGroup
-                                            row
-                                            name="quality"
-                                            value={quality}
-                                            onChange={(e) => setQuality(e.target.value)}
-                                            onFocus={() => handleErrorMessage('quality', null)}
-                                        >
+                            {contentType !== "series" && (
+                                <Grid size={8}>
+                                    <FormControl error={error.quality} onFocus={() => handleErrorMessage('quality', null)} fullWidth>
+                                        <FormLabel>Quality</FormLabel>
+                                        <RadioGroup row value={quality} onChange={(e) => setQuality(e.target.value)}>
                                             <FormControlLabel value="480P" control={<Radio />} label="480P" />
                                             <FormControlLabel value="720P" control={<Radio />} label="720P" />
                                             <FormControlLabel value="1080P" control={<Radio />} label="1080P" />
@@ -457,15 +451,16 @@ export default function MovieInterface() {
                                     </FormControl>
                                 </Grid>
                             )}
-                            {handleQuality()}
+
+                            {contentType !== "series" && handleQuality()}
                             {contentType === "series" && handleSeries()}
 
-                            
+
                             <Grid size={6}>
                                 <Button variant="contained" onClick={handleClick} fullWidth>Submit</Button>
                             </Grid>
                             <Grid size={6}>
-                                <Button variant="contained" onClick={() => { handleReset(); DisplayAll(); }} fullWidth>Reset</Button>
+                                <Button variant="contained" onClick={handleReset} fullWidth>Reset</Button>
                             </Grid>
                         </Grid>
                     </div>
