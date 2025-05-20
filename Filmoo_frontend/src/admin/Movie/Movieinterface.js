@@ -27,20 +27,18 @@ export default function MovieInterface() {
     const [link4k, setLink4k] = useState('')
     const [size4k, setSize4k] = useState('')
     const [description, setDescription] = useState('')
+    const [zip, setZip] = useState('')
     const [screenshot, setScreenshot] = useState([])
     const [image, setImage] = useState({ filename: '/film.png', bytes: '' })
     const [quality, setQuality] = useState('')
     const [categoryList, setCategoryList] = useState([])
     const [selectedGenres, setSelectedGenres] = useState([]);
     const [selectedLanguage, setSelectedLanguage] = useState([]);
-    const [contentType, setContentType] = useState("movie"); // or "series"
+    const [contentType, setContentType] = useState("movie");
     const [error, setError] = useState({})
     
-    // --- Added for episodes management ---
     const [numberOfEpisodes, setNumberOfEpisodes] = useState(1);
-    // Array of episodes objects { link480P, size480P, link720P, size720P... }
     const [episodesLinks, setEpisodesLinks] = useState([]);
-    // --------------------------------------
 
     const genresList = [
         "Action", "Adventure", "Animation", "Biography", "Comedy", "Crime", "Documentary",
@@ -85,7 +83,6 @@ export default function MovieInterface() {
         setError((prev) => ({ ...prev, [label]: errorMessage }))
     }
 
-    // --- Added handler for number of episodes input change ---
     const handleNumberOfEpisodesChange = (e) => {
         let val = e.target.value;
         if (!val || val < 1) {
@@ -94,15 +91,12 @@ export default function MovieInterface() {
             val = parseInt(val);
         }
         setNumberOfEpisodes(val);
-        // Adjust episodesLinks array length accordingly
         let arr = [...episodesLinks];
         while (arr.length < val) arr.push({});
         while (arr.length > val) arr.pop();
         setEpisodesLinks(arr);
     }
-    // --- End of new handler ---
-
-    // --- Added handler for changing episode's individual link/size fields ---
+    
     const handleEpisodeFieldChange = (index, field, value) => {
         let arr = [...episodesLinks];
         if (!arr[index]) arr[index] = {};
@@ -319,13 +313,22 @@ export default function MovieInterface() {
         if (contentType === "series") {
             return (
                 <>
-                    <Grid size={6}>
+                    <Grid size={3}>
                         <TextField
                             label="Number of Episodes"
                             type="number"
                             value={numberOfEpisodes}
                             onChange={handleNumberOfEpisodesChange}
                             inputProps={{ min: 1 }}
+                            fullWidth
+                            style={{ marginBottom: 10 }}
+                        />
+                    </Grid>
+                    <Grid size={3}>
+                        <TextField
+                            label="Zip link"
+                            value={zip}
+                            onChange={(e) => setZip(e.target.value)}
                             fullWidth
                             style={{ marginBottom: 10 }}
                         />
