@@ -16,7 +16,7 @@ router.post('/insert_movies', upload.fields([{ name: 'image', maxCount: 1 }, { n
         const screenshotString = screenshots.join(', '); // Convert array to comma-separated string
 
         pool.query(
-            'INSERT INTO movie (categoryid, name, language, year, image, screenshot, genre, description, quality,link480p, link720p, link1080p, link4k, size480p, size720p, size1080p, size4k,title) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+            'INSERT INTO movie (categoryid, name, language, year, image, screenshot, genre, description, quality,link480p, link720p, link1080p, link4k, size480p, size720p, size1080p, size4k,title,zip) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
             [
                 req.body.categoryid,
                 req.body.name,
@@ -35,7 +35,8 @@ router.post('/insert_movies', upload.fields([{ name: 'image', maxCount: 1 }, { n
                 req.body.size720p || null,
                 req.body.size1080p || null,
                 req.body.size4k || null,
-                req.body.title
+                req.body.title,
+                req.body.zip
             ],
             function (error, result) {
                 if (error) {

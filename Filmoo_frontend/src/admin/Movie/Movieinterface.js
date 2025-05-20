@@ -96,14 +96,13 @@ export default function MovieInterface() {
         while (arr.length > val) arr.pop();
         setEpisodesLinks(arr);
     }
-    
+
     const handleEpisodeFieldChange = (index, field, value) => {
         let arr = [...episodesLinks];
         if (!arr[index]) arr[index] = {};
         arr[index][field] = value;
         setEpisodesLinks(arr);
     }
-    // --- End ---
 
     const handleClick = async () => {
 
@@ -140,6 +139,10 @@ export default function MovieInterface() {
             err = true
             handleErrorMessage('quality', 'Please Select Quality...')
         }
+        if (zip.length == 0) {
+            err = true
+            handleErrorMessage('zip', 'Please Enter Zip Link...')
+        }
         if (image.bytes.length == 0) {
             err = true
             handleErrorMessage("image", 'Please Select Image')
@@ -149,7 +152,6 @@ export default function MovieInterface() {
             handleErrorMessage('screenshot', 'Please Upload Screenshot')
         }
 
-        // Validation for series episodes links/sizes
         if (contentType === "series") {
             for (let i = 0; i < numberOfEpisodes; i++) {
                 let ep = episodesLinks[i] || {};
@@ -214,6 +216,7 @@ export default function MovieInterface() {
             formData.append('genre', selectedGenres.join(', '));
             formData.append('description', description);
             formData.append('quality', quality);
+            formData.append('zip', zip);
             
             // For movie normal quality inputs
             if (contentType !== "series") {
@@ -273,6 +276,7 @@ export default function MovieInterface() {
         setSize1080P('');
         setLink4k('');
         setSize4k('');
+        setZip('')
         setImage({ filename: '/film.png', bytes: '' });
         setScreenshot([]);
         setNumberOfEpisodes(1);
