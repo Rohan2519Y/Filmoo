@@ -229,9 +229,8 @@ export default function MovieInterface() {
                 formData.append('link4k', link4k);
                 formData.append('size4k', size4k);
             } else {
-                // Append episodes links JSON for series
-                formData.append('episodesLinks', JSON.stringify(episodesLinks));
-                formData.append('numberOfEpisodes', numberOfEpisodes);
+                formData.append('eplinks', JSON.stringify(episodesLinks));
+                formData.append('numberep', numberOfEpisodes);
             }
 
             if (image.bytes) {
@@ -456,8 +455,6 @@ export default function MovieInterface() {
         }
     }
 
-    
-
     function DisplayAll() {
         return (
             <div className={classes.back}>
@@ -496,7 +493,7 @@ export default function MovieInterface() {
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 50, flexDirection: 'column' }}>
                                     <Button fullWidth component="label" variant="outlined">
                                         Upload Image
-                                        <input onChange={handleImageChange} onFocus={() => handleErrorMessage('image', '')} type="file" accept="image/*" hidden multiple />
+                                        <input onChange={handleImageChange} onFocus={() => handleErrorMessage('image', '')} type="file" accept="image/*" hidden />
                                     </Button>
                                     <div className={classes.helperTextStyle}>{error.image}</div>
                                 </div>

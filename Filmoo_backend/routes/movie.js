@@ -13,10 +13,10 @@ router.post('/insert_movies', upload.fields([{ name: 'image', maxCount: 1 }, { n
         if (req.files['screenshot']) {
             screenshots = req.files['screenshot'].map(file => file.filename);
         }
-        const screenshotString = screenshots.join(', '); // Convert array to comma-separated string
+        const screenshotString = screenshots.join(', '); 
 
         pool.query(
-            'INSERT INTO movie (categoryid, name, language, year, image, screenshot, genre, description, quality,link480p, link720p, link1080p, link4k, size480p, size720p, size1080p, size4k,title,zip) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+            'INSERT INTO movie (categoryid, name, language, year, image, screenshot, genre, description, quality,link480p, link720p, link1080p, link4k, size480p, size720p, size1080p, size4k,title,zip,eplinks,numberep) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
             [
                 req.body.categoryid,
                 req.body.name,
@@ -36,7 +36,9 @@ router.post('/insert_movies', upload.fields([{ name: 'image', maxCount: 1 }, { n
                 req.body.size1080p || null,
                 req.body.size4k || null,
                 req.body.title,
-                req.body.zip
+                req.body.zip,
+                req.body.eplinks,
+                req.body.numberep
             ],
             function (error, result) {
                 if (error) {
