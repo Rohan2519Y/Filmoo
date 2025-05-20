@@ -36,7 +36,7 @@ router.post('/insert_movies', upload.fields([{ name: 'image', maxCount: 1 }, { n
                 req.body.size1080p || null,
                 req.body.size4k || null,
                 req.body.title,
-                req.body.zip,
+                req.body.zip || null,
                 req.body.eplinks,
                 req.body.numberep
             ],
@@ -207,6 +207,29 @@ router.post('/update_screenshots', upload.array('screenshots'), async (req, res)
             message: 'Internal server error'
         });
     }
+});
+router.post('/delete_movie', function (req, res, next) {
+
+    try {
+        pool.query("delete from movie where movieid=?", [req.body.movieid], function (error, result) {
+
+            if (error) {
+                console.log(error);
+                res.status(200).json({ status: false, message: "Database Error, Pls Contact Backend Team" })
+            }
+            else {
+                res.status(200).json({ status: true, message: "Movie Sucessfully Deleted" })
+            }
+
+        })
+
+    }
+
+    catch (e) {
+        console.log(error);
+        res.status(200).json({ status: false, message: "Critical Error, Pls Contact Server Administrator" })
+    }
+
 });
 
 module.exports = router;

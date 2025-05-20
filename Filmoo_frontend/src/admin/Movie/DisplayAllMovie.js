@@ -31,7 +31,7 @@ export default function DisplayAllMovie() {
     const [categoryId, setCategoryId] = useState('')
     const [name, setName] = useState('')
     const [year, setYear] = useState('')
-    const [title,setTitle]=useState('')
+    const [title, setTitle] = useState('')
     const [link480P, setLink480P] = useState('')
     const [size480P, setSize480P] = useState('')
     const [link720P, setLink720P] = useState('')
@@ -66,7 +66,40 @@ export default function DisplayAllMovie() {
     useEffect(function () {
         fetchAllMovies()
     }, [])
+    const deleteUsingIcon = (rowData) => {
+        Swal.fire({
+            title: "Are you sure to delete selected Movie or Series",
+            showCancelButton: true,
+            confirmButtonText: 'Delete'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                handleDelete(rowData.movieid);
+            }
+        });
+    }
 
+    const handleDelete = async (id) => {
+        if (!id) return;
+        var body = { 'movieid': id }
+        var result = await postData('movie/delete_movie', body)
+        if (result.status) {
+            Swal.fire({
+                icon: "success",
+                title: "Movie Register",
+                text: result.message,
+                toast: true
+            });
+            fetchAllMovies()
+        }
+        else {
+            Swal.fire({
+                icon: "error",
+                title: "Movie Register",
+                text: result.message,
+                toast: true
+            });
+        }
+    }
 
     const languageList = [
         'Hindi', 'English', 'Tamil', 'Telgu', 'Gujarati', 'Marathi', 'Japanese', 'Chinese'
@@ -283,7 +316,7 @@ export default function DisplayAllMovie() {
                 'quality': quality,
                 'link480p': link480P, 'link720p': link720P, 'link1080p': link1080P, 'link4k': link4k,
                 'size480p': size480P, 'size720p': size720P, 'size1080p': size1080P, 'size4k': size4k,
-                'title':title
+                'title': title
             }
             var result = await postData('movie/edit_movies', body)
             if (result.status) {
@@ -752,7 +785,7 @@ export default function DisplayAllMovie() {
                             {
                                 icon: () => <DeleteIcon />,
                                 tooltip: 'Delete Movie',
-                                onClick: (event, rowData) => alert("Delete movie: " + rowData.name)
+                                onClick: (event, rowData) => deleteUsingIcon(rowData)
                             },
                             {
                                 icon: () => <AddIcon />,
