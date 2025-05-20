@@ -729,14 +729,65 @@ export default function DisplayAllMovie() {
                             { title: 'Genre', field: 'genre', width: '18%' },
                             { title: 'Quality', field: 'quality', width: '5%' },
                             {
-                                title: 'Links', render: (rowData) =>
-                                    <div>
-                                        <div>{rowData.link480p}</div>
-                                        <div>{rowData.link720p}</div>
-                                        <div>{rowData.link1080p}</div>
-                                        <div>{rowData.link4k}</div>
-                                    </div>
-                            },
+                                title: 'Links',
+                                render: (rowData) => {
+                                    const { eplinks } = rowData;
+
+                                    // If eplinks is null/undefined, show fallback
+                                    if (!eplinks) return <div>
+                                            <div>{rowData.link480p}</div>
+                                            <div>{rowData.link720p}</div>
+                                            <div>{rowData.link1080p}</div>
+                                            <div>{rowData.link4k}</div>
+                                        </div>;
+
+                                    // Try to parse JSON if possible, otherwise treat as plain string
+                                    let linksArray = null;
+
+                                    try {
+                                        if (typeof eplinks === 'string') {
+                                            // Try parse JSON
+                                            linksArray = JSON.parse(eplinks);
+
+                                            // If parsed is not array, fallback to plain string output
+                                            if (!Array.isArray(linksArray)) {
+                                                linksArray = null;
+                                            }
+                                        } else if (Array.isArray(eplinks)) {
+                                            linksArray = eplinks;
+                                        }
+                                    } catch {
+                                        // JSON parse failed — treat as plain string
+                                        linksArray = null;
+                                    }
+
+                                    if (linksArray) {
+                                        // Render JSON array links
+                                        return (
+                                            <div>
+                                                {linksArray.map((item, index) => (
+                                                    <div key={index} style={{ marginBottom: '10px' }}>
+                                                        {item.link480P && <div>480p: {item.link480P}</div>}
+                                                        {item.link720P && <div>720p: {item.link720P}</div>}
+                                                        {item.link1080P && <div>1080p: {item.link1080P}</div>}
+                                                        {item.link4k && <div>4K: {item.link4k}</div>}
+                                                        {item.size480P && <div>Size: {item.size480P}</div>}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        );
+                                    } else {
+                                        // Render plain string directly
+                                        return <div>
+                                            <div>{rowData.link480p}</div>
+                                            <div>{rowData.link720p}</div>
+                                            <div>{rowData.link1080p}</div>
+                                            <div>{rowData.link4k}</div>
+                                        </div>
+                                    }
+                                }
+                            }
+                            ,
                             {
                                 title: 'Sizes', width: '5%', render: (rowData) =>
                                     <div>
