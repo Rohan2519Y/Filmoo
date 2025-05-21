@@ -16,7 +16,7 @@ router.post('/insert_movies', upload.fields([{ name: 'image', maxCount: 1 }, { n
         const screenshotString = screenshots.join(', '); 
 
         pool.query(
-            'INSERT INTO movie (categoryid, name, language, year, image, screenshot, genre, description, quality,link480p, link720p, link1080p, link4k, size480p, size720p, size1080p, size4k,title,zip,eplinks,numberep) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+            'INSERT INTO movie (categoryid, name, language, year, image, screenshot, genre, description, quality,link480p, link720p, link1080p, link4k, size480p, size720p, size1080p, size4k,title,zip,eplinks,numberep,content) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
             [
                 req.body.categoryid,
                 req.body.name,
@@ -38,7 +38,8 @@ router.post('/insert_movies', upload.fields([{ name: 'image', maxCount: 1 }, { n
                 req.body.title,
                 req.body.zip || null,
                 req.body.eplinks,
-                req.body.numberep
+                req.body.numberep,
+                req.body.content
             ],
             function (error, result) {
                 if (error) {

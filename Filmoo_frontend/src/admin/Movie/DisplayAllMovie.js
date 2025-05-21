@@ -48,7 +48,7 @@ export default function DisplayAllMovie() {
     const [categoryList, setCategoryList] = useState([])
     const [selectedGenres, setSelectedGenres] = useState([]);
     const [selectedLanguage, setSelectedLanguage] = useState([]);
-    const [contentType, setContentType] = useState("movie");
+    const [contentType, setContentType] = useState('');
     const [error, setError] = useState({})
 
     const [numberOfEpisodes, setNumberOfEpisodes] = useState(1);
@@ -344,6 +344,7 @@ export default function DisplayAllMovie() {
         setSize720P(rowData.size720p)
         setSize1080P(rowData.size1080p)
         setSize4k(rowData.size4k)
+        setContentType(rowData.content)
         setImage({ filename: `${serverURL}/images/${rowData.image}`, bytes: '' })
         setOpen(true)
     }
@@ -822,6 +823,7 @@ export default function DisplayAllMovie() {
                             { title: 'Year', field: 'year', width: '4%' },
                             { title: 'Genre', field: 'genre', width: '18%' },
                             { title: 'Quality', field: 'quality', width: '5%' },
+                            { title: 'Content', field: 'content', width: '5%' },
                             {
                                 title: 'Links',
                                 render: (rowData) => {

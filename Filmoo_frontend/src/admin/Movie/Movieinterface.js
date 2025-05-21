@@ -213,6 +213,7 @@ export default function MovieInterface() {
             formData.append('description', description);
             formData.append('quality', quality);
             formData.append('zip', zip);
+            formData.append('content',contentType)
             
             // For movie normal quality inputs
             if (contentType !== "series") {
