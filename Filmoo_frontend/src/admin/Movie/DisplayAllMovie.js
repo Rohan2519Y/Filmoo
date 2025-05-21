@@ -41,13 +41,18 @@ export default function DisplayAllMovie() {
     const [link4k, setLink4k] = useState('')
     const [size4k, setSize4k] = useState('')
     const [description, setDescription] = useState('')
+    const [zip, setZip] = useState('')
     const [screenshot, setScreenshot] = useState([])
     const [image, setImage] = useState({ filename: '/film.png', bytes: '' })
     const [quality, setQuality] = useState('')
     const [categoryList, setCategoryList] = useState([])
     const [selectedGenres, setSelectedGenres] = useState([]);
     const [selectedLanguage, setSelectedLanguage] = useState([]);
+    const [contentType, setContentType] = useState("movie");
     const [error, setError] = useState({})
+
+    const [numberOfEpisodes, setNumberOfEpisodes] = useState(1);
+    const [episodesLinks, setEpisodesLinks] = useState([]);
 
     const fetchAllMovies = async () => {
         var response = await getData('movie/fetch_movies')
@@ -148,16 +153,93 @@ export default function DisplayAllMovie() {
         setError((prev) => ({ ...prev, [label]: errorMessage }))
     }
 
+    const handleNumberOfEpisodesChange = (e) => {
+        let val = e.target.value;
+        if (!val || val < 1) {
+            val = 1;
+        } else {
+            val = parseInt(val);
+        }
+        setNumberOfEpisodes(val);
+        let arr = [...episodesLinks];
+        while (arr.length < val) arr.push({});
+        while (arr.length > val) arr.pop();
+        setEpisodesLinks(arr);
+    }
+
+    const handleEpisodeFieldChange = (index, field, value) => {
+        let arr = [...episodesLinks];
+        if (!arr[index]) arr[index] = {};
+        arr[index][field] = value;
+        setEpisodesLinks(arr);
+    }
+
+
     const handleQuality = () => {
+        if (contentType === "series") {
+            return (
+                <>
+                    <Grid size={3}>
+                        <TextField
+                            label="Number of Episodes"
+                            type="number"
+                            value={numberOfEpisodes}
+                            onChange={handleNumberOfEpisodesChange}
+                            inputProps={{ min: 1 }}
+                            fullWidth
+                            style={{ marginBottom: 10 }}
+                        />
+                    </Grid>
+                    <Grid size={3}>
+                        <TextField
+                            label="Zip link"
+                            value={zip}
+                            onChange={(e) => setZip(e.target.value)}
+                            fullWidth
+                            style={{ marginBottom: 10 }}
+                        />
+                    </Grid>
+                    {
+                        Array.from({ length: numberOfEpisodes }, (_, idx) => {
+                            // which fields to show per quality
+                            const fieldsByQuality = {
+                                '480P': ['link480P', 'size480P'],
+                                '720P': ['link480P', 'size480P', 'link720P', 'size720P'],
+                                '1080P': ['link480P', 'size480P', 'link720P', 'size720P', 'link1080P', 'size1080P'],
+                                '4K': ['link480P', 'size480P', 'link720P', 'size720P', 'link1080P', 'size1080P', 'link4k', 'size4k']
+                            };
+                            const fields = fieldsByQuality[quality] || [];
+                            return (
+                                <div key={idx} style={{ marginBottom: '20px', border: '1px solid #ccc', padding: '10px', display: 'flex' }}>
+                                    <div>Episode {idx + 1}:</div>
+                                    {fields.map(field => (
+                                        <Grid size={4} key={field} style={{ marginTop: 10 }}>
+                                            <TextField
+                                                label={field.replace(/link|size/g, (m) => m.toUpperCase())}
+                                                value={(episodesLinks[idx] && episodesLinks[idx][field]) || ''}
+                                                onChange={(e) => handleEpisodeFieldChange(idx, field, e.target.value)}
+                                                fullWidth
+                                            />
+                                        </Grid>
+                                    ))}
+                                </div>
+                            )
+                        })
+                    }
+                </>
+            )
+        }
+
+        // for non-series content type, keep your existing quality inputs:
         switch (quality) {
             case "480P":
                 return (
                     <>
                         <Grid size={12}>
-                            <TextField value={link480P} onChange={(e) => setLink480P(e.target.value)} label='480P Link' fullWidth></TextField>
+                            <TextField onChange={(e) => setLink480P(e.target.value)} label='480P Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={12}>
-                            <TextField value={size480P} onChange={(e) => setSize480P(e.target.value)} label='480P Size' fullWidth></TextField>
+                            <TextField onChange={(e) => setSize480P(e.target.value)} label='480P Size' fullWidth></TextField>
                         </Grid>
                     </>
                 )
@@ -166,16 +248,16 @@ export default function DisplayAllMovie() {
                 return (
                     <>
                         <Grid size={6}>
-                            <TextField value={link480P} onChange={(e) => setLink480P(e.target.value)} label='480P Link' fullWidth></TextField>
+                            <TextField onChange={(e) => setLink480P(e.target.value)} label='480P Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={6}>
-                            <TextField value={link720P} onChange={(e) => setLink720P(e.target.value)} label='720P Link' fullWidth></TextField>
+                            <TextField onChange={(e) => setLink720P(e.target.value)} label='720P Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={6}>
-                            <TextField value={size480P} onChange={(e) => setSize480P(e.target.value)} label='480P Size' fullWidth></TextField>
+                            <TextField onChange={(e) => setSize480P(e.target.value)} label='480P Size' fullWidth></TextField>
                         </Grid>
                         <Grid size={6}>
-                            <TextField value={size720P} onChange={(e) => setSize720P(e.target.value)} label='720P Size' fullWidth></TextField>
+                            <TextField onChange={(e) => setSize720P(e.target.value)} label='720P Size' fullWidth></TextField>
                         </Grid>
                     </>)
 
@@ -183,22 +265,22 @@ export default function DisplayAllMovie() {
                 return (
                     <>
                         <Grid size={4}>
-                            <TextField value={link480P} onChange={(e) => setLink480P(e.target.value)} label='480P Link' fullWidth></TextField>
+                            <TextField onChange={(e) => setLink480P(e.target.value)} label='480P Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={4}>
-                            <TextField value={link720P} onChange={(e) => setLink720P(e.target.value)} label='720P Link' fullWidth></TextField>
+                            <TextField onChange={(e) => setLink720P(e.target.value)} label='720P Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={4}>
-                            <TextField value={link1080P} onChange={(e) => setLink1080P(e.target.value)} label='1080P Link' fullWidth></TextField>
+                            <TextField onChange={(e) => setLink1080P(e.target.value)} label='1080P Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={4}>
-                            <TextField value={size480P} onChange={(e) => setSize480P(e.target.value)} label='480P Size' fullWidth></TextField>
+                            <TextField onChange={(e) => setSize480P(e.target.value)} label='480P Size' fullWidth></TextField>
                         </Grid>
                         <Grid size={4}>
-                            <TextField value={size720P} onChange={(e) => setSize720P(e.target.value)} label='720P Size' fullWidth></TextField>
+                            <TextField onChange={(e) => setSize720P(e.target.value)} label='720P Size' fullWidth></TextField>
                         </Grid>
                         <Grid size={4}>
-                            <TextField value={size1080P} onChange={(e) => setSize1080P(e.target.value)} label='1080P Size' fullWidth></TextField>
+                            <TextField onChange={(e) => setSize1080P(e.target.value)} label='1080P Size' fullWidth></TextField>
                         </Grid>
                     </>
                 )
@@ -206,28 +288,28 @@ export default function DisplayAllMovie() {
                 return (
                     <>
                         <Grid size={3}>
-                            <TextField value={link480P} onChange={(e) => setLink480P(e.target.value)} label='480P Link' fullWidth></TextField>
+                            <TextField onChange={(e) => setLink480P(e.target.value)} label='480P Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={3}>
-                            <TextField value={link720P} onChange={(e) => setLink720P(e.target.value)} label='720P Link' fullWidth></TextField>
+                            <TextField onChange={(e) => setLink720P(e.target.value)} label='720P Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={3}>
-                            <TextField value={link1080P} onChange={(e) => setLink1080P(e.target.value)} label='1080P Link' fullWidth></TextField>
+                            <TextField onChange={(e) => setLink1080P(e.target.value)} label='1080P Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={3}>
-                            <TextField value={link4k} onChange={(e) => setLink4k(e.target.value)} label='4K Link' fullWidth></TextField>
+                            <TextField onChange={(e) => setLink4k(e.target.value)} label='4K Link' fullWidth></TextField>
                         </Grid>
                         <Grid size={3}>
-                            <TextField value={size480P} onChange={(e) => setSize480P(e.target.value)} label='480P Size' fullWidth></TextField>
+                            <TextField onChange={(e) => setSize480P(e.target.value)} label='480P Size' fullWidth></TextField>
                         </Grid>
                         <Grid size={3}>
-                            <TextField value={size720P} onChange={(e) => setSize720P(e.target.value)} label='720P Size' fullWidth></TextField>
+                            <TextField onChange={(e) => setSize720P(e.target.value)} label='720P Size' fullWidth></TextField>
                         </Grid>
                         <Grid size={3}>
-                            <TextField value={size1080P} onChange={(e) => setSize1080P(e.target.value)} label='1080P Size' fullWidth></TextField>
+                            <TextField onChange={(e) => setSize1080P(e.target.value)} label='1080P Size' fullWidth></TextField>
                         </Grid>
                         <Grid size={3}>
-                            <TextField value={size4k} onChange={(e) => setSize4k(e.target.value)} label='4K Size' fullWidth></TextField>
+                            <TextField onChange={(e) => setSize4k(e.target.value)} label='4K Size' fullWidth></TextField>
                         </Grid>
                     </>
                 )
@@ -431,24 +513,36 @@ export default function DisplayAllMovie() {
                             </FormControl>
 
                         </Grid>
-                        <Grid size={12} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                            <FormLabel style={{ marginRight: 'auto' }}>Quality</FormLabel>
-                            <FormControl error={error.quality} onFocus={() => handleErrorMessage('quality', null)}  >
+                        <Grid size={4}>
+                            <FormControl component="fieldset">
+                                <FormLabel component="legend">Content Type</FormLabel>
                                 <RadioGroup
                                     row
-                                    aria-labelledby="demo-row-radio-buttons-group-label"
-                                    name="row-radio-buttons-group"
-                                    value={quality}
-                                    onChange={(e) => setQuality(e.target.value)}>
-                                    <FormControlLabel name="quality" value="480P" control={<Radio />} label="480P" />
-                                    <FormControlLabel name="quality" value="720P" control={<Radio />} label="720P" />
-                                    <FormControlLabel name="quality" value="1080P" control={<Radio />} label="1080P" />
-                                    <FormControlLabel name="quality" value="4K" control={<Radio />} label="4K" />
+                                    value={contentType}
+                                    onChange={(e) => setContentType(e.target.value)}
+                                >
+                                    <FormControlLabel value="movie" control={<Radio />} label="Movie" />
+                                    <FormControlLabel value="series" control={<Radio />} label="Series" />
                                 </RadioGroup>
-                                <FormHelperText fullWidth>{error.quality}</FormHelperText>
                             </FormControl>
                         </Grid>
+
+                        <Grid size={8}>
+                            <FormControl error={error.quality} onFocus={() => handleErrorMessage('quality', null)} fullWidth>
+                                <FormLabel>Quality</FormLabel>
+                                <RadioGroup row value={quality} onChange={(e) => setQuality(e.target.value)}>
+                                    <FormControlLabel value="480P" control={<Radio />} label="480P" />
+                                    <FormControlLabel value="720P" control={<Radio />} label="720P" />
+                                    <FormControlLabel value="1080P" control={<Radio />} label="1080P" />
+                                    <FormControlLabel value="4K" control={<Radio />} label="4K" />
+                                </RadioGroup>
+                                <FormHelperText>{error.quality}</FormHelperText>
+                            </FormControl>
+                        </Grid>
+
+                        {/* Render quality inputs based on selected contentType */}
                         {handleQuality()}
+
                         <Grid size={6}>
                             <Button variant="contained" onClick={handleClick} fullWidth>Submit</Button>
                         </Grid>
@@ -735,11 +829,11 @@ export default function DisplayAllMovie() {
 
                                     // If eplinks is null/undefined, show fallback
                                     if (!eplinks) return <div>
-                                            <div>{rowData.link480p}</div>
-                                            <div>{rowData.link720p}</div>
-                                            <div>{rowData.link1080p}</div>
-                                            <div>{rowData.link4k}</div>
-                                        </div>;
+                                        <div>{rowData.link480p}</div>
+                                        <div>{rowData.link720p}</div>
+                                        <div>{rowData.link1080p}</div>
+                                        <div>{rowData.link4k}</div>
+                                    </div>;
 
                                     // Try to parse JSON if possible, otherwise treat as plain string
                                     let linksArray = null;

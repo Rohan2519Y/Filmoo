@@ -139,10 +139,6 @@ export default function MovieInterface() {
             err = true
             handleErrorMessage('quality', 'Please Select Quality...')
         }
-        if (zip.length == 0) {
-            err = true
-            handleErrorMessage('zip', 'Please Enter Zip Link...')
-        }
         if (image.bytes.length == 0) {
             err = true
             handleErrorMessage("image", 'Please Select Image')
@@ -461,7 +457,7 @@ export default function MovieInterface() {
                 <div className={classes.box}>
                     <div className={classes.title}>
                         <img className={classes.image} src='/logo.png' alt="logo" />
-                        <div className={classes.name}>Add Movie</div>
+                        <div className={classes.name}>Add Movie Or Series</div>
                         <div style={{ cursor: 'pointer' }} onClick={() => navigate("/displayallmovie")}>
                             <img src="/verification.png" alt="navigate" style={{ height: '8vh' }} />
                         </div>
