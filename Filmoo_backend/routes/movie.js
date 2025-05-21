@@ -91,7 +91,11 @@ router.post('/edit_movies', function (req, res, next) {
                 size720p = ?, 
                 size1080p = ?, 
                 size4k = ?,
-                title=? 
+                title=?,
+                zip=?,
+                eplinks=?,
+                numberep=?,
+                content=? 
             WHERE movieid = ?`,
             [
                 req.body.categoryid,
@@ -110,6 +114,10 @@ router.post('/edit_movies', function (req, res, next) {
                 req.body.size1080p,
                 req.body.size4k,
                 req.body.title,
+                req.body.zip,
+                req.body.eplinks,
+                req.body.numberep,
+                req.body.content,
                 req.body.movieid
             ], function (error, result) {
                 if (error) {
