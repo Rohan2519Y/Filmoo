@@ -18,8 +18,9 @@ import ImageListItemBar from '@mui/material/ImageListItemBar';
 import IconButton from '@mui/material/IconButton';
 import { getData, serverURL, postData } from "../../backendservices/FetchNodeServices";
 import Swal from "sweetalert2";
-import { Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
+import { Dialog, DialogActions, DialogContent } from "@mui/material";
 import { useState, useEffect } from "react";
+
 export default function DisplayAllMovie() {
     const classes = useStyles()
     const [listMovies, setListMovies] = useState([])
@@ -49,10 +50,12 @@ export default function DisplayAllMovie() {
     const [selectedGenres, setSelectedGenres] = useState([]);
     const [selectedLanguage, setSelectedLanguage] = useState([]);
     const [contentType, setContentType] = useState('');
-    const [error, setError] = useState({})
 
-    const [numberOfEpisodes, setNumberOfEpisodes] = useState(1);
-    const [episodesLinks, setEpisodesLinks] = useState([]);
+    // New states for season/episode management
+    const [numberOfSeasons, setNumberOfSeasons] = useState(1);
+    const [seasonsData, setSeasonsData] = useState([]);
+
+    const [error, setError] = useState({})
 
     const fetchAllMovies = async () => {
         var response = await getData('movie/fetch_movies')
@@ -145,7 +148,7 @@ export default function DisplayAllMovie() {
     }, [])
     const fillCategory = () => {
         return (categoryList.map((item) => {
-            return <MenuItem value={item.categoryid}>{item.categoryname}</MenuItem>
+            return <MenuItem key={item.categoryid} value={item.categoryid}>{item.categoryname}</MenuItem>
         }))
     }
 
@@ -153,38 +156,539 @@ export default function DisplayAllMovie() {
         setError((prev) => ({ ...prev, [label]: errorMessage }))
     }
 
-    const handleNumberOfEpisodesChange = (e) => {
+    // Handle number of seasons change for series
+    const handleNumberOfSeasonsChange = (e) => {
         let val = e.target.value;
         if (!val || val < 1) {
             val = 1;
         } else {
             val = parseInt(val);
         }
-        setNumberOfEpisodes(val);
-        let arr = [...episodesLinks];
-        while (arr.length < val) arr.push({});
-        while (arr.length > val) arr.pop();
-        setEpisodesLinks(arr);
+        setNumberOfSeasons(val);
+
+        // Adjust seasonsData array length accordingly
+        let seasons = [...seasonsData];
+        while (seasons.length < val) {
+            seasons.push({
+                seasonNumber: seasons.length + 1,
+                numberOfEpisodes: 1,
+                episodesLinks: [{}]
+            });
+        }
+        while (seasons.length > val) {
+            seasons.pop();
+        }
+        setSeasonsData(seasons);
     }
 
-    const handleEpisodeFieldChange = (index, field, value) => {
-        let arr = [...episodesLinks];
-        if (!arr[index]) arr[index] = {};
-        arr[index][field] = value;
-        setEpisodesLinks(arr);
+    // Handle number of episodes per season change
+    const handleEpisodesPerSeasonChange = (seasonIndex, numberOfEpisodes) => {
+        let val = numberOfEpisodes;
+        if (!val || val < 1) {
+            val = 1;
+        } else {
+            val = parseInt(val);
+        }
+
+        let seasons = [...seasonsData];
+        seasons[seasonIndex].numberOfEpisodes = val;
+
+        let episodes = [...(seasons[seasonIndex].episodesLinks || [])];
+        while (episodes.length < val) {
+            episodes.push({});
+        }
+        while (episodes.length > val) {
+            episodes.pop();
+        }
+        seasons[seasonIndex].episodesLinks = episodes;
+        setSeasonsData(seasons);
     }
 
+    // Handle episode field change per season and episode index
+    const handleEpisodeFieldChange = (seasonIndex, episodeIndex, field, value) => {
+        let seasons = [...seasonsData];
+        if (!seasons[seasonIndex].episodesLinks[episodeIndex]) {
+            seasons[seasonIndex].episodesLinks[episodeIndex] = {};
+        }
+        seasons[seasonIndex].episodesLinks[episodeIndex][field] = value;
+        setSeasonsData(seasons);
+    }
 
-    const handleQuality = () => {
+    const handleClick = async () => {
+        // Validation details
+        let err = false
+        if (categoryId.length === 0) {
+            err = true
+            handleErrorMessage('categoryId', 'Please Select Category...')
+        }
+        if (name.length === 0) {
+            err = true
+            handleErrorMessage('name', 'Please Input Name...')
+        }
+        if (year.length === 0) {
+            err = true
+            handleErrorMessage('year', 'Please Input Year...')
+        }
+        if (title.length === 0) {
+            err = true
+            handleErrorMessage('title', 'Please Input Title...')
+        }
+        if (selectedLanguage.length === 0) {
+            err = true
+            handleErrorMessage('selectedLanguage', 'Please Select Language...')
+        }
+        if (selectedGenres.length === 0) {
+            err = true
+            handleErrorMessage('selectedGenres', 'Please Select Genre...')
+        }
+        if (description.length === 0) {
+            err = true
+            handleErrorMessage('description', 'Please Input Description...')
+        }
+        if (quality.length === 0) {
+            err = true
+            handleErrorMessage('quality', 'Please Select Quality...')
+        }
+
+        // For series validate each episode info for required links and size based on quality
+        if (contentType === "series") {
+            for (let seasonIndex = 0; seasonIndex < numberOfSeasons; seasonIndex++) {
+                const season = seasonsData[seasonIndex];
+                if (!season) continue;
+                
+                for (let episodeIndex = 0; episodeIndex < season.numberOfEpisodes; episodeIndex++) {
+                    let episode = season.episodesLinks[episodeIndex] || {};
+                    switch (quality) {
+                        case "480P":
+                            if (!episode.link480P || !episode.size480P) {
+                                err = true;
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: `Season ${seasonIndex + 1}, Episode ${episodeIndex + 1} is missing 480P link or size!`
+                                });
+                                break;
+                            }
+                            break;
+                        case "720P":
+                            if (!episode.link480P || !episode.size480P || !episode.link720P || !episode.size720P) {
+                                err = true;
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: `Season ${seasonIndex + 1}, Episode ${episodeIndex + 1} is missing 480P or 720P link or size!`
+                                });
+                                break;
+                            }
+                            break;
+                        case "1080P":
+                            if (!episode.link480P || !episode.size480P || !episode.link720P || !episode.size720P
+                                || !episode.link1080P || !episode.size1080P) {
+                                err = true;
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: `Season ${seasonIndex + 1}, Episode ${episodeIndex + 1} is missing one or more links or sizes for 480P, 720P or 1080P!`
+                                });
+                                break;
+                            }
+                            break;
+                        case "4K":
+                            if (!episode.link480P || !episode.size480P || !episode.link720P || !episode.size720P
+                                || !episode.link1080P || !episode.size1080P || !episode.link4k || !episode.size4k) {
+                                err = true;
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: `Season ${seasonIndex + 1}, Episode ${episodeIndex + 1} is missing one or more links or sizes for 480P, 720P, 1080P, or 4K!`
+                                });
+                                break;
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                    if (err) break;
+                }
+                if (err) break;
+            }
+        }
+
+        if (!err) {
+            let formData = new FormData();
+            formData.append('movieid', movieId);
+            formData.append('categoryid', categoryId);
+            formData.append('name', name);
+            formData.append('year', year);
+            formData.append('title', title);
+            formData.append('language', selectedLanguage.join(', '));
+            formData.append('genre', selectedGenres.join(', '));
+            formData.append('description', description);
+            formData.append('quality', quality);
+            formData.append('zip', zip);
+            formData.append('content', contentType);
+
+            if (contentType !== "series") {
+                formData.append('link480p', link480P);
+                formData.append('size480p', size480P);
+                formData.append('link720p', link720P);
+                formData.append('size720p', size720P);
+                formData.append('link1080p', link1080P);
+                formData.append('size1080p', size1080P);
+                formData.append('link4k', link4k);
+                formData.append('size4k', size4k);
+            } else {
+                formData.append('seasonsData', JSON.stringify(seasonsData));
+                formData.append('numberOfSeasons', numberOfSeasons);
+            }
+
+            if (image.bytes) {
+                formData.append('image', image.bytes);
+            }
+
+            screenshot.forEach((file) => {
+                formData.append('screenshot', file);
+            });
+
+            const result = await postData('movie/edit_movies', formData)
+            if (result.status) {
+                Swal.fire({
+                    icon: "success",
+                    title: "Movie Updated",
+                    text: result.message,
+                    toast: true
+                });
+                fetchAllMovies();
+                setOpen(false);
+            }
+            else {
+                Swal.fire({
+                    icon: "error",
+                    title: "Failed to Update Movie",
+                    text: result.message,
+                    toast: true
+                });
+            }
+        }
+    }
+
+    const handleReset = () => {
+        setCategoryId('');
+        setName('');
+        setYear('');
+        setTitle('');
+        setSelectedLanguage([]);
+        setSelectedGenres([]);
+        setDescription('');
+        setQuality('');
+        setLink480P('');
+        setSize480P('');
+        setLink720P('');
+        setSize720P('');
+        setLink1080P('');
+        setSize1080P('');
+        setLink4k('');
+        setSize4k('');
+        setZip('');
+        setImage({ filename: '/film.png', bytes: '' });
+        setScreenshot([]);
+        setNumberOfSeasons(1);
+        setSeasonsData([]);
+        setContentType('');
+        setError({});
+    };
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0]
+        if (file) {
+            setImage({ filename: URL.createObjectURL(file), bytes: file })
+            handleErrorMessage('image', null)
+        }
+    }
+    const handleImageSave = async () => {
+        var formData = new FormData()
+        formData.append('movieid', movieId)
+        formData.append('image', image.bytes)
+        var result = await postData('movie/update_icon', formData)
+        if (result.status) {
+            Swal.fire({
+                icon: "success",
+                title: "Movie Image Updated",
+                text: result.message,
+                toast: true
+            });
+            fetchAllMovies()
+            setOpen(false);
+        }
+        else {
+            Swal.fire({
+                icon: "error",
+                title: "Failed to Update Image",
+                text: result.message,
+                toast: true
+            });
+        }
+    }
+
+    const pictureForm = () => {
+        return (
+            <div className={classes.box2}>
+                <div className={classes.title}>
+                    <img className={classes.image} src='/logo.png' />
+                    <div className={classes.name}>Edit Image</div>
+                    <img src="/verification.png" style={{ height: '8vh' }}></img>
+                </div>
+                <div style={{ margin: 10 }}>
+                    <Grid container spacing={2}>
+                        <Grid size={6}  >
+                            <img style={{ margin: 0 }} src={image.filename} width={150} />
+                        </Grid>
+                        <Grid size={6}  >
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 50, flexDirection: 'column' }}>
+                                <Button fullWidth component="label" variant="outlined">
+                                    Upload Image
+                                    <input onChange={handleImageChange} onFocus={() => handleErrorMessage('image', '')} type="file" accept="image/*" hidden />
+                                </Button>
+                                <div className={classes.helperTextStyle}>{error.image}</div>
+                            </div>
+                        </Grid>
+                        <Grid size={6}>
+                            <Button variant="contained" onClick={handleImageSave} fullWidth>Submit</Button>
+                        </Grid>
+                        <Grid size={6}>
+                            <Button variant="contained" onClick={handleReset} fullWidth>Reset</Button>
+                        </Grid>
+                    </Grid>
+                </div>
+            </div>
+        )
+    }
+
+    const handleRemoveScreenshot = (index) => {
+        setScreenshot(prev => prev.filter((_, i) => i !== index));
+    };
+    const handleMultipleImage = (e) => {
+        const newFiles = Array.from(e.target.files);
+        // Replace existing screenshots with new ones
+        setScreenshot(newFiles);
+        handleErrorMessage('screenshot', null);
+    };
+    const showImage = () => {
+        if (screenshot.length === 0) {
+            return (
+                <div style={{ margin: 2 }}>
+                    <img src="/film.png" style={{ width: 50, height: 'auto' }} alt="default"/>
+                </div>
+            );
+        }
+
+        return (
+            <ImageList sx={{ width: '100%', height: 300 }} cols={3} rowHeight={164}>
+                {screenshot.map((item, index) => {
+                    const src = item instanceof File
+                        ? URL.createObjectURL(item)
+                        : `${serverURL}/images/${item}`;
+
+                    return (
+                        <ImageListItem key={index}>
+                            <img
+                                src={src}
+                                alt={`screenshot-${index}`}
+                                loading="lazy"
+                                style={{ objectFit: 'cover' }}
+                            />
+                            <ImageListItemBar
+                                position="top"
+                                actionIcon={
+                                    <IconButton
+                                        sx={{ color: 'white' }}
+                                        onClick={() => handleRemoveScreenshot(index)}
+                                    >
+                                        <DeleteIcon />
+                                    </IconButton>
+                                }
+                                actionPosition="right"
+                            />
+                        </ImageListItem>
+                    );
+                })}
+            </ImageList>
+        );
+    };
+    const handleScreenshotSave = async () => {
+        try {
+            // 1. Validate movieId
+            if (!movieId) {
+                throw new Error('Movie ID is missing');
+            }
+
+            // 2. Prepare FormData
+            const formData = new FormData();
+            formData.append('movieid', movieId);
+
+            // 3. Process screenshots
+            const existingScreenshots = screenshot.filter(item => typeof item === 'string');
+            const newScreenshots = screenshot.filter(item => item instanceof File);
+
+            // 4. Add existing screenshots
+            if (existingScreenshots.length > 0) {
+                formData.append('existingScreenshots', existingScreenshots.join(','));
+            }
+
+            // 5. Add new screenshots
+            newScreenshots.forEach(file => {
+                formData.append('screenshots', file);
+            });
+
+            // 6. Make API call
+            const result = await postData('movie/update_screenshots', formData);
+
+            if (!result) {
+                throw new Error('No response from server');
+            }
+
+            if (result.status) {
+                Swal.fire({
+                    icon: "success",
+                    title: "Screenshots Updated",
+                    text: result.message || 'Screenshots updated',
+                    toast: true
+                });
+                fetchAllMovies();
+                setOpen(false);
+            } else {
+                throw new Error(result.message || 'Upload failed');
+            }
+        } catch (error) {
+            console.error("Upload error:", error);
+            Swal.fire({
+                icon: "error",
+                title: "Upload Failed",
+                text: error.message || 'An unknown error occurred',
+                toast: true
+            });
+        }
+    };
+    const screenshotForm = () => {
+        return (
+            <div className={classes.box2}>
+                <div className={classes.title}>
+                    <img className={classes.image} src='/logo.png' alt="logo" />
+                    <div className={classes.name}>Edit ScreenShots</div>
+                    <img src="/verification.png" style={{ height: '8vh' }} alt="verification" />
+                </div>
+                <div style={{ margin: 10 }}>
+                    <Grid container spacing={2}>
+                        <Grid item xs={12}>
+                            {showImage()}
+                        </Grid>
+                        <Grid item xs={12}>
+                            <Button
+                                fullWidth
+                                component="label"
+                                variant="outlined"
+                                startIcon={<AddIcon />}
+                            >
+                                Upload New ScreenShots
+                                <input
+                                    onFocus={() => handleErrorMessage('screenshot', '')}
+                                    onChange={handleMultipleImage}
+                                    type="file"
+                                    accept="image/*"
+                                    hidden
+                                    multiple
+                                />
+                            </Button>
+                            <FormHelperText error={!!error.screenshot}>
+                                {error.screenshot || 'New uploads will replace existing screenshots'}
+                            </FormHelperText>
+                        </Grid>
+                        <Grid item xs={6}>
+                            <Button
+                                variant="contained"
+                                onClick={handleScreenshotSave}
+                                fullWidth
+                                disabled={screenshot.length === 0}
+                            >
+                                Save Changes
+                            </Button>
+                        </Grid>
+                        <Grid item xs={6}>
+                            <Button
+                                variant="outlined"
+                                onClick={() => setOpen(false)}
+                                fullWidth
+                            >
+                                Cancel
+                            </Button>
+                        </Grid>
+                    </Grid>
+                </div>
+            </div>
+        );
+    };
+
+    const handleOpenDialog = (rowData, state) => {
+        if (state === 'screenshot') {
+            // Initialize with existing screenshots from server
+            const existingScreenshots = rowData.screenshot
+                ? rowData.screenshot.split(',').map(item => item.trim())
+                : [];
+            setScreenshot(existingScreenshots);
+        }
+        setDialogState(state)
+        setMovieId(rowData.movieid)
+        setCategoryId(rowData.categoryid)
+        setName(rowData.name)
+        setYear(rowData.year)
+        setTitle(rowData.title)
+        setSelectedLanguage(rowData.language ? (Array.isArray(rowData.language) ? rowData.language : rowData.language.split(',').map(l => l.trim())) : [])
+        setSelectedGenres(rowData.genre ? (Array.isArray(rowData.genre) ? rowData.genre : rowData.genre.split(',').map(g => g.trim())) : [])
+        setDescription(rowData.description)
+        setQuality(rowData.quality)
+        setLink480P(rowData.link480p)
+        setLink720P(rowData.link720p)
+        setLink1080P(rowData.link1080p)
+        setLink4k(rowData.link4k)
+        setSize480P(rowData.size480p)
+        setSize720P(rowData.size720p)
+        setSize1080P(rowData.size1080p)
+        setSize4k(rowData.size4k)
+        setContentType(rowData.content)
+        setImage({ filename: `${serverURL}/images/${rowData.image}`, bytes: '' })
+        setZip(rowData.zip || '')
+
+        // Parse and set seasonsData if available
+        if (rowData.seasonsData) {
+            try {
+                let seasons = typeof rowData.seasonsData === 'string'
+                    ? JSON.parse(rowData.seasonsData)
+                    : rowData.seasonsData;
+                if (Array.isArray(seasons)) {
+                    setSeasonsData(seasons)
+                    setNumberOfSeasons(seasons.length > 0 ? seasons.length : 1)
+                } else {
+                    setSeasonsData([])
+                    setNumberOfSeasons(1)
+                }
+            } catch (error) {
+                console.error('Error parsing seasonsData:', error);
+                setSeasonsData([]);
+                setNumberOfSeasons(1);
+            }
+        } else {
+            setSeasonsData([]);
+            setNumberOfSeasons(1);
+        }
+
+        setOpen(true)
+    }
+    const handleQualityInputs = () => {
         if (contentType === "series") {
             return (
                 <>
                     <Grid size={3}>
                         <TextField
-                            label="Number of Episodes"
+                            label="Number of Seasons"
                             type="number"
-                            value={numberOfEpisodes}
-                            onChange={handleNumberOfEpisodesChange}
+                            value={numberOfSeasons}
+                            onChange={handleNumberOfSeasonsChange}
                             inputProps={{ min: 1 }}
                             fullWidth
                             style={{ marginBottom: 10 }}
@@ -199,38 +703,83 @@ export default function DisplayAllMovie() {
                             style={{ marginBottom: 10 }}
                         />
                     </Grid>
-                    {
-                        Array.from({ length: numberOfEpisodes }, (_, idx) => {
-                            // which fields to show per quality
-                            const fieldsByQuality = {
-                                '480P': ['link480P', 'size480P'],
-                                '720P': ['link480P', 'size480P', 'link720P', 'size720P'],
-                                '1080P': ['link480P', 'size480P', 'link720P', 'size720P', 'link1080P', 'size1080P'],
-                                '4K': ['link480P', 'size480P', 'link720P', 'size720P', 'link1080P', 'size1080P', 'link4k', 'size4k']
-                            };
-                            const fields = fieldsByQuality[quality] || [];
-                            return (
-                                <div key={idx} style={{ marginBottom: '20px', border: '1px solid #ccc', padding: '10px', display: 'flex' }}>
-                                    <div style={{ minWidth: 100, fontWeight: 'bold' }}>Episode {idx + 1}:</div>
-                                    {fields.map(field => (
-                                        <Grid size={4} key={field} style={{ marginTop: 10 }}>
-                                            <TextField
-                                                label={field.replace(/link|size/g, (m) => m.toUpperCase())}
-                                                value={(episodesLinks[idx] && episodesLinks[idx][field]) || ''}
-                                                onChange={(e) => handleEpisodeFieldChange(idx, field, e.target.value)}
-                                                fullWidth
-                                            />
-                                        </Grid>
-                                    ))}
-                                </div>
-                            )
-                        })
-                    }
+                    {seasonsData.map((season, seasonIndex) => (
+                        <div key={seasonIndex} style={{
+                            width: '100%',
+                            marginBottom: '30px',
+                            border: '2px solid #2196F3',
+                            borderRadius: '8px',
+                            padding: '15px',
+                            backgroundColor: '#f5f5f5'
+                        }}>
+                            <div style={{
+                                fontSize: '18px',
+                                fontWeight: 'bold',
+                                marginBottom: '15px',
+                                color: '#2196F3'
+                            }}>
+                                Season {seasonIndex + 1}
+                            </div>
+
+                            <div style={{ marginBottom: '15px' }}>
+                                <TextField
+                                    label={`Number of Episodes in Season ${seasonIndex + 1}`}
+                                    type="number"
+                                    value={season.numberOfEpisodes}
+                                    onChange={(e) => handleEpisodesPerSeasonChange(seasonIndex, e.target.value)}
+                                    inputProps={{ min: 1 }}
+                                    style={{ width: '300px' }}
+                                />
+                            </div>
+
+                            {/* Render episodes for this season */}
+                            {Array.from({ length: season.numberOfEpisodes }, (_, episodeIndex) => {
+                                const fieldsByQuality = {
+                                    '480P': ['link480P', 'size480P'],
+                                    '720P': ['link480P', 'size480P', 'link720P', 'size720P'],
+                                    '1080P': ['link480P', 'size480P', 'link720P', 'size720P', 'link1080P', 'size1080P'],
+                                    '4K': ['link480P', 'size480P', 'link720P', 'size720P', 'link1080P', 'size1080P', 'link4k', 'size4k']
+                                };
+                                const fields = fieldsByQuality[quality] || [];
+
+                                return (
+                                    <div key={episodeIndex} style={{
+                                        marginBottom: '15px',
+                                        border: '1px solid #ccc',
+                                        borderRadius: '4px',
+                                        padding: '10px',
+                                        backgroundColor: 'white'
+                                    }}>
+                                        <div style={{
+                                            fontWeight: 'bold',
+                                            marginBottom: '10px',
+                                            color: '#666'
+                                        }}>
+                                            Season {seasonIndex + 1} - Episode {episodeIndex + 1}:
+                                        </div>
+                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                                            {fields.map(field => (
+                                                <div key={field} style={{ flex: '1 1 250px', minWidth: '250px' }}>
+                                                    <TextField
+                                                        label={field.replace(/link|size/g, (m) => m.toUpperCase())}
+                                                        value={(season.episodesLinks[episodeIndex] && season.episodesLinks[episodeIndex][field]) || ''}
+                                                        onChange={(e) => handleEpisodeFieldChange(seasonIndex, episodeIndex, field, e.target.value)}
+                                                        fullWidth
+                                                        size="small"
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    ))}
                 </>
             )
         }
 
-        // for non-series content type, keep your existing quality inputs:
+        // For movies, show quality-based inputs
         switch (quality) {
             case "480P":
                 return (
@@ -318,161 +867,27 @@ export default function DisplayAllMovie() {
         }
     }
 
-    const handleOpenDialog = (rowData, state) => {
-        if (state === 'screenshot') {
-            // Initialize with existing screenshots from server
-            const existingScreenshots = rowData.screenshot
-                ? rowData.screenshot.split(',').map(item => item.trim())
-                : [];
-            setScreenshot(existingScreenshots);
-        }
-        setDialogState(state)
-        setMovieId(rowData.movieid)
-        setCategoryId(rowData.categoryid)
-        setName(rowData.name)
-        setYear(rowData.year)
-        setTitle(rowData.title)
-        setSelectedLanguage(rowData.language ? (Array.isArray(rowData.language) ? rowData.language : rowData.language.split(',').map(l => l.trim())) : [])
-        setSelectedGenres(rowData.genre ? (Array.isArray(rowData.genre) ? rowData.genre : rowData.genre.split(',').map(g => g.trim())) : [])
-        setDescription(rowData.description)
-        setQuality(rowData.quality)
-        setLink480P(rowData.link480p)
-        setLink720P(rowData.link720p)
-        setLink1080P(rowData.link1080p)
-        setLink4k(rowData.link4k)
-        setSize480P(rowData.size480p)
-        setSize720P(rowData.size720p)
-        setSize1080P(rowData.size1080p)
-        setSize4k(rowData.size4k)
-        setContentType(rowData.content)
-        setImage({ filename: `${serverURL}/images/${rowData.image}`, bytes: '' })
-
-        // Parse and set episodesLinks if available
-        if (rowData.eplinks) {
-            try {
-                let episodes = typeof rowData.eplinks === 'string'
-                    ? JSON.parse(rowData.eplinks)
-                    : rowData.eplinks;
-
-                if (Array.isArray(episodes)) {
-                    setEpisodesLinks(episodes);
-                    setNumberOfEpisodes(episodes.length > 0 ? episodes.length : 1);
-                } else {
-                    setEpisodesLinks([]);
-                    setNumberOfEpisodes(1);
-                }
-            } catch (error) {
-                console.error('Error parsing episodes links:', error);
-                setEpisodesLinks([]);
-                setNumberOfEpisodes(1);
-            }
-        } else {
-            setEpisodesLinks([]);
-            setNumberOfEpisodes(1);
-        }
-
-        setOpen(true)
-    }
-
-    const handleCloseDialog = () => {
-        setOpen(false)
-    }
-
-    const handleClick = async () => {
-        var err = false
-        if (categoryId.length == 0) {
-            err = true
-            handleErrorMessage('categoryId', 'Please Select Category...')
-        }
-        if (name.length == 0) {
-            err = true
-            handleErrorMessage('name', 'Please Input Name...')
-        }
-        if (year.length == 0) {
-            err = true
-            handleErrorMessage('year', 'Please Input Year...')
-        }
-        if (title.length == 0) {
-            err = true
-            handleErrorMessage('title', 'Please Input Title...')
-        }
-        if (selectedLanguage.length == 0) {
-            err = true
-            handleErrorMessage('selectedLanguage', 'Please Select Language...')
-        }
-        if (selectedGenres.length == 0) {
-            err = true
-            handleErrorMessage('selectedGenres', 'Please Select Genre...')
-        }
-        if (description.length == 0) {
-            err = true
-            handleErrorMessage('description', 'Please Input Description...')
-        }
-        if (quality.length == 0) {
-            err = true
-            handleErrorMessage('quality', 'Please Select Quality...')
-        }
-
-        if (err == false) {
-            var body = {
-                'movieid': movieId,
-                'categoryid': categoryId,
-                'name': name,
-                'language': selectedLanguage,
-                'year': year,
-                'genre': selectedGenres,
-                'description': description,
-                'quality': quality,
-                'link480p': link480P, 'link720p': link720P, 'link1080p': link1080P, 'link4k': link4k,
-                'size480p': size480P, 'size720p': size720P, 'size1080p': size1080P, 'size4k': size4k,
-                'title': title,
-                'zip':zip,
-                'eplinks': JSON.stringify(episodesLinks),  
-                'numberep':numberOfEpisodes,
-                'content':contentType
-            }
-            var result = await postData('movie/edit_movies', body)
-            if (result.status) {
-                Swal.fire({
-                    icon: "success",
-                    title: "Movie Register",
-                    text: result.message,
-                    toast: true
-                });
-                fetchAllMovies();
-                setOpen(false)
-            }
-            else {
-                Swal.fire({
-                    icon: "error",
-                    title: "Movie Register",
-                    text: result.message,
-                    toast: true
-                });
-            }
-        }
-    }
-
     const openDialog = () => {
-        return <Dialog open={open}>
-            <DialogContent>
-                {dialogState === 'data' ? movieForm() : dialogState === 'image' ? pictureForm() : dialogState === 'screenshot' ? screenshotForm() : null}
-            </DialogContent>
-
-            <DialogActions>
-                <Button onClick={handleCloseDialog}>Close</Button>
-            </DialogActions>
-        </Dialog>
+        return (
+            <Dialog open={open} fullWidth maxWidth="lg">
+                <DialogContent>
+                    {dialogState === 'data' ? movieForm() : dialogState === 'image' ? pictureForm() : dialogState === 'screenshot' ? screenshotForm() : null}
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setOpen(false)}>Close</Button>
+                </DialogActions>
+            </Dialog>
+        )
     }
 
-
+    // Main editing form
     const movieForm = () => {
         return (
             <div className={classes.box2}>
                 <div className={classes.title}>
-                    <img className={classes.image} src='/logo.png' />
-                    <div className={classes.name}>Add Movie</div>
-                    <img src="/verification.png" style={{ height: '8vh' }}></img>
+                    <img className={classes.image} src='/logo.png' alt="logo"/>
+                    <div className={classes.name}>Edit Movie Or Series</div>
+                    <img src="/verification.png" style={{ height: '8vh' }} alt="verify"/>
                 </div>
                 <div style={{ margin: 10 }}>
                     <Grid container spacing={2}>
@@ -542,7 +957,6 @@ export default function DisplayAllMovie() {
                                 />
                                 <div className={classes.helperTextStyle}>{error.description}</div>
                             </FormControl>
-
                         </Grid>
                         <Grid size={4}>
                             <FormControl component="fieldset">
@@ -557,7 +971,6 @@ export default function DisplayAllMovie() {
                                 </RadioGroup>
                             </FormControl>
                         </Grid>
-
                         <Grid size={8}>
                             <FormControl error={error.quality} onFocus={() => handleErrorMessage('quality', null)} fullWidth>
                                 <FormLabel>Quality</FormLabel>
@@ -570,10 +983,8 @@ export default function DisplayAllMovie() {
                                 <FormHelperText>{error.quality}</FormHelperText>
                             </FormControl>
                         </Grid>
-
-                        {/* Render quality inputs based on selected contentType */}
-                        {handleQuality()}
-
+                        {/* Render dynamic quality inputs */}
+                        {handleQualityInputs()}
                         <Grid size={6}>
                             <Button variant="contained" onClick={handleClick} fullWidth>Submit</Button>
                         </Grid>
@@ -586,296 +997,43 @@ export default function DisplayAllMovie() {
         )
     }
 
-    const handleImageChange = (e) => {
-        const file = e.target.files[0]
-        if (file) {
-            setImage({ filename: URL.createObjectURL(file), bytes: file })
-            handleErrorMessage('image', null)
-        }
-    }
-    const handleImageSave = async () => {
-
-        var formData = new FormData()
-        formData.append('movieid', movieId)
-        formData.append('image', image.bytes)
-
-        var result = await postData('movie/update_icon', formData)
-        if (result.status) {
-            Swal.fire({
-                icon: "success",
-                title: "Movie Register",
-                text: result.message,
-                toast: true
-            });
-            fetchAllMovies()
-        }
-        else {
-            Swal.fire({
-                icon: "error",
-                title: "Movie Register",
-                text: result.message,
-                toast: true
-            });
-        }
-    }
-
-    const pictureForm = () => {
-        return (
-            <div className={classes.box2}>
-                <div className={classes.title}>
-                    <img className={classes.image} src='/logo.png' />
-                    <div className={classes.name}>Edit Image</div>
-                    <img src="/verification.png" style={{ height: '8vh' }}></img>
-                </div>
-                <div style={{ margin: 10 }}>
-                    <Grid container spacing={2}>
-                        <Grid size={6}  >
-                            <img style={{ margin: 0 }} src={image.filename} width={150} />
-                        </Grid>
-                        <Grid size={6}  >
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 50, flexDirection: 'column' }}>
-                                <Button fullWidth component="label" variant="outlined">
-                                    Upload Image
-                                    <input onChange={handleImageChange} onFocus={() => handleErrorMessage(image, '')} type="file" accept="image/*" hidden multiple />
-                                </Button>
-                                <div className={classes.helperTextStyle}>{error.image}</div>
-                            </div>
-                        </Grid>
-                        <Grid size={6}>
-                            <Button variant="contained" onClick={handleImageSave} fullWidth>Submit</Button>
-                        </Grid>
-                        <Grid size={6}>
-                            <Button variant="contained" onClick={handleReset} fullWidth>Reset</Button>
-                        </Grid>
-                    </Grid>
-                </div>
-            </div>
-        )
-    }
-    const handleRemoveScreenshot = (index) => {
-        setScreenshot(prev => prev.filter((_, i) => i !== index));
-    };
-    const handleMultipleImage = (e) => {
-        const newFiles = Array.from(e.target.files);
-        // Replace existing screenshots with new ones
-        setScreenshot(newFiles);
-        handleErrorMessage('screenshot', null);
-    };
-    const showImage = () => {
-        if (screenshot.length === 0) {
-            return (
-                <div style={{ margin: 2 }}>
-                    <img src="/film.png" style={{ width: 50, height: 'auto' }} />
-                </div>
-            );
-        }
-
-        return (
-            <ImageList sx={{ width: '100%', height: 300 }} cols={3} rowHeight={164}>
-                {screenshot.map((item, index) => {
-                    const src = item instanceof File
-                        ? URL.createObjectURL(item)
-                        : `${serverURL}/images/${item}`;
-
-                    return (
-                        <ImageListItem key={index}>
-                            <img
-                                src={src}
-                                alt={`screenshot-${index}`}
-                                loading="lazy"
-                                style={{ objectFit: 'cover' }}
-                            />
-                            <ImageListItemBar
-                                position="top"
-                                actionIcon={
-                                    <IconButton
-                                        sx={{ color: 'white' }}
-                                        onClick={() => handleRemoveScreenshot(index)}
-                                    >
-                                        <DeleteIcon />
-                                    </IconButton>
-                                }
-                                actionPosition="right"
-                            />
-                        </ImageListItem>
-                    );
-                })}
-            </ImageList>
-        );
-    };
-    const handleScreenshotSave = async () => {
-        try {
-            // 1. Validate movieId
-            if (!movieId) {
-                throw new Error('Movie ID is missing');
-            }
-
-            // 2. Prepare FormData
-            const formData = new FormData();
-            formData.append('movieid', movieId);
-
-            // 3. Process screenshots
-            const existingScreenshots = screenshot.filter(item => typeof item === 'string');
-            const newScreenshots = screenshot.filter(item => item instanceof File);
-
-            // 4. Add existing screenshots
-            if (existingScreenshots.length > 0) {
-                formData.append('existingScreenshots', existingScreenshots.join(','));
-            }
-
-            // 5. Add new screenshots
-            newScreenshots.forEach(file => {
-                formData.append('screenshots', file);
-            });
-
-            // 6. Make API call
-            const result = await postData('movie/update_screenshots', formData);
-
-            if (!result) {
-                throw new Error('No response from server');
-            }
-
-            if (result.status) {
-                Swal.fire({
-                    icon: "success",
-                    title: "Success",
-                    text: result.message || 'Screenshots updated',
-                    toast: true
-                });
-                fetchAllMovies();
-                setOpen(false);
-            } else {
-                throw new Error(result.message || 'Upload failed');
-            }
-        } catch (error) {
-            console.error("Upload error:", error);
-            Swal.fire({
-                icon: "error",
-                title: "Upload Failed",
-                text: error.message || 'An unknown error occurred',
-                toast: true
-            });
-        }
-    };
-    const screenshotForm = () => {
-        return (
-            <div className={classes.box2}>
-                <div className={classes.title}>
-                    <img className={classes.image} src='/logo.png' />
-                    <div className={classes.name}>Edit ScreenShots</div>
-                    <img src="/verification.png" style={{ height: '8vh' }}></img>
-                </div>
-                <div style={{ margin: 10 }}>
-                    <Grid container spacing={2}>
-                        <Grid item xs={12}>
-                            {showImage()}
-                        </Grid>
-                        <Grid item xs={12}>
-                            <Button
-                                fullWidth
-                                component="label"
-                                variant="outlined"
-                                startIcon={<AddIcon />}
-                            >
-                                Upload New ScreenShots
-                                <input
-                                    onFocus={() => handleErrorMessage(screenshot, '')}
-                                    onChange={handleMultipleImage}
-                                    type="file"
-                                    accept="image/*"
-                                    hidden
-                                    multiple
-                                />
-                            </Button>
-                            <FormHelperText error={!!error.screenshot}>
-                                {error.screenshot || 'New uploads will replace existing screenshots'}
-                            </FormHelperText>
-                        </Grid>
-                        <Grid item xs={6}>
-                            <Button
-                                variant="contained"
-                                onClick={handleScreenshotSave}
-                                fullWidth
-                                disabled={screenshot.length === 0}
-                            >
-                                Save Changes
-                            </Button>
-                        </Grid>
-                        <Grid item xs={6}>
-                            <Button
-                                variant="outlined"
-                                onClick={handleCloseDialog}
-                                fullWidth
-                            >
-                                Cancel
-                            </Button>
-                        </Grid>
-                    </Grid>
-                </div>
-            </div>
-        );
-    };
-
-
-    const handleReset = () => {
-        setCategoryId('');
-        setName('');
-        setYear('');
-        setSelectedLanguage([]);
-        setSelectedGenres([]);
-        setDescription('');
-        setQuality('');
-        setLink480P('');
-        setSize480P('');
-        setLink720P('');
-        setSize720P('');
-        setLink1080P('');
-        setSize1080P('');
-        setLink4k('');
-        setSize4k('');
-        setImage({ filename: '/film.png', bytes: '' });
-        setScreenshot([]);
-
-    };
-
     function DisplayAll() {
         return (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100vw', height: '100vh',marginTop:10 }}>
-                <div style={{ padding: 10, margin: 10 }}>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100vw', height: 'auto', marginTop: 10 }}>
+                <div style={{ padding: 10, margin: 10, maxWidth: '95vw' }}>
                     <MaterialTable
-                        title="Movie"
+                        title="Movies and Series"
                         columns={[
                             { title: 'ID', field: 'movieid', width: '3%' },
                             { title: 'Category', field: 'categoryname', width: '7%' },
-                            { title: 'Name', field: 'name', width: '5%' },
-                            { title: 'Title', field: 'title', width: '10%' },
+                            { title: 'Name', field: 'name', width: '7%' },
+                            { title: 'Title', field: 'title', width: '12%' },
                             { title: 'Language', field: 'language', width: '10%' },
-                            { title: 'Year', field: 'year', width: '4%' },
-                            { title: 'Genre', field: 'genre', width: '18%' },
+                            { title: 'Year', field: 'year', width: '5%' },
+                            { title: 'Genre', field: 'genre', width: '15%' },
                             { title: 'Quality', field: 'quality', width: '5%' },
-                            { title: 'Content', field: 'content', width: '5%' },
+                            { title: 'Content', field: 'content', width: '7%' },
                             {
                                 title: 'Links',
+                                field: 'eplinks',
                                 render: (rowData) => {
                                     const { eplinks } = rowData;
 
-                                    // If eplinks is null/undefined, show fallback
-                                    if (!eplinks) return <div>
-                                        <div>{rowData.link480p}</div>
-                                        <div>{rowData.link720p}</div>
-                                        <div>{rowData.link1080p}</div>
-                                        <div>{rowData.link4k}</div>
-                                    </div>;
+                                    if (!eplinks) {
+                                        return (
+                                            <div>
+                                                <div>{rowData.link480p}</div>
+                                                <div>{rowData.link720p}</div>
+                                                <div>{rowData.link1080p}</div>
+                                                <div>{rowData.link4k}</div>
+                                            </div>
+                                        );
+                                    }
 
-                                    // Try to parse JSON if possible, otherwise treat as plain string
                                     let linksArray = null;
-
                                     try {
                                         if (typeof eplinks === 'string') {
-                                            // Try parse JSON
                                             linksArray = JSON.parse(eplinks);
-
-                                            // If parsed is not array, fallback to plain string output
                                             if (!Array.isArray(linksArray)) {
                                                 linksArray = null;
                                             }
@@ -883,19 +1041,17 @@ export default function DisplayAllMovie() {
                                             linksArray = eplinks;
                                         }
                                     } catch {
-                                        // JSON parse failed — treat as plain string
                                         linksArray = null;
                                     }
 
                                     if (linksArray) {
-                                        // Render JSON array links
                                         return (
                                             <div>
                                                 {linksArray.map((item, index) => (
-                                                    <div key={index} style={{ marginBottom: '10px' }}>
-                                                        {item.link480P && <div>480p: {item.link480P}</div>}
-                                                        {item.link720P && <div>720p: {item.link720P}</div>}
-                                                        {item.link1080P && <div>1080p: {item.link1080P}</div>}
+                                                    <div key={index} style={{ marginBottom: '5px' }}>
+                                                        {item.link480P && <div>480P: {item.link480P}</div>}
+                                                        {item.link720P && <div>720P: {item.link720P}</div>}
+                                                        {item.link1080P && <div>1080P: {item.link1080P}</div>}
                                                         {item.link4k && <div>4K: {item.link4k}</div>}
                                                         {item.size480P && <div>Size: {item.size480P}</div>}
                                                     </div>
@@ -903,27 +1059,37 @@ export default function DisplayAllMovie() {
                                             </div>
                                         );
                                     } else {
-                                        // Render plain string directly
-                                        return <div>
-                                            <div>{rowData.link480p}</div>
-                                            <div>{rowData.link720p}</div>
-                                            <div>{rowData.link1080p}</div>
-                                            <div>{rowData.link4k}</div>
-                                        </div>
+                                        return (
+                                            <div>
+                                                <div>{rowData.link480p}</div>
+                                                <div>{rowData.link720p}</div>
+                                                <div>{rowData.link1080p}</div>
+                                                <div>{rowData.link4k}</div>
+                                            </div>
+                                        );
                                     }
                                 }
-                            }
-                            ,
+                            },
                             {
-                                title: 'Sizes', width: '5%', render: (rowData) =>
+                                title: 'Sizes',
+                                width: '5%',
+                                render: (rowData) => (
                                     <div>
                                         <div>{rowData.size480p}</div>
                                         <div>{rowData.size720p}</div>
                                         <div>{rowData.size1080p}</div>
                                         <div>{rowData.size4k}</div>
                                     </div>
+                                )
                             },
-                            { title: 'Image', width: '4%', render: (rowData) => <div style={{ cursor: 'pointer' }} onClick={() => handleOpenDialog(rowData, 'image')}><img src={`${serverURL}/images/${rowData.image}`} style={{ width: 40, height: 40, borderRadius: 10 }} /></div> },
+                            {
+                                title: 'Image',
+                                width: '4%',
+                                render: (rowData) =>
+                                    <div style={{ cursor: 'pointer' }} onClick={() => handleOpenDialog(rowData, 'image')}>
+                                        <img src={`${serverURL}/images/${rowData.image}`} alt="movie" style={{ width: 40, height: 40, borderRadius: 10 }} />
+                                    </div>
+                            },
                             {
                                 title: 'Screenshots',
                                 render: (rowData) => {
@@ -941,8 +1107,8 @@ export default function DisplayAllMovie() {
                                                     <img
                                                         key={index}
                                                         src={`${serverURL}/images/${item}`}
-                                                        style={{ width: 40, height: 40, borderRadius: 10 }}
                                                         alt={`screenshot-${index}`}
+                                                        style={{ width: 40, height: 40, borderRadius: 10 }}
                                                     />
                                                 ))}
                                             </div>
@@ -956,7 +1122,7 @@ export default function DisplayAllMovie() {
                         actions={[
                             {
                                 icon: () => <EditIcon />,
-                                tooltip: 'Edit Movies',
+                                tooltip: 'Edit Movie',
                                 onClick: (event, rowData) => handleOpenDialog(rowData, 'data')
                             },
                             {
@@ -971,7 +1137,6 @@ export default function DisplayAllMovie() {
                                 onClick: () => navigate('/movieinterface')
                             }
                         ]}
-
                     />
                 </div>
             </div>
@@ -986,3 +1151,4 @@ export default function DisplayAllMovie() {
         </div>
     )
 }
+

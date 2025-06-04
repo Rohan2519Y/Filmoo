@@ -39,7 +39,7 @@ export default function MovieInterface() {
     const [error, setError] = useState({})
     
     // New season-based state variables
-    const [numberOfSeasons, setNumberOfSeasons] = useState(1);
+    const [numberOfSeasons, setNumberOfSeasons] = useState([]);
     const [seasonsData, setSeasonsData] = useState([]);
 
     const genresList = [
