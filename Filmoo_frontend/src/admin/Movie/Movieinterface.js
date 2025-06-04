@@ -28,7 +28,6 @@ export default function MovieInterface() {
     const [link4k, setLink4k] = useState('')
     const [size4k, setSize4k] = useState('')
     const [description, setDescription] = useState('')
-    const [zip, setZip] = useState('')
     const [screenshot, setScreenshot] = useState([])
     const [image, setImage] = useState({ filename: '/film.png', bytes: '' })
     const [quality, setQuality] = useState('')
@@ -38,7 +37,7 @@ export default function MovieInterface() {
     const [contentType, setContentType] = useState("movie");
     const [error, setError] = useState({})
     
-    // New season-based state variables
+    // Updated season-based state variables with per-season zip link
     const [numberOfSeasons, setNumberOfSeasons] = useState([]);
     const [seasonsData, setSeasonsData] = useState([]);
 
@@ -80,9 +79,9 @@ export default function MovieInterface() {
     }, [])
 
     const fillCategory = () => {
-        return (categoryList.map((item) => {
-            return <MenuItem key={item.categoryid} value={item.categoryid}>{item.categoryname}</MenuItem>
-        }))
+        return (categoryList.map((item) => (
+            <MenuItem key={item.categoryid} value={item.categoryid}>{item.categoryname}</MenuItem>
+        )))
     }
 
     const handleErrorMessage = (label, errorMessage) => {
@@ -99,13 +98,14 @@ export default function MovieInterface() {
         }
         setNumberOfSeasons(val);
         
-        // Initialize seasons data
+        // Initialize seasons data if needed
         let seasons = [...seasonsData];
         while (seasons.length < val) {
             seasons.push({
                 seasonNumber: seasons.length + 1,
                 numberOfEpisodes: 1,
-                episodesLinks: [{}]
+                episodesLinks: [{}],
+                zip: ''
             });
         }
         while (seasons.length > val) {
@@ -122,7 +122,6 @@ export default function MovieInterface() {
         } else {
             val = parseInt(val);
         }
-
         let seasons = [...seasonsData];
         seasons[seasonIndex].numberOfEpisodes = val;
         
@@ -148,46 +147,53 @@ export default function MovieInterface() {
         setSeasonsData(seasons);
     }
 
+    // Handle zip link change per season
+    const handleSeasonZipChange = (seasonIndex, value) => {
+        let seasons = [...seasonsData];
+        seasons[seasonIndex].zip = value;
+        setSeasonsData(seasons);
+    }
+
     const handleClick = async () => {
-        let err = false
-        if (categoryId.length == 0) {
-            err = true
-            handleErrorMessage('categoryId', 'Please Select Category...')
+        let err = false;
+        if (categoryId.length === 0) {
+            err = true;
+            handleErrorMessage('categoryId', 'Please Select Category...');
         }
-        if (name.length == 0) {
-            err = true
-            handleErrorMessage('name', 'Please Input Name...')
+        if (name.length === 0) {
+            err = true;
+            handleErrorMessage('name', 'Please Input Name...');
         }
-        if (year.length == 0) {
-            err = true
-            handleErrorMessage('year', 'Please Input Year...')
+        if (year.length === 0) {
+            err = true;
+            handleErrorMessage('year', 'Please Input Year...');
         }
-        if (title.length == 0) {
-            err = true
-            handleErrorMessage('title', 'Please Input Title...')
+        if (title.length === 0) {
+            err = true;
+            handleErrorMessage('title', 'Please Input Title...');
         }
-        if (selectedLanguage.length == 0) {
-            err = true
-            handleErrorMessage('selectedLanguage', 'Please Select Language...')
+        if (selectedLanguage.length === 0) {
+            err = true;
+            handleErrorMessage('selectedLanguage', 'Please Select Language...');
         }
-        if (selectedGenres.length == 0) {
-            err = true
-            handleErrorMessage('selectedGenres', 'Please Select Genre...')
+        if (selectedGenres.length === 0) {
+            err = true;
+            handleErrorMessage('selectedGenres', 'Please Select Genre...');
         }
-        if (description.length == 0) {
-            err = true
-            handleErrorMessage('description', 'Please Input Description...')
+        if (description.length === 0) {
+            err = true;
+            handleErrorMessage('description', 'Please Input Description...');
         }
-        if (quality.length == 0) {
-            err = true
-            handleErrorMessage('quality', 'Please Select Quality...')
+        if (quality.length === 0) {
+            err = true;
+            handleErrorMessage('quality', 'Please Select Quality...');
         }
-        if (image.bytes.length == 0) {
-            err = true
+        if (image.bytes.length === 0) {
+            err = true;
             handleErrorMessage("image", 'Please Select Image')
         }
-        if (screenshot.length == 0) {
-            err = true
+        if (screenshot.length === 0) {
+            err = true;
             handleErrorMessage('screenshot', 'Please Upload Screenshot')
         }
 
@@ -196,7 +202,17 @@ export default function MovieInterface() {
             for (let seasonIndex = 0; seasonIndex < numberOfSeasons; seasonIndex++) {
                 const season = seasonsData[seasonIndex];
                 if (!season) continue;
-                
+
+                // Validate zip link for season
+                if (!season.zip || season.zip.trim() === '') {
+                    err = true;
+                    Swal.fire({
+                        icon: 'error',
+                        title: `Zip link is required for Season ${seasonIndex + 1}`
+                    });
+                    break;
+                }
+
                 for (let episodeIndex = 0; episodeIndex < season.numberOfEpisodes; episodeIndex++) {
                     let episode = season.episodesLinks[episodeIndex] || {};
                     switch (quality) {
@@ -251,7 +267,7 @@ export default function MovieInterface() {
             }
         }
 
-        if (err == false) {
+        if (!err) {
             const formData = new FormData();
 
             formData.append('categoryid', categoryId);
@@ -262,8 +278,7 @@ export default function MovieInterface() {
             formData.append('genre', selectedGenres.join(', '));
             formData.append('description', description);
             formData.append('quality', quality);
-            formData.append('zip', zip);
-            formData.append('content', contentType)
+            formData.append('content', contentType);
             
             // For movie normal quality inputs
             if (contentType !== "series") {
@@ -296,6 +311,7 @@ export default function MovieInterface() {
                     text: result.message,
                     toast: true
                 });
+                navigate('/displayallmovie')
             }
             else {
                 Swal.fire({
@@ -325,11 +341,12 @@ export default function MovieInterface() {
         setSize1080P('');
         setLink4k('');
         setSize4k('');
-        setZip('')
         setImage({ filename: '/film.png', bytes: '' });
         setScreenshot([]);
         setNumberOfSeasons(1);
         setSeasonsData([]);
+        setContentType('movie');
+        setError({});
     };
 
     const handleImageChange = (e) => {
@@ -350,14 +367,14 @@ export default function MovieInterface() {
         if (screenshot.length === 0) {
             return (
                 <div style={{ margin: 2 }}>
-                    <img src="/film.png" style={{ width: 50, height: 'auto' }} />
+                    <img src="/film.png" style={{ width: 50, height: 'auto' }} alt="default" />
                 </div>
             );
         }
         return screenshot.map((item, index) => {
             return (
                 <div key={index} style={{ margin: 2 }}>
-                    <img src={URL.createObjectURL(item)} style={{ width: 30, height: 30 }} />
+                    <img src={URL.createObjectURL(item)} style={{ width: 30, height: 30 }} alt={`screenshot-${index}`} />
                 </div>
             );
         });
@@ -378,17 +395,8 @@ export default function MovieInterface() {
                             style={{ marginBottom: 10 }}
                         />
                     </Grid>
-                    <Grid size={3}>
-                        <TextField
-                            label="Zip link"
-                            value={zip}
-                            onChange={(e) => setZip(e.target.value)}
-                            fullWidth
-                            style={{ marginBottom: 10 }}
-                        />
-                    </Grid>
                     
-                    {/* Render seasons */}
+                    {/* Render seasons including new zip link input */}
                     {seasonsData.map((season, seasonIndex) => (
                         <div key={seasonIndex} style={{ 
                             width: '100%', 
@@ -408,6 +416,13 @@ export default function MovieInterface() {
                             </div>
                             
                             <div style={{ marginBottom: '15px' }}>
+                                <TextField
+                                    label={`Zip Link for Season ${seasonIndex + 1}`}
+                                    value={season.zip || ''}
+                                    onChange={(e) => handleSeasonZipChange(seasonIndex, e.target.value)}
+                                    fullWidth
+                                    style={{ marginBottom: 10 }}
+                                />
                                 <TextField
                                     label={`Number of Episodes in Season ${seasonIndex + 1}`}
                                     type="number"
@@ -461,6 +476,7 @@ export default function MovieInterface() {
                             })}
                         </div>
                     ))}
+
                 </>
             )
         } 
@@ -709,3 +725,4 @@ export default function MovieInterface() {
         </div>
     )
 }
+
