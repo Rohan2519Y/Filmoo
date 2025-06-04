@@ -15,8 +15,36 @@ router.post('/insert_movies', upload.fields([{ name: 'image', maxCount: 1 }, { n
         }
         const screenshotString = screenshots.join(', '); 
 
+        // Handle content type and episodes/seasons data
+        const contentType = req.body.content || 'movie';
+        let eplinks = '';
+        let numberep = 0;
+        let numberOfSeasons = 0;
+        
+        // Handle series data
+        if (contentType === 'series' && req.body.seasonsData) {
+            try {
+                const seasonsData = JSON.parse(req.body.seasonsData);
+                numberOfSeasons = parseInt(req.body.numberOfSeasons) || 0;
+                
+                // Convert seasons data to JSON string for storage
+                eplinks = JSON.stringify(seasonsData);
+                
+                // Calculate total episodes across all seasons
+                numberep = seasonsData.reduce((total, season) => {
+                    return total + (season.numberOfEpisodes || 0);
+                }, 0);
+            } catch (parseError) {
+                console.error('Error parsing seasons data:', parseError);
+                return res.status(400).json({ 
+                    status: false, 
+                    message: 'Invalid seasons data format' 
+                });
+            }
+        }
+
         pool.query(
-            'INSERT INTO movie (categoryid, name, language, year, image, screenshot, genre, description, quality,link480p, link720p, link1080p, link4k, size480p, size720p, size1080p, size4k,title,zip,eplinks,numberep,content) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+            'INSERT INTO movie (categoryid, name, language, year, image, screenshot, genre, description, quality, link480p, link720p, link1080p, link4k, size480p, size720p, size1080p, size4k, title, zip, eplinks, numberep, content, numberOfSeasons) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
             [
                 req.body.categoryid,
                 req.body.name,
@@ -37,16 +65,17 @@ router.post('/insert_movies', upload.fields([{ name: 'image', maxCount: 1 }, { n
                 req.body.size4k || null,
                 req.body.title,
                 req.body.zip || null,
-                req.body.eplinks,
-                req.body.numberep,
-                req.body.content
+                eplinks,
+                numberep,
+                contentType,
+                numberOfSeasons
             ],
             function (error, result) {
                 if (error) {
                     console.error('Database Error:', error);
                     return res.status(200).json({ status: false, message: 'Database Error, Please Contact Backend Team' });
                 }
-                res.status(200).json({ status: true, message: 'Movie Added Successfully' });
+                res.status(200).json({ status: true, message: `${contentType === 'series' ? 'Series' : 'Movie'} Added Successfully` });
             }
         );
     }
@@ -63,7 +92,20 @@ router.get('/fetch_movies', function (req, res, next) {
                 res.status(200).json({ status: false, message: 'Database Error,Pls Contact Backend Team' })
             }
             else {
-                res.status(200).json({ status: true, message: 'Success..', data: result })
+                // Parse eplinks for series content
+                const processedResult = result.map(item => {
+                    if (item.content === 'series' && item.eplinks) {
+                        try {
+                            item.seasonsData = JSON.parse(item.eplinks);
+                        } catch (parseError) {
+                            console.error('Error parsing eplinks for movie ID:', item.movieid, parseError);
+                            item.seasonsData = [];
+                        }
+                    }
+                    return item;
+                });
+                
+                res.status(200).json({ status: true, message: 'Success..', data: processedResult })
             }
         })
     }
@@ -74,6 +116,36 @@ router.get('/fetch_movies', function (req, res, next) {
 
 router.post('/edit_movies', function (req, res, next) {
     try {
+        // Handle content type and episodes/seasons data
+        const contentType = req.body.content || 'movie';
+        let eplinks = '';
+        let numberep = 0;
+        let numberOfSeasons = 0;
+        
+        // Handle series data
+        if (contentType === 'series' && req.body.seasonsData) {
+            try {
+                const seasonsData = typeof req.body.seasonsData === 'string' 
+                    ? JSON.parse(req.body.seasonsData) 
+                    : req.body.seasonsData;
+                numberOfSeasons = parseInt(req.body.numberOfSeasons) || 0;
+                
+                // Convert seasons data to JSON string for storage
+                eplinks = JSON.stringify(seasonsData);
+                
+                // Calculate total episodes across all seasons
+                numberep = seasonsData.reduce((total, season) => {
+                    return total + (season.numberOfEpisodes || 0);
+                }, 0);
+            } catch (parseError) {
+                console.error('Error parsing seasons data:', parseError);
+                return res.status(400).json({ 
+                    status: false, 
+                    message: 'Invalid seasons data format' 
+                });
+            }
+        }
+
         pool.query(
             `UPDATE movie SET 
                 categoryid = ?, 
@@ -91,33 +163,35 @@ router.post('/edit_movies', function (req, res, next) {
                 size720p = ?, 
                 size1080p = ?, 
                 size4k = ?,
-                title=?,
-                zip=?,
-                eplinks=?,
-                numberep=?,
-                content=? 
+                title = ?,
+                zip = ?,
+                eplinks = ?,
+                numberep = ?,
+                content = ?,
+                numberOfSeasons = ?
             WHERE movieid = ?`,
             [
                 req.body.categoryid,
                 req.body.name,
-                req.body.language.join(', '),
+                Array.isArray(req.body.language) ? req.body.language.join(', ') : req.body.language,
                 req.body.year,
-                req.body.genre.join(', '),
+                Array.isArray(req.body.genre) ? req.body.genre.join(', ') : req.body.genre,
                 req.body.description,
                 req.body.quality,
-                req.body.link480p,
-                req.body.link720p,
-                req.body.link1080p,
-                req.body.link4k,
-                req.body.size480p,
-                req.body.size720p,
-                req.body.size1080p,
-                req.body.size4k,
+                req.body.link480p || null,
+                req.body.link720p || null,
+                req.body.link1080p || null,
+                req.body.link4k || null,
+                req.body.size480p || null,
+                req.body.size720p || null,
+                req.body.size1080p || null,
+                req.body.size4k || null,
                 req.body.title,
-                req.body.zip,
-                req.body.eplinks,
-                req.body.numberep,
-                req.body.content,
+                req.body.zip || null,
+                eplinks,
+                numberep,
+                contentType,
+                numberOfSeasons,
                 req.body.movieid
             ], function (error, result) {
                 if (error) {
@@ -126,13 +200,113 @@ router.post('/edit_movies', function (req, res, next) {
                 }
                 else {
                     console.log(result)
-                    res.status(200).json({ status: true, message: 'Movie Updated Successfully..' })
+                    res.status(200).json({ status: true, message: `${contentType === 'series' ? 'Series' : 'Movie'} Updated Successfully..` })
                 }
             })
     }
     catch (e) {
         console.log(e)
         res.status(200).json({ status: false, message: 'Critical Error,Pls Contact Server Administrator' })
+    }
+});
+
+// New route to get series episodes by season
+router.get('/fetch_series_episodes/:movieid', function (req, res, next) {
+    try {
+        const movieid = req.params.movieid;
+        
+        pool.query('SELECT eplinks, numberOfSeasons, content FROM movie WHERE movieid = ?', [movieid], function (error, result) {
+            if (error) {
+                res.status(200).json({ status: false, message: 'Database Error,Pls Contact Backend Team' })
+            }
+            else if (result.length === 0) {
+                res.status(200).json({ status: false, message: 'Movie/Series not found' })
+            }
+            else {
+                const movie = result[0];
+                if (movie.content === 'series' && movie.eplinks) {
+                    try {
+                        const seasonsData = JSON.parse(movie.eplinks);
+                        res.status(200).json({ 
+                            status: true, 
+                            message: 'Success..', 
+                            data: {
+                                seasonsData: seasonsData,
+                                numberOfSeasons: movie.numberOfSeasons
+                            }
+                        })
+                    } catch (parseError) {
+                        console.error('Error parsing eplinks:', parseError);
+                        res.status(200).json({ status: false, message: 'Error parsing series data' })
+                    }
+                } else {
+                    res.status(200).json({ status: false, message: 'This is not a series or has no episode data' })
+                }
+            }
+        })
+    }
+    catch (e) {
+        res.status(200).json({ status: false, message: 'Critical Error,Pls Contact Server Administrator' })
+    }
+});
+
+// New route to update specific episode links
+router.post('/update_episode', function (req, res, next) {
+    try {
+        const { movieid, seasonIndex, episodeIndex, episodeData } = req.body;
+        
+        if (!movieid || seasonIndex === undefined || episodeIndex === undefined || !episodeData) {
+            return res.status(400).json({ 
+                status: false, 
+                message: 'Missing required parameters' 
+            });
+        }
+        
+        // First, get the current eplinks data
+        pool.query('SELECT eplinks FROM movie WHERE movieid = ?', [movieid], function (error, result) {
+            if (error) {
+                return res.status(200).json({ status: false, message: 'Database Error,Pls Contact Backend Team' });
+            }
+            
+            if (result.length === 0) {
+                return res.status(200).json({ status: false, message: 'Movie/Series not found' });
+            }
+            
+            try {
+                let seasonsData = JSON.parse(result[0].eplinks || '[]');
+                
+                // Update the specific episode
+                if (seasonsData[seasonIndex] && seasonsData[seasonIndex].episodesLinks) {
+                    seasonsData[seasonIndex].episodesLinks[episodeIndex] = {
+                        ...seasonsData[seasonIndex].episodesLinks[episodeIndex],
+                        ...episodeData
+                    };
+                    
+                    // Update the database
+                    pool.query(
+                        'UPDATE movie SET eplinks = ? WHERE movieid = ?',
+                        [JSON.stringify(seasonsData), movieid],
+                        function (updateError, updateResult) {
+                            if (updateError) {
+                                console.error('Update Error:', updateError);
+                                res.status(200).json({ status: false, message: 'Database Error,Pls Contact Backend Team' });
+                            } else {
+                                res.status(200).json({ status: true, message: 'Episode updated successfully' });
+                            }
+                        }
+                    );
+                } else {
+                    res.status(400).json({ status: false, message: 'Invalid season or episode index' });
+                }
+            } catch (parseError) {
+                console.error('Parse Error:', parseError);
+                res.status(500).json({ status: false, message: 'Error parsing series data' });
+            }
+        });
+    }
+    catch (e) {
+        console.error('Critical Error:', e);
+        res.status(500).json({ status: false, message: 'Critical Error,Pls Contact Server Administrator' });
     }
 });
 
@@ -149,7 +323,7 @@ router.post('/update_icon', upload.single('image'), function (req, res, next) {
         })
     }
     catch (e) {
-        console.log("EE", error)
+        console.log("EE", e)
         res.status(200).json({ status: false, message: 'Critical Error,Pls Contact Server Administrator' })
     }
 });
@@ -217,28 +391,23 @@ router.post('/update_screenshots', upload.array('screenshots'), async (req, res)
         });
     }
 });
-router.post('/delete_movie', function (req, res, next) {
 
+router.post('/delete_movie', function (req, res, next) {
     try {
         pool.query("delete from movie where movieid=?", [req.body.movieid], function (error, result) {
-
             if (error) {
                 console.log(error);
                 res.status(200).json({ status: false, message: "Database Error, Pls Contact Backend Team" })
             }
             else {
-                res.status(200).json({ status: true, message: "Movie Sucessfully Deleted" })
+                res.status(200).json({ status: true, message: "Movie/Series Successfully Deleted" })
             }
-
         })
-
     }
-
     catch (e) {
-        console.log(error);
+        console.log(e);
         res.status(200).json({ status: false, message: "Critical Error, Pls Contact Server Administrator" })
     }
-
 });
 
 module.exports = router;
