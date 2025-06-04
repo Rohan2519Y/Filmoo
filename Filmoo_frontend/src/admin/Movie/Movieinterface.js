@@ -11,6 +11,7 @@ import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
 import FormHelperText from '@mui/material/FormHelperText';
 import Swal from "sweetalert2";
+
 export default function MovieInterface() {
     const classes = useStyles()
     const navigate = useNavigate()
@@ -37,14 +38,16 @@ export default function MovieInterface() {
     const [contentType, setContentType] = useState("movie");
     const [error, setError] = useState({})
     
-    const [numberOfEpisodes, setNumberOfEpisodes] = useState(1);
-    const [episodesLinks, setEpisodesLinks] = useState([]);
+    // New season-based state variables
+    const [numberOfSeasons, setNumberOfSeasons] = useState(1);
+    const [seasonsData, setSeasonsData] = useState([]);
 
     const genresList = [
         "Action", "Adventure", "Animation", "Biography", "Comedy", "Crime", "Documentary",
         "Drama", "Family", "Fantasy", "Historical", "Horror", "Music", "Mystery",
         "Romance", "Sci-Fi", "Sport", "Thriller", "War", "Western"
     ];
+
     const handleGenreChange = (event) => {
         const value = event.target.name;
         if (selectedGenres.includes(value)) {
@@ -57,6 +60,7 @@ export default function MovieInterface() {
     const languageList = [
         'Hindi', 'English', 'Tamil', 'Telgu', 'Gujarati', 'Marathi', 'Japanese', 'Chinese'
     ]
+
     const handleLanguageChange = (e) => {
         const value = e.target.name
         if (selectedLanguage.includes(value)) {
@@ -70,9 +74,11 @@ export default function MovieInterface() {
         var res = await getData("category/fetch_categories")
         setCategoryList(res.data)
     }
+
     useEffect(function () {
         fetchAllCategory()
     }, [])
+
     const fillCategory = () => {
         return (categoryList.map((item) => {
             return <MenuItem key={item.categoryid} value={item.categoryid}>{item.categoryname}</MenuItem>
@@ -83,29 +89,66 @@ export default function MovieInterface() {
         setError((prev) => ({ ...prev, [label]: errorMessage }))
     }
 
-    const handleNumberOfEpisodesChange = (e) => {
+    // Handle number of seasons change
+    const handleNumberOfSeasonsChange = (e) => {
         let val = e.target.value;
         if (!val || val < 1) {
             val = 1;
         } else {
             val = parseInt(val);
         }
-        setNumberOfEpisodes(val);
-        let arr = [...episodesLinks];
-        while (arr.length < val) arr.push({});
-        while (arr.length > val) arr.pop();
-        setEpisodesLinks(arr);
+        setNumberOfSeasons(val);
+        
+        // Initialize seasons data
+        let seasons = [...seasonsData];
+        while (seasons.length < val) {
+            seasons.push({
+                seasonNumber: seasons.length + 1,
+                numberOfEpisodes: 1,
+                episodesLinks: [{}]
+            });
+        }
+        while (seasons.length > val) {
+            seasons.pop();
+        }
+        setSeasonsData(seasons);
     }
 
-    const handleEpisodeFieldChange = (index, field, value) => {
-        let arr = [...episodesLinks];
-        if (!arr[index]) arr[index] = {};
-        arr[index][field] = value;
-        setEpisodesLinks(arr);
+    // Handle episodes per season change
+    const handleEpisodesPerSeasonChange = (seasonIndex, numberOfEpisodes) => {
+        let val = numberOfEpisodes;
+        if (!val || val < 1) {
+            val = 1;
+        } else {
+            val = parseInt(val);
+        }
+
+        let seasons = [...seasonsData];
+        seasons[seasonIndex].numberOfEpisodes = val;
+        
+        // Initialize episodes for this season
+        let episodes = [...(seasons[seasonIndex].episodesLinks || [])];
+        while (episodes.length < val) {
+            episodes.push({});
+        }
+        while (episodes.length > val) {
+            episodes.pop();
+        }
+        seasons[seasonIndex].episodesLinks = episodes;
+        setSeasonsData(seasons);
+    }
+
+    // Handle episode field change
+    const handleEpisodeFieldChange = (seasonIndex, episodeIndex, field, value) => {
+        let seasons = [...seasonsData];
+        if (!seasons[seasonIndex].episodesLinks[episodeIndex]) {
+            seasons[seasonIndex].episodesLinks[episodeIndex] = {};
+        }
+        seasons[seasonIndex].episodesLinks[episodeIndex][field] = value;
+        setSeasonsData(seasons);
     }
 
     const handleClick = async () => {
-
         let err = false
         if (categoryId.length == 0) {
             err = true
@@ -148,54 +191,61 @@ export default function MovieInterface() {
             handleErrorMessage('screenshot', 'Please Upload Screenshot')
         }
 
+        // Validation for series with seasons
         if (contentType === "series") {
-            for (let i = 0; i < numberOfEpisodes; i++) {
-                let ep = episodesLinks[i] || {};
-                switch (quality) {
-                    case "480P":
-                        if (!ep.link480P || !ep.size480P) {
-                            err = true;
-                            Swal.fire({
-                                icon: 'error',
-                                title: `Episode ${i + 1} is missing 480P link or size!`
-                            });
+            for (let seasonIndex = 0; seasonIndex < numberOfSeasons; seasonIndex++) {
+                const season = seasonsData[seasonIndex];
+                if (!season) continue;
+                
+                for (let episodeIndex = 0; episodeIndex < season.numberOfEpisodes; episodeIndex++) {
+                    let episode = season.episodesLinks[episodeIndex] || {};
+                    switch (quality) {
+                        case "480P":
+                            if (!episode.link480P || !episode.size480P) {
+                                err = true;
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: `Season ${seasonIndex + 1}, Episode ${episodeIndex + 1} is missing 480P link or size!`
+                                });
+                                break;
+                            }
                             break;
-                        }
-                        break;
-                    case "720P":
-                        if (!ep.link480P || !ep.size480P || !ep.link720P || !ep.size720P) {
-                            err = true;
-                            Swal.fire({
-                                icon: 'error',
-                                title: `Episode ${i + 1} is missing 480P or 720P link or size!`
-                            });
+                        case "720P":
+                            if (!episode.link480P || !episode.size480P || !episode.link720P || !episode.size720P) {
+                                err = true;
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: `Season ${seasonIndex + 1}, Episode ${episodeIndex + 1} is missing 480P or 720P link or size!`
+                                });
+                                break;
+                            }
                             break;
-                        }
-                        break;
-                    case "1080P":
-                        if (!ep.link480P || !ep.size480P || !ep.link720P || !ep.size720P
-                            || !ep.link1080P || !ep.size1080P) {
-                            err = true;
-                            Swal.fire({
-                                icon: 'error',
-                                title: `Episode ${i + 1} is missing one or more links or sizes for 480P, 720P or 1080P!`
-                            });
+                        case "1080P":
+                            if (!episode.link480P || !episode.size480P || !episode.link720P || !episode.size720P
+                                || !episode.link1080P || !episode.size1080P) {
+                                err = true;
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: `Season ${seasonIndex + 1}, Episode ${episodeIndex + 1} is missing one or more links or sizes for 480P, 720P or 1080P!`
+                                });
+                                break;
+                            }
                             break;
-                        }
-                        break;
-                    case "4K":
-                        if (!ep.link480P || !ep.size480P || !ep.link720P || !ep.size720P
-                            || !ep.link1080P || !ep.size1080P || !ep.link4k || !ep.size4k) {
-                            err = true;
-                            Swal.fire({
-                                icon: 'error',
-                                title: `Episode ${i + 1} is missing one or more links or sizes for 480P, 720P, 1080P, or 4K!`
-                            });
+                        case "4K":
+                            if (!episode.link480P || !episode.size480P || !episode.link720P || !episode.size720P
+                                || !episode.link1080P || !episode.size1080P || !episode.link4k || !episode.size4k) {
+                                err = true;
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: `Season ${seasonIndex + 1}, Episode ${episodeIndex + 1} is missing one or more links or sizes for 480P, 720P, 1080P, or 4K!`
+                                });
+                                break;
+                            }
                             break;
-                        }
-                        break;
-                    default:
-                        break;
+                        default:
+                            break;
+                    }
+                    if (err) break;
                 }
                 if (err) break;
             }
@@ -213,7 +263,7 @@ export default function MovieInterface() {
             formData.append('description', description);
             formData.append('quality', quality);
             formData.append('zip', zip);
-            formData.append('content',contentType)
+            formData.append('content', contentType)
             
             // For movie normal quality inputs
             if (contentType !== "series") {
@@ -226,8 +276,9 @@ export default function MovieInterface() {
                 formData.append('link4k', link4k);
                 formData.append('size4k', size4k);
             } else {
-                formData.append('eplinks', JSON.stringify(episodesLinks));
-                formData.append('numberep', numberOfEpisodes);
+                // For series, send seasons data
+                formData.append('seasonsData', JSON.stringify(seasonsData));
+                formData.append('numberOfSeasons', numberOfSeasons);
             }
 
             if (image.bytes) {
@@ -236,11 +287,12 @@ export default function MovieInterface() {
             screenshot.forEach((file, index) => {
                 formData.append(`screenshot`, file);
             });
+            
             const result = await postData('movie/insert_movies', formData)
             if (result.status) {
                 Swal.fire({
                     icon: "success",
-                    title: "Movie Register",
+                    title: "Movie/Series Register",
                     text: result.message,
                     toast: true
                 });
@@ -248,13 +300,14 @@ export default function MovieInterface() {
             else {
                 Swal.fire({
                     icon: "error",
-                    title: "Movie Register",
+                    title: "Movie/Series Register",
                     text: result.message,
                     toast: true
                 });
             }
         }
     };
+
     const handleReset = () => {
         setCategoryId('');
         setName('');
@@ -275,10 +328,9 @@ export default function MovieInterface() {
         setZip('')
         setImage({ filename: '/film.png', bytes: '' });
         setScreenshot([]);
-        setNumberOfEpisodes(1);
-        setEpisodesLinks([]);
+        setNumberOfSeasons(1);
+        setSeasonsData([]);
     };
-
 
     const handleImageChange = (e) => {
         const file = e.target.files[0]
@@ -287,11 +339,13 @@ export default function MovieInterface() {
             handleErrorMessage('image', null)
         }
     }
+
     const handleMultipleImage = (e) => {
         var images = Object.values(e.target.files)
         setScreenshot(images.length > 0 ? images : []);
         handleErrorMessage('screenshot', null)
     }
+
     const showImage = () => {
         if (screenshot.length === 0) {
             return (
@@ -315,10 +369,10 @@ export default function MovieInterface() {
                 <>
                     <Grid size={3}>
                         <TextField
-                            label="Number of Episodes"
+                            label="Number of Seasons"
                             type="number"
-                            value={numberOfEpisodes}
-                            onChange={handleNumberOfEpisodesChange}
+                            value={numberOfSeasons}
+                            onChange={handleNumberOfSeasonsChange}
                             inputProps={{ min: 1 }}
                             fullWidth
                             style={{ marginBottom: 10 }}
@@ -333,33 +387,80 @@ export default function MovieInterface() {
                             style={{ marginBottom: 10 }}
                         />
                     </Grid>
-                    {
-                        Array.from({ length: numberOfEpisodes }, (_, idx) => {
-                            // which fields to show per quality
-                            const fieldsByQuality = {
-                                '480P': ['link480P', 'size480P'],
-                                '720P': ['link480P', 'size480P', 'link720P', 'size720P'],
-                                '1080P': ['link480P', 'size480P', 'link720P', 'size720P', 'link1080P', 'size1080P'],
-                                '4K': ['link480P', 'size480P', 'link720P', 'size720P', 'link1080P', 'size1080P', 'link4k', 'size4k']
-                            };
-                            const fields = fieldsByQuality[quality] || [];
-                            return (
-                                <div key={idx} style={{ marginBottom: '20px', border: '1px solid #ccc', padding: '10px',display:'flex' }}>
-                                    <div>Episode {idx + 1}:</div>
-                                    {fields.map(field => (
-                                        <Grid size={4} key={field} style={{ marginTop: 10 }}>
-                                            <TextField
-                                                label={field.replace(/link|size/g, (m) => m.toUpperCase())}
-                                                value={(episodesLinks[idx] && episodesLinks[idx][field]) || ''}
-                                                onChange={(e) => handleEpisodeFieldChange(idx, field, e.target.value)}
-                                                fullWidth
-                                            />
-                                        </Grid>
-                                    ))}
-                                </div>
-                            )
-                        })
-                    }
+                    
+                    {/* Render seasons */}
+                    {seasonsData.map((season, seasonIndex) => (
+                        <div key={seasonIndex} style={{ 
+                            width: '100%', 
+                            marginBottom: '30px', 
+                            border: '2px solid #2196F3', 
+                            borderRadius: '8px',
+                            padding: '15px',
+                            backgroundColor: '#f5f5f5'
+                        }}>
+                            <div style={{ 
+                                fontSize: '18px', 
+                                fontWeight: 'bold', 
+                                marginBottom: '15px',
+                                color: '#2196F3'
+                            }}>
+                                Season {seasonIndex + 1}
+                            </div>
+                            
+                            <div style={{ marginBottom: '15px' }}>
+                                <TextField
+                                    label={`Number of Episodes in Season ${seasonIndex + 1}`}
+                                    type="number"
+                                    value={season.numberOfEpisodes}
+                                    onChange={(e) => handleEpisodesPerSeasonChange(seasonIndex, e.target.value)}
+                                    inputProps={{ min: 1 }}
+                                    style={{ width: '300px' }}
+                                />
+                            </div>
+
+                            {/* Render episodes for this season */}
+                            {Array.from({ length: season.numberOfEpisodes }, (_, episodeIndex) => {
+                                const fieldsByQuality = {
+                                    '480P': ['link480P', 'size480P'],
+                                    '720P': ['link480P', 'size480P', 'link720P', 'size720P'],
+                                    '1080P': ['link480P', 'size480P', 'link720P', 'size720P', 'link1080P', 'size1080P'],
+                                    '4K': ['link480P', 'size480P', 'link720P', 'size720P', 'link1080P', 'size1080P', 'link4k', 'size4k']
+                                };
+                                const fields = fieldsByQuality[quality] || [];
+                                
+                                return (
+                                    <div key={episodeIndex} style={{ 
+                                        marginBottom: '15px', 
+                                        border: '1px solid #ccc', 
+                                        borderRadius: '4px',
+                                        padding: '10px',
+                                        backgroundColor: 'white'
+                                    }}>
+                                        <div style={{ 
+                                            fontWeight: 'bold', 
+                                            marginBottom: '10px',
+                                            color: '#666'
+                                        }}>
+                                            Season {seasonIndex + 1} - Episode {episodeIndex + 1}:
+                                        </div>
+                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                                            {fields.map(field => (
+                                                <div key={field} style={{ flex: '1 1 250px', minWidth: '250px' }}>
+                                                    <TextField
+                                                        label={field.replace(/link|size/g, (m) => m.toUpperCase())}
+                                                        value={(season.episodesLinks[episodeIndex] && season.episodesLinks[episodeIndex][field]) || ''}
+                                                        onChange={(e) => handleEpisodeFieldChange(seasonIndex, episodeIndex, field, e.target.value)}
+                                                        fullWidth
+                                                        size="small"
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    ))}
                 </>
             )
         } 
@@ -608,4 +709,3 @@ export default function MovieInterface() {
         </div>
     )
 }
-
