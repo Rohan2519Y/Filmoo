@@ -35,7 +35,9 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "commit": "node tools/auto-commit/run-auto-commit.js",
-    "commit:msg": "node tools/auto-commit/run-auto-commit.js"
+    "commit:msg": "node tools/auto-commit/run-auto-commit.js",
+    "timer": "node tools/auto-commit/timer-runner.js",
+    "timer:help": "node tools/auto-commit/timer-runner.js --help"
   },
   "eslintConfig": {
     "extends": [
