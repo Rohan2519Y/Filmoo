@@ -33,7 +33,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "commit": "node tools/auto-commit/run-auto-commit.js",
+    "commit:msg": "node tools/auto-commit/run-auto-commit.js"
   },
   "eslintConfig": {
     "extends": [
