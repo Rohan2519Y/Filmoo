@@ -14,6 +14,7 @@ class AutoCommitTimer {
             commitCount: 0,
             isRunning: false,
             timerId: null,
+            countdownId: null,
             ...options
         };
     }
@@ -158,7 +159,7 @@ class AutoCommitTimer {
         return true;
     }
 
-    // Start the timer
+    // Start the timer with live countdown
     startTimer() {
         if (this.options.isRunning) {
             console.log('⏰ Timer is already running!');
@@ -177,20 +178,40 @@ class AutoCommitTimer {
         this.options.commitCount = 0;
 
         // Perform initial commit check
-        this.performCommit();
+        this.performCommit().then(() => {
+            this._startCountdownAndTimer();
+        });
+    }
 
-        // Set up recurring timer
-        this.options.timerId = setInterval(async () => {
-            if (this.options.commitCount >= this.options.maxCommits) {
-                console.log(`\n🛑 Maximum commits (${this.options.maxCommits}) reached. Stopping timer.`);
-                this.stopTimer();
-                return;
+    // Internal: start countdown and timer
+    _startCountdownAndTimer() {
+        let remaining = this.options.interval / 1000; // seconds
+        const displayCountdown = () => {
+            const min = Math.floor(remaining / 60);
+            const sec = remaining % 60;
+            process.stdout.write(`\r⏳ Next commit in: ${min}:${sec.toString().padStart(2, '0')}   `);
+        };
+        displayCountdown();
+        this.options.countdownId = setInterval(() => {
+            remaining--;
+            if (remaining <= 0) {
+                clearInterval(this.options.countdownId);
+                process.stdout.write('\r\n');
+                this._runCommitAndRestartCountdown();
+            } else {
+                displayCountdown();
             }
+        }, 1000);
+    }
 
-            await this.performCommit();
-        }, this.options.interval);
-
-        console.log('⏰ Timer started successfully!');
+    // Internal: run commit and restart countdown
+    async _runCommitAndRestartCountdown() {
+        await this.performCommit();
+        if (this.options.isRunning && (this.options.commitCount < this.options.maxCommits)) {
+            this._startCountdownAndTimer();
+        } else {
+            this.stopTimer();
+        }
     }
 
     // Stop the timer
@@ -199,13 +220,16 @@ class AutoCommitTimer {
             console.log('⏰ Timer is not running!');
             return;
         }
-
         if (this.options.timerId) {
             clearInterval(this.options.timerId);
             this.options.timerId = null;
         }
-
+        if (this.options.countdownId) {
+            clearInterval(this.options.countdownId);
+            this.options.countdownId = null;
+        }
         this.options.isRunning = false;
+        process.stdout.write('\r\n');
         console.log(`\n⏹️  Timer stopped! Total commits made: ${this.options.commitCount}`);
     }
 
