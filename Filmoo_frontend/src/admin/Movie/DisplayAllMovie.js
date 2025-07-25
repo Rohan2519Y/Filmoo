@@ -223,12 +223,16 @@ export default function DisplayAllMovie() {
                 let seasons = typeof rowData.seasonsData === 'string'
                     ? JSON.parse(rowData.seasonsData)
                     : rowData.seasonsData;
+
+                // Ensure each season has a zip property
+                seasons = seasons.map(season => ({
+                    ...season,
+                    zip: season.zip || '' // Initialize zip if missing
+                }));
+
                 if (Array.isArray(seasons)) {
                     setSeasonsData(seasons)
                     setNumberOfSeasons(seasons.length > 0 ? seasons.length : 1)
-                } else {
-                    setSeasonsData([])
-                    setNumberOfSeasons(1)
                 }
             } catch (error) {
                 console.error('Error parsing seasonsData:', error);
@@ -265,111 +269,120 @@ export default function DisplayAllMovie() {
     }
 
     const handleClick = async () => {
-        let err = false
-        if (categoryId.length === 0) {
-            err = true
-            handleErrorMessage('categoryId', 'Please Select Category...')
-        }
-        if (name.length === 0) {
-            err = true
-            handleErrorMessage('name', 'Please Input Name...')
-        }
-        if (year.length === 0) {
-            err = true
-            handleErrorMessage('year', 'Please Input Year...')
-        }
-        if (title.length === 0) {
-            err = true
-            handleErrorMessage('title', 'Please Input Title...')
-        }
-        if (selectedLanguage.length === 0) {
-            err = true
-            handleErrorMessage('selectedLanguage', 'Please Select Language...')
-        }
-        if (selectedGenres.length === 0) {
-            err = true
-            handleErrorMessage('selectedGenres', 'Please Select Genre...')
-        }
-        if (description.length === 0) {
-            err = true
-            handleErrorMessage('description', 'Please Input Description...')
-        }
-        if (quality.length === 0) {
-            err = true
-            handleErrorMessage('quality', 'Please Select Quality...')
-        }
+    // Initialize error tracking
+    let hasError = false;
+    const newErrors = {};
+    
+    // Basic field validations
+    if (!categoryId) {
+        newErrors.categoryId = 'Please select a category';
+        hasError = true;
+    }
+    if (!name.trim()) {
+        newErrors.name = 'Please enter a name';
+        hasError = true;
+    }
+    if (!year.trim()) {
+        newErrors.year = 'Please enter a year';
+        hasError = true;
+    }
+    if (!title.trim()) {
+        newErrors.title = 'Please enter a title';
+        hasError = true;
+    }
+    if (selectedLanguage.length === 0) {
+        newErrors.selectedLanguage = 'Please select at least one language';
+        hasError = true;
+    }
+    if (selectedGenres.length === 0) {
+        newErrors.selectedGenres = 'Please select at least one genre';
+        hasError = true;
+    }
+    if (!description.trim()) {
+        newErrors.description = 'Please enter a description';
+        hasError = true;
+    }
+    if (!quality) {
+        newErrors.quality = 'Please select a quality';
+        hasError = true;
+    }
+    if (!contentType) {
+        newErrors.contentType = 'Please select content type (Movie/Series)';
+        hasError = true;
+    }
 
-        if (contentType === "series") {
-            for (let seasonIndex = 0; seasonIndex < numberOfSeasons; seasonIndex++) {
-                const season = seasonsData[seasonIndex];
-                if (!season) continue;
+    // Content type specific validations
+    if (contentType === "series") {
+        // Validate each season
+        for (let seasonIndex = 0; seasonIndex < numberOfSeasons; seasonIndex++) {
+            const season = seasonsData[seasonIndex] || {};
 
-                if (!season.zip || season.zip.trim() === '') {
-                    err = true;
-                    Swal.fire({
+            // Validate episodes based on selected quality
+            for (let episodeIndex = 0; episodeIndex < (season.numberOfEpisodes || 1); episodeIndex++) {
+                const episode = (season.episodesLinks && season.episodesLinks[episodeIndex]) || {};
+                let missingFields = [];
+
+                // Check required fields based on quality
+                if (quality === "480P" && (!episode.link480P || !episode.size480P)) {
+                    missingFields.push('480P link/size');
+                }
+                if (quality === "720P" && (!episode.link720P || !episode.size720P)) {
+                    missingFields.push('720P link/size');
+                }
+                if (quality === "1080P" && (!episode.link1080P || !episode.size1080P)) {
+                    missingFields.push('1080P link/size');
+                }
+                if (quality === "4K" && (!episode.link4k || !episode.size4k)) {
+                    missingFields.push('4K link/size');
+                }
+
+                if (missingFields.length > 0) {
+                    hasError = true;
+                    await Swal.fire({
                         icon: 'error',
-                        title: `Zip link is required for Season ${seasonIndex + 1}`
+                        title: `Validation Error`,
+                        html: `Season ${seasonIndex + 1}, Episode ${episodeIndex + 1} is missing:<br>${missingFields.join('<br>')}`,
                     });
                     break;
                 }
-
-                for (let episodeIndex = 0; episodeIndex < season.numberOfEpisodes; episodeIndex++) {
-                    let episode = season.episodesLinks[episodeIndex] || {};
-                    switch (quality) {
-                        case "480P":
-                            if (!episode.link480P || !episode.size480P) {
-                                err = true;
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: `Season ${seasonIndex + 1}, Episode ${episodeIndex + 1} is missing 480P link or size!`
-                                });
-                                break;
-                            }
-                            break;
-                        case "720P":
-                            if (!episode.link480P || !episode.size480P || !episode.link720P || !episode.size720P) {
-                                err = true;
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: `Season ${seasonIndex + 1}, Episode ${episodeIndex + 1} is missing 480P or 720P link or size!`
-                                });
-                                break;
-                            }
-                            break;
-                        case "1080P":
-                            if (!episode.link480P || !episode.size480P || !episode.link720P || !episode.size720P
-                                || !episode.link1080P || !episode.size1080P) {
-                                err = true;
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: `Season ${seasonIndex + 1}, Episode ${episodeIndex + 1} is missing one or more links or sizes for 480P, 720P or 1080P!`
-                                });
-                                break;
-                            }
-                            break;
-                        case "4K":
-                            if (!episode.link480P || !episode.size480P || !episode.link720P || !episode.size720P
-                                || !episode.link1080P || !episode.size1080P || !episode.link4k || !episode.size4k) {
-                                err = true;
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: `Season ${seasonIndex + 1}, Episode ${episodeIndex + 1} is missing one or more links or sizes for 480P, 720P, 1080P, or 4K!`
-                                });
-                                break;
-                            }
-                            break;
-                        default:
-                            break;
-                    }
-                    if (err) break;
-                }
-                if (err) break;
             }
+            if (hasError) break;
+        }
+    } else {
+        // Movie quality validations
+        const missingFields = [];
+        if (quality === "480P" && (!link480P || !size480P)) {
+            missingFields.push('480P link/size');
+        }
+        if (["720P", "1080P", "4K"].includes(quality) && (!link720P || !size720P)) {
+            missingFields.push('720P link/size');
+        }
+        if (["1080P", "4K"].includes(quality) && (!link1080P || !size1080P)) {
+            missingFields.push('1080P link/size');
+        }
+        if (quality === "4K" && (!link4k || !size4k)) {
+            missingFields.push('4K link/size');
         }
 
-        if (!err) {
-            var formData = new FormData();
+        if (missingFields.length > 0) {
+            hasError = true;
+            await Swal.fire({
+                icon: 'error',
+                title: `Validation Error`,
+                html: `Missing required fields:<br>${missingFields.join('<br>')}`,
+            });
+        }
+    }
 
+    // Update errors state
+    setError(newErrors);
+
+    // If no errors, proceed with submission
+    if (!hasError) {
+        try {
+            const formData = new FormData();
+            
+            // Add basic fields
             formData.append('movieid', movieId);
             formData.append('categoryid', categoryId);
             formData.append('name', name);
@@ -381,7 +394,49 @@ export default function DisplayAllMovie() {
             formData.append('quality', quality);
             formData.append('content', contentType);
 
-            if (contentType !== "series") {
+            // Handle image upload
+            if (image.bytes) {
+                formData.append('image', image.bytes);
+            } else if (image.filename && image.filename.startsWith(serverURL)) {
+                // Keep existing image if no new one uploaded
+                const existingImage = image.filename.split('/').pop();
+                formData.append('existingImage', existingImage);
+            }
+
+            // Handle screenshots
+            const existingScreenshots = screenshot.filter(item => typeof item === 'string');
+            const newScreenshots = screenshot.filter(item => item instanceof File);
+            
+            if (existingScreenshots.length > 0) {
+                formData.append('existingScreenshots', existingScreenshots.join(','));
+            }
+            newScreenshots.forEach(file => {
+                formData.append('screenshot', file);
+            });
+
+            // Handle content type specific data
+            if (contentType === "series") {
+                // Prepare seasons data with zip links
+                const processedSeasons = seasonsData.map((season, index) => ({
+                    seasonNumber: index + 1,
+                    numberOfEpisodes: season.numberOfEpisodes || 1,
+                    zip: season.zip || '',
+                    episodesLinks: (season.episodesLinks || []).map(episode => ({
+                        link480P: episode.link480P || '',
+                        size480P: episode.size480P || '',
+                        link720P: episode.link720P || '',
+                        size720P: episode.size720P || '',
+                        link1080P: episode.link1080P || '',
+                        size1080P: episode.size1080P || '',
+                        link4k: episode.link4k || '',
+                        size4k: episode.size4k || ''
+                    }))
+                }));
+                
+                formData.append('seasonsData', JSON.stringify(processedSeasons));
+                formData.append('numberOfSeasons', numberOfSeasons);
+            } else {
+                // Add movie quality links
                 formData.append('link480p', link480P);
                 formData.append('size480p', size480P);
                 formData.append('link720p', link720P);
@@ -390,39 +445,42 @@ export default function DisplayAllMovie() {
                 formData.append('size1080p', size1080P);
                 formData.append('link4k', link4k);
                 formData.append('size4k', size4k);
-            } else {
-                formData.append('seasonsData', JSON.stringify(seasonsData));
-                formData.append('numberOfSeasons', numberOfSeasons);
             }
 
-            if (image.bytes) {
-                formData.append('image', image.bytes);
-            }
-            screenshot.forEach((file) => {
-                formData.append('screenshot', file);
+            // Show loading indicator
+            Swal.fire({
+                title: 'Saving...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
             });
 
-            const result = await postData('movie/edit_movies', formData)
+            // Submit to backend
+            const result = await postData('movie/edit_movies', formData);
+            
+            Swal.close();
             if (result.status) {
-                Swal.fire({
-                    icon: "success",
-                    title: "Movie Updated",
-                    text: result.message,
-                    toast: true
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: `${contentType === 'series' ? 'Series' : 'Movie'} updated successfully!`,
                 });
                 fetchAllMovies();
                 setOpen(false);
+            } else {
+                throw new Error(result.message || 'Update failed');
             }
-            else {
-                Swal.fire({
-                    icon: "error",
-                    title: "Failed to Update Movie",
-                    text: result.message,
-                    toast: true
-                });
-            }
+        } catch (error) {
+            console.error('Submission error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Update Failed',
+                text: error.message || 'An error occurred while saving. Please try again.',
+            });
         }
     }
+};
 
     const handleReset = () => {
         setCategoryId('');
@@ -483,140 +541,291 @@ export default function DisplayAllMovie() {
     };
 
     const handleQualityInputs = () => {
-        if (contentType === "series") {
+    if (contentType === "series") {
+        return (
+            <>
+                <Grid item xs={12}>
+                    <TextField
+                        label="Number of Seasons"
+                        type="number"
+                        value={numberOfSeasons}
+                        onChange={handleNumberOfSeasonsChange}
+                        inputProps={{ min: 1 }}
+                        fullWidth
+                        style={{ marginBottom: 10 }}
+                    />
+                </Grid>
+
+                {seasonsData.map((season, seasonIndex) => (
+                    <div key={seasonIndex} style={{
+                        width: '100%',
+                        marginBottom: '30px',
+                        border: '2px solid #2196F3',
+                        borderRadius: '8px',
+                        padding: '15px',
+                        backgroundColor: '#f5f5f5'
+                    }}>
+                        <div style={{
+                            fontSize: '18px',
+                            fontWeight: 'bold',
+                            marginBottom: '15px',
+                            color: '#2196F3'
+                        }}>
+                            Season {seasonIndex + 1}
+                        </div>
+
+                        {/* Zip Link Input for the Season */}
+                        <div style={{ marginBottom: '15px' }}>
+                            <TextField
+                                label={`Zip Link for Season ${seasonIndex + 1}`}
+                                value={season.zip || ''}
+                                onChange={(e) => handleSeasonZipChange(seasonIndex, e.target.value)}
+                                fullWidth
+                                style={{ marginBottom: 10 }}
+                                required
+                            />
+                            <TextField
+                                label={`Number of Episodes in Season ${seasonIndex + 1}`}
+                                type="number"
+                                value={season.numberOfEpisodes || 1}
+                                onChange={(e) => handleEpisodesPerSeasonChange(seasonIndex, e.target.value)}
+                                inputProps={{ min: 1 }}
+                                style={{ width: '300px' }}
+                            />
+                        </div>
+
+                        {Array.from({ length: season.numberOfEpisodes || 1 }, (_, episodeIndex) => {
+                            const fieldsByQuality = {
+                                '480P': ['link480P', 'size480P'],
+                                '720P': ['link480P', 'size480P', 'link720P', 'size720P'],
+                                '1080P': ['link480P', 'size480P', 'link720P', 'size720P', 'link1080P', 'size1080P'],
+                                '4K': ['link480P', 'size480P', 'link720P', 'size720P', 'link1080P', 'size1080P', 'link4k', 'size4k']
+                            };
+                            const fields = fieldsByQuality[quality] || [];
+
+                            return (
+                                <div key={episodeIndex} style={{
+                                    marginBottom: '15px',
+                                    border: '1px solid #ccc',
+                                    borderRadius: '4px',
+                                    padding: '10px',
+                                    backgroundColor: 'white'
+                                }}>
+                                    <div style={{
+                                        fontWeight: 'bold',
+                                        marginBottom: '10px',
+                                        color: '#666'
+                                    }}>
+                                        Season {seasonIndex + 1} - Episode {episodeIndex + 1}:
+                                    </div>
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                                        {fields.map(field => (
+                                            <div key={field} style={{ flex: '1 1 250px', minWidth: '250px' }}>
+                                                <TextField
+                                                    label={field.replace(/([a-z])([A-Z])/g, '$1 $2').toUpperCase()}
+                                                    value={(season.episodesLinks && season.episodesLinks[episodeIndex] && season.episodesLinks[episodeIndex][field]) || ''}
+                                                    onChange={(e) => handleEpisodeFieldChange(seasonIndex, episodeIndex, field, e.target.value)}
+                                                    fullWidth
+                                                    size="small"
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                ))}
+            </>
+        );
+    }
+
+    // For movies, show quality inputs
+    switch (quality) {
+        case "480P":
             return (
                 <>
-                    <Grid size={3}>
-                        <TextField
-                            label="Number of Seasons"
-                            type="number"
-                            value={numberOfSeasons}
-                            onChange={handleNumberOfSeasonsChange}
-                            inputProps={{ min: 1 }}
-                            fullWidth
-                            style={{ marginBottom: 10 }}
+                    <Grid item xs={12}>
+                        <TextField 
+                            value={link480P} 
+                            onChange={e => setLink480P(e.target.value)} 
+                            label="480P Link" 
+                            fullWidth 
                         />
                     </Grid>
-
-                    {seasonsData.map((season, seasonIndex) => (
-                        <div key={seasonIndex} style={{
-                            width: '100%',
-                            marginBottom: '30px',
-                            border: '2px solid #2196F3',
-                            borderRadius: '8px',
-                            padding: '15px',
-                            backgroundColor: '#f5f5f5'
-                        }}>
-                            <div style={{
-                                fontSize: '18px',
-                                fontWeight: 'bold',
-                                marginBottom: '15px',
-                                color: '#2196F3'
-                            }}>
-                                Season {seasonIndex + 1}
-                            </div>
-
-                            <div style={{ marginBottom: '15px' }}>
-                                <TextField
-                                    label={`Zip Link for Season ${seasonIndex + 1}`}
-                                    value={season.zip || ''}
-                                    onChange={(e) => handleSeasonZipChange(seasonIndex, e.target.value)}
-                                    fullWidth
-                                    style={{ marginBottom: 10 }}
-                                />
-                                <TextField
-                                    label={`Number of Episodes in Season ${seasonIndex + 1}`}
-                                    type="number"
-                                    value={season.numberOfEpisodes}
-                                    onChange={(e) => handleEpisodesPerSeasonChange(seasonIndex, e.target.value)}
-                                    inputProps={{ min: 1 }}
-                                    style={{ width: '300px' }}
-                                />
-                            </div>
-
-                            {Array.from({ length: season.numberOfEpisodes }, (_, episodeIndex) => {
-                                const fieldsByQuality = {
-                                    '480P': ['link480P', 'size480P'],
-                                    '720P': ['link480P', 'size480P', 'link720P', 'size720P'],
-                                    '1080P': ['link480P', 'size480P', 'link720P', 'size720P', 'link1080P', 'size1080P'],
-                                    '4K': ['link480P', 'size480P', 'link720P', 'size720P', 'link1080P', 'size1080P', 'link4k', 'size4k']
-                                };
-                                const fields = fieldsByQuality[quality] || [];
-
-                                return (
-                                    <div key={episodeIndex} style={{
-                                        marginBottom: '15px',
-                                        border: '1px solid #ccc',
-                                        borderRadius: '4px',
-                                        padding: '10px',
-                                        backgroundColor: 'white'
-                                    }}>
-                                        <div style={{
-                                            fontWeight: 'bold',
-                                            marginBottom: '10px',
-                                            color: '#666'
-                                        }}>
-                                            Season {seasonIndex + 1} - Episode {episodeIndex + 1}:
-                                        </div>
-                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                                            {fields.map(field => (
-                                                <div key={field} style={{ flex: '1 1 250px', minWidth: '250px' }}>
-                                                    <TextField
-                                                        label={field.replace(/link|size/g, (m) => m.toUpperCase())}
-                                                        value={(season.episodesLinks[episodeIndex] && season.episodesLinks[episodeIndex][field]) || ''}
-                                                        onChange={(e) => handleEpisodeFieldChange(seasonIndex, episodeIndex, field, e.target.value)}
-                                                        fullWidth
-                                                        size="small"
-                                                    />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )
-                            })}
-                        </div>
-                    ))}
+                    <Grid item xs={12}>
+                        <TextField 
+                            value={size480P} 
+                            onChange={e => setSize480P(e.target.value)} 
+                            label="480P Size" 
+                            fullWidth 
+                        />
+                    </Grid>
                 </>
-            )
-        }
-
-        // For movies, show quality inputs
-        switch (quality) {
-            case "480P":
-                return <>
-                    <Grid size={12}><TextField value={link480P} onChange={e => setLink480P(e.target.value)} label="480P Link" fullWidth /></Grid>
-                    <Grid size={12}><TextField value={size480P} onChange={e => setSize480P(e.target.value)} label="480P Size" fullWidth /></Grid>
+            );
+        case "720P":
+            return (
+                <>
+                    <Grid item xs={6}>
+                        <TextField 
+                            value={link480P} 
+                            onChange={e => setLink480P(e.target.value)} 
+                            label="480P Link" 
+                            fullWidth 
+                        />
+                    </Grid>
+                    <Grid item xs={6}>
+                        <TextField 
+                            value={link720P} 
+                            onChange={e => setLink720P(e.target.value)} 
+                            label="720P Link" 
+                            fullWidth 
+                        />
+                    </Grid>
+                    <Grid item xs={6}>
+                        <TextField 
+                            value={size480P} 
+                            onChange={e => setSize480P(e.target.value)} 
+                            label="480P Size" 
+                            fullWidth 
+                        />
+                    </Grid>
+                    <Grid item xs={6}>
+                        <TextField 
+                            value={size720P} 
+                            onChange={e => setSize720P(e.target.value)} 
+                            label="720P Size" 
+                            fullWidth 
+                        />
+                    </Grid>
                 </>
-            case "720P":
-                return <>
-                    <Grid size={6}><TextField value={link480P} onChange={e => setLink480P(e.target.value)} label="480P Link" fullWidth /></Grid>
-                    <Grid size={6}><TextField value={link720P} onChange={e => setLink720P(e.target.value)} label="720P Link" fullWidth /></Grid>
-                    <Grid size={6}><TextField value={size480P} onChange={e => setSize480P(e.target.value)} label="480P Size" fullWidth /></Grid>
-                    <Grid size={6}><TextField value={size720P} onChange={e => setSize720P(e.target.value)} label="720P Size" fullWidth /></Grid>
+            );
+        case "1080P":
+            return (
+                <>
+                    <Grid item xs={4}>
+                        <TextField 
+                            value={link480P} 
+                            onChange={e => setLink480P(e.target.value)} 
+                            label="480P Link" 
+                            fullWidth 
+                        />
+                    </Grid>
+                    <Grid item xs={4}>
+                        <TextField 
+                            value={link720P} 
+                            onChange={e => setLink720P(e.target.value)} 
+                            label="720P Link" 
+                            fullWidth 
+                        />
+                    </Grid>
+                    <Grid item xs={4}>
+                        <TextField 
+                            value={link1080P} 
+                            onChange={e => setLink1080P(e.target.value)} 
+                            label="1080P Link" 
+                            fullWidth 
+                        />
+                    </Grid>
+                    <Grid item xs={4}>
+                        <TextField 
+                            value={size480P} 
+                            onChange={e => setSize480P(e.target.value)} 
+                            label="480P Size" 
+                            fullWidth 
+                        />
+                    </Grid>
+                    <Grid item xs={4}>
+                        <TextField 
+                            value={size720P} 
+                            onChange={e => setSize720P(e.target.value)} 
+                            label="720P Size" 
+                            fullWidth 
+                        />
+                    </Grid>
+                    <Grid item xs={4}>
+                        <TextField 
+                            value={size1080P} 
+                            onChange={e => setSize1080P(e.target.value)} 
+                            label="1080P Size" 
+                            fullWidth 
+                        />
+                    </Grid>
                 </>
-            case "1080P":
-                return <>
-                    <Grid size={4}><TextField value={link480P} onChange={e => setLink480P(e.target.value)} label="480P Link" fullWidth /></Grid>
-                    <Grid size={4}><TextField value={link720P} onChange={e => setLink720P(e.target.value)} label="720P Link" fullWidth /></Grid>
-                    <Grid size={4}><TextField value={link1080P} onChange={e => setLink1080P(e.target.value)} label="1080P Link" fullWidth /></Grid>
-                    <Grid size={4}><TextField value={size480P} onChange={e => setSize480P(e.target.value)} label="480P Size" fullWidth /></Grid>
-                    <Grid size={4}><TextField value={size720P} onChange={e => setSize720P(e.target.value)} label="720P Size" fullWidth /></Grid>
-                    <Grid size={4}><TextField value={size1080P} onChange={e => setSize1080P(e.target.value)} label="1080P Size" fullWidth /></Grid>
+            );
+        case "4K":
+            return (
+                <>
+                    <Grid item xs={3}>
+                        <TextField 
+                            value={link480P} 
+                            onChange={e => setLink480P(e.target.value)} 
+                            label="480P Link" 
+                            fullWidth 
+                        />
+                    </Grid>
+                    <Grid item xs={3}>
+                        <TextField 
+                            value={link720P} 
+                            onChange={e => setLink720P(e.target.value)} 
+                            label="720P Link" 
+                            fullWidth 
+                        />
+                    </Grid>
+                    <Grid item xs={3}>
+                        <TextField 
+                            value={link1080P} 
+                            onChange={e => setLink1080P(e.target.value)} 
+                            label="1080P Link" 
+                            fullWidth 
+                        />
+                    </Grid>
+                    <Grid item xs={3}>
+                        <TextField 
+                            value={link4k} 
+                            onChange={e => setLink4k(e.target.value)} 
+                            label="4K Link" 
+                            fullWidth 
+                        />
+                    </Grid>
+                    <Grid item xs={3}>
+                        <TextField 
+                            value={size480P} 
+                            onChange={e => setSize480P(e.target.value)} 
+                            label="480P Size" 
+                            fullWidth 
+                        />
+                    </Grid>
+                    <Grid item xs={3}>
+                        <TextField 
+                            value={size720P} 
+                            onChange={e => setSize720P(e.target.value)} 
+                            label="720P Size" 
+                            fullWidth 
+                        />
+                    </Grid>
+                    <Grid item xs={3}>
+                        <TextField 
+                            value={size1080P} 
+                            onChange={e => setSize1080P(e.target.value)} 
+                            label="1080P Size" 
+                            fullWidth 
+                        />
+                    </Grid>
+                    <Grid item xs={3}>
+                        <TextField 
+                            value={size4k} 
+                            onChange={e => setSize4k(e.target.value)} 
+                            label="4K Size" 
+                            fullWidth 
+                        />
+                    </Grid>
                 </>
-            case "4K":
-                return <>
-                    <Grid size={3}><TextField value={link480P} onChange={e => setLink480P(e.target.value)} label="480P Link" fullWidth /></Grid>
-                    <Grid size={3}><TextField value={link720P} onChange={e => setLink720P(e.target.value)} label="720P Link" fullWidth /></Grid>
-                    <Grid size={3}><TextField value={link1080P} onChange={e => setLink1080P(e.target.value)} label="1080P Link" fullWidth /></Grid>
-                    <Grid size={3}><TextField value={link4k} onChange={e => setLink4k(e.target.value)} label="4K Link" fullWidth /></Grid>
-                    <Grid size={3}><TextField value={size480P} onChange={e => setSize480P(e.target.value)} label="480P Size" fullWidth /></Grid>
-                    <Grid size={3}><TextField value={size720P} onChange={e => setSize720P(e.target.value)} label="720P Size" fullWidth /></Grid>
-                    <Grid size={3}><TextField value={size1080P} onChange={e => setSize1080P(e.target.value)} label="1080P Size" fullWidth /></Grid>
-                    <Grid size={3}><TextField value={size4k} onChange={e => setSize4k(e.target.value)} label="4K Size" fullWidth /></Grid>
-                </>
-            default: return null;
-        }
+            );
+        default: 
+            return null;
     }
+};
 
     const openDialog = () => {
         return (
@@ -945,7 +1154,7 @@ export default function DisplayAllMovie() {
                             { title: 'Genre', field: 'genre', width: '15%' },
                             { title: 'Quality', field: 'quality', width: '5%' },
                             { title: 'Content', field: 'content', width: '7%' },
-                            
+
                             {
                                 title: 'Image',
                                 width: '4%',
