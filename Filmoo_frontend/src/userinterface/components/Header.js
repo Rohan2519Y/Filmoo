@@ -44,12 +44,12 @@ export default function Header() {
             <div className="h-full md:w-[30%] w-[40%] flex justify-center items-center mr-auto">
                 <img src="https://res.cloudinary.com/dio6iadsq/image/upload/v1753368344/logo_ho4bun.png" className="max-w-[90%] max-h-[80%] cursor-pointer"></img>
             </div>
-            <div className=" w-[70%] h-full md:flex hidden justify-evenly items-center" >
-                <div className="text-white h-full justify-center items-center flex text-lg cursor-pointer text-shadow-10xl" >Home</div>
-                <div className="text-white h-full justify-center items-center flex text-lg cursor-pointer text-shadow-10xl" >Featured</div>
-                <div className="text-white h-full justify-center items-center flex text-lg cursor-pointer text-shadow-10xl" >Category</div>
-                <div className="text-white h-full justify-center items-center flex text-lg cursor-pointer text-shadow-10xl" >Genre</div>
-                <div className="text-white h-full justify-center items-center flex text-lg cursor-pointer text-shadow-10xl" >Language</div>
+            <div className=" w-[70%] md:flex hidden justify-evenly items-center" >
+                <div style={{ textShadow: '2px 2px 5px rgba(0, 0, 0, 0.6)' }} className="text-white w-[10%] justify-center items-center flex text-lg cursor-pointer hover:font-medium hover:text-red-300" >Home</div>
+                <div style={{ textShadow: '2px 2px 5px rgba(0, 0, 0, 0.6)' }} className="text-white w-[10%] justify-center items-center flex text-lg cursor-pointer hover:font-medium hover:text-red-300" >Featured</div>
+                <div style={{ textShadow: '2px 2px 5px rgba(0, 0, 0, 0.6)' }} className="text-white w-[10%] justify-center items-center flex text-lg cursor-pointer hover:font-medium hover:text-red-300" >Category</div>
+                <div style={{ textShadow: '2px 2px 5px rgba(0, 0, 0, 0.6)' }} className="text-white w-[10%] justify-center items-center flex text-lg cursor-pointer hover:font-medium hover:text-red-300" >Genre</div>
+                <div style={{ textShadow: '2px 2px 5px rgba(0, 0, 0, 0.6)' }} className="text-white w-[10%] justify-center items-center flex text-lg cursor-pointer hover:font-medium hover:text-red-300" >Language</div>
             </div>
             <div className="md:hidden h-full flex items-center justify-center mr-5 ">
                 <MenuIcon style={{ fontSize: '200%' }} className='text-slate-800 cursor-pointer' onClick={() => { setMenu(true) }} />
@@ -59,15 +59,15 @@ export default function Header() {
                     <CloseIcon onClick={handleClose} style={{ fontSize: '200%' }} className='text-white absolute right-5 top-4 cursor-pointer' />
                     <div className='h-auto w-full flex justify-center items-center flex-col top-[60px] absolute'>
                         <hr className='bg-white opacity-[100%] w-[90%]'></hr>
-                        <div className='w-full h-[70px] flex justify-center items-center text-white text-2xl opacity-[100%]'>Home</div>
+                        <div className='w-full h-[70px] flex justify-center items-center text-white text-2xl opacity-[100%] cursor-pointer '>Home</div>
                         <hr className='bg-white opacity-[100%] w-[90%]'></hr>
-                        <div className='w-full h-[70px] flex justify-center items-center text-white text-2xl opacity-[100%]'>Featured</div>
+                        <div className='w-full h-[70px] flex justify-center items-center text-white text-2xl opacity-[100%] cursor-pointer '>Featured</div>
                         <hr className='bg-white opacity-[100%] w-[90%]'></hr>
-                        <div className='w-full h-[70px] flex justify-center items-center text-white text-2xl opacity-[100%]'>Category</div>
+                        <div className='w-full h-[70px] flex justify-center items-center text-white text-2xl opacity-[100%] cursor-pointer '>Category</div>
                         <hr className='bg-white opacity-[100%] w-[90%]'></hr>
-                        <div className='w-full h-[70px] flex justify-center items-center text-white text-2xl opacity-[100%]'>Genre</div>
+                        <div className='w-full h-[70px] flex justify-center items-center text-white text-2xl opacity-[100%] cursor-pointer '>Genre</div>
                         <hr className='bg-white opacity-[100%] w-[90%]'></hr>
-                        <div className='w-full h-[70px] flex justify-center items-center text-white text-2xl opacity-[100%]'>Language</div>
+                        <div className='w-full h-[70px] flex justify-center items-center text-white text-2xl opacity-[100%] cursor-pointer '>Language</div>
                         <hr className='bg-white opacity-[100%] w-[90%]'></hr>
                     </div>
                 </div>}
