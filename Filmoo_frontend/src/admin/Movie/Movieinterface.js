@@ -32,20 +32,16 @@ export default function MovieInterface() {
     const [image, setImage] = useState({ filename: '/film.png', bytes: '' })
     const [quality, setQuality] = useState('')
     const [categoryList, setCategoryList] = useState([])
+    const [genreList, setGenreList] = useState([])
+    const [languagesList, setLanguagesList] = useState([])
     const [selectedGenres, setSelectedGenres] = useState([]);
     const [selectedLanguage, setSelectedLanguage] = useState([]);
     const [contentType, setContentType] = useState("movie");
     const [error, setError] = useState({})
-    
+
     // Updated season-based state variables with per-season zip link
     const [numberOfSeasons, setNumberOfSeasons] = useState([]);
     const [seasonsData, setSeasonsData] = useState([]);
-
-    const genresList = [
-        "Action", "Adventure", "Animation", "Biography", "Comedy", "Crime", "Documentary",
-        "Drama", "Family", "Fantasy", "Historical", "Horror", "Music", "Mystery",
-        "Romance", "Sci-Fi", "Sport", "Thriller", "War", "Western"
-    ];
 
     const handleGenreChange = (event) => {
         const value = event.target.name;
@@ -56,12 +52,8 @@ export default function MovieInterface() {
         }
     };
 
-    const languageList = [
-        'Hindi', 'English', 'Tamil', 'Telgu', 'Gujarati', 'Marathi', 'Japanese', 'Chinese'
-    ]
-
     const handleLanguageChange = (e) => {
-        const value = e.target.name
+        const value = e.target.name;
         if (selectedLanguage.includes(value)) {
             setSelectedLanguage(selectedLanguage.filter((language) => language !== value));
         } else {
@@ -74,8 +66,20 @@ export default function MovieInterface() {
         setCategoryList(res.data)
     }
 
+    const fetchAllGeneres = async () => {
+        var res = await getData("category/fetch_genres")
+        setGenreList(res.data)
+    }
+
+    const fetchAllLanguages = async () => {
+        var res = await getData("category/fetch_languages")
+        setLanguagesList(res.data)
+    }
+
     useEffect(function () {
         fetchAllCategory()
+        fetchAllGeneres()
+        fetchAllLanguages()
     }, [])
 
     const fillCategory = () => {
@@ -97,7 +101,7 @@ export default function MovieInterface() {
             val = parseInt(val);
         }
         setNumberOfSeasons(val);
-        
+
         // Initialize seasons data if needed
         let seasons = [...seasonsData];
         while (seasons.length < val) {
@@ -124,7 +128,7 @@ export default function MovieInterface() {
         }
         let seasons = [...seasonsData];
         seasons[seasonIndex].numberOfEpisodes = val;
-        
+
         // Initialize episodes for this season
         let episodes = [...(seasons[seasonIndex].episodesLinks || [])];
         while (episodes.length < val) {
@@ -279,7 +283,7 @@ export default function MovieInterface() {
             formData.append('description', description);
             formData.append('quality', quality);
             formData.append('content', contentType);
-            
+
             // For movie normal quality inputs
             if (contentType !== "series") {
                 formData.append('link480p', link480P);
@@ -302,7 +306,7 @@ export default function MovieInterface() {
             screenshot.forEach((file, index) => {
                 formData.append(`screenshot`, file);
             });
-            
+
             const result = await postData('movie/insert_movies', formData)
             if (result.status) {
                 Swal.fire({
@@ -395,26 +399,26 @@ export default function MovieInterface() {
                             style={{ marginBottom: 10 }}
                         />
                     </Grid>
-                    
+
                     {/* Render seasons including new zip link input */}
                     {seasonsData.map((season, seasonIndex) => (
-                        <div key={seasonIndex} style={{ 
-                            width: '100%', 
-                            marginBottom: '30px', 
-                            border: '2px solid #2196F3', 
+                        <div key={seasonIndex} style={{
+                            width: '100%',
+                            marginBottom: '30px',
+                            border: '2px solid #2196F3',
                             borderRadius: '8px',
                             padding: '15px',
                             backgroundColor: '#f5f5f5'
                         }}>
-                            <div style={{ 
-                                fontSize: '18px', 
-                                fontWeight: 'bold', 
+                            <div style={{
+                                fontSize: '18px',
+                                fontWeight: 'bold',
                                 marginBottom: '15px',
                                 color: '#2196F3'
                             }}>
                                 Season {seasonIndex + 1}
                             </div>
-                            
+
                             <div style={{ marginBottom: '15px' }}>
                                 <TextField
                                     label={`Zip Link for Season ${seasonIndex + 1}`}
@@ -442,17 +446,17 @@ export default function MovieInterface() {
                                     '4K': ['link480P', 'size480P', 'link720P', 'size720P', 'link1080P', 'size1080P', 'link4k', 'size4k']
                                 };
                                 const fields = fieldsByQuality[quality] || [];
-                                
+
                                 return (
-                                    <div key={episodeIndex} style={{ 
-                                        marginBottom: '15px', 
-                                        border: '1px solid #ccc', 
+                                    <div key={episodeIndex} style={{
+                                        marginBottom: '15px',
+                                        border: '1px solid #ccc',
                                         borderRadius: '4px',
                                         padding: '10px',
                                         backgroundColor: 'white'
                                     }}>
-                                        <div style={{ 
-                                            fontWeight: 'bold', 
+                                        <div style={{
+                                            fontWeight: 'bold',
                                             marginBottom: '10px',
                                             color: '#666'
                                         }}>
@@ -479,7 +483,7 @@ export default function MovieInterface() {
 
                 </>
             )
-        } 
+        }
 
         // for non-series content type, keep your existing quality inputs:
         switch (quality) {
@@ -630,9 +634,18 @@ export default function MovieInterface() {
                                 <FormControl error={error.selectedLanguage} onFocus={() => handleErrorMessage('selectedLanguage', null)} component="fieldset" fullWidth>
                                     <FormLabel component="legend">Language</FormLabel>
                                     <FormGroup row>
-                                        {languageList.map((language) => (
-                                            <FormControlLabel key={language} control={<Checkbox checked={selectedLanguage.includes(language)} onChange={handleLanguageChange} name={language} />}
-                                                label={language} />
+                                        {languagesList.map((item) => (
+                                            <FormControlLabel
+                                                key={item.languageid}
+                                                control={
+                                                    <Checkbox
+                                                        checked={selectedLanguage.includes(item.language)}
+                                                        onChange={handleLanguageChange}
+                                                        name={item.language}
+                                                    />
+                                                }
+                                                label={item.language}
+                                            />
                                         ))}
                                     </FormGroup>
                                     <FormHelperText>{error.selectedLanguage}</FormHelperText>
@@ -642,9 +655,17 @@ export default function MovieInterface() {
                                 <FormControl error={error.selectedGenres} onFocus={() => handleErrorMessage('selectedGenres', null)} component="fieldset" fullWidth>
                                     <FormLabel component="legend">Genre</FormLabel>
                                     <FormGroup row>
-                                        {genresList.map((genre) => (
-                                            <FormControlLabel key={genre} control={<Checkbox checked={selectedGenres.includes(genre)} onChange={handleGenreChange} name={genre} />}
-                                                label={genre}
+                                        {genreList.map((item) => (
+                                            <FormControlLabel
+                                                key={item.genreid}
+                                                control={
+                                                    <Checkbox
+                                                        checked={selectedGenres.includes(item.genre)}
+                                                        onChange={handleGenreChange}
+                                                        name={item.genre}
+                                                    />
+                                                }
+                                                label={item.genre}
                                             />
                                         ))}
                                     </FormGroup>

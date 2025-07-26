@@ -46,6 +46,8 @@ export default function DisplayAllMovie() {
     const [image, setImage] = useState({ filename: '/film.png', bytes: '' })
     const [quality, setQuality] = useState('')
     const [categoryList, setCategoryList] = useState([])
+    const [genreList, setGenreList] = useState([])
+    const [languagesList, setLanguagesList] = useState([])
     const [selectedGenres, setSelectedGenres] = useState([]);
     const [selectedLanguage, setSelectedLanguage] = useState([]);
     const [contentType, setContentType] = useState('');
@@ -70,9 +72,28 @@ export default function DisplayAllMovie() {
             });
         }
     }
+
+    const fetchAllGenres = async () => {
+        var response = await getData('category/fetch_genres')
+        if (response.status) {
+            setGenreList(response.data)
+        }
+    }
+
+    const fetchAllLanguages = async () => {
+        var response = await getData('category/fetch_languages')
+        if (response.status) {
+            setLanguagesList(response.data)
+        }
+    }
+
     useEffect(function () {
         fetchAllMovies()
+        fetchAllCategory()
+        fetchAllGenres()
+        fetchAllLanguages()
     }, [])
+
     const deleteUsingIcon = (rowData) => {
         Swal.fire({
             title: "Are you sure to delete selected Movie or Series",
@@ -108,15 +129,6 @@ export default function DisplayAllMovie() {
         }
     }
 
-    const languageList = [
-        'Hindi', 'English', 'Tamil', 'Telgu', 'Gujarati', 'Marathi', 'Japanese', 'Chinese'
-    ];
-    const genresList = [
-        "Action", "Adventure", "Animation", "Biography", "Comedy", "Crime", "Documentary",
-        "Drama", "Family", "Fantasy", "Historical", "Horror", "Music", "Mystery",
-        "Romance", "Sci-Fi", "Sport", "Thriller", "War", "Western"
-    ];
-
     const handleGenreChange = (e) => {
         const value = e.target.name
         if (selectedGenres.includes(value)) {
@@ -125,6 +137,7 @@ export default function DisplayAllMovie() {
             setSelectedGenres(prev => [...prev, value]);
         }
     }
+
     const handleLanguageChange = (e) => {
         const value = e.target.name
         if (selectedLanguage.includes(value)) {
@@ -138,9 +151,7 @@ export default function DisplayAllMovie() {
         var res = await getData("category/fetch_categories")
         setCategoryList(res.data)
     }
-    useEffect(function () {
-        fetchAllCategory()
-    }, [])
+
     const fillCategory = () => {
         return (categoryList.map((item) => (
             <MenuItem key={item.categoryid} value={item.categoryid}>{item.categoryname}</MenuItem>
@@ -269,218 +280,218 @@ export default function DisplayAllMovie() {
     }
 
     const handleClick = async () => {
-    // Initialize error tracking
-    let hasError = false;
-    const newErrors = {};
-    
-    // Basic field validations
-    if (!categoryId) {
-        newErrors.categoryId = 'Please select a category';
-        hasError = true;
-    }
-    if (!name.trim()) {
-        newErrors.name = 'Please enter a name';
-        hasError = true;
-    }
-    if (!year.trim()) {
-        newErrors.year = 'Please enter a year';
-        hasError = true;
-    }
-    if (!title.trim()) {
-        newErrors.title = 'Please enter a title';
-        hasError = true;
-    }
-    if (selectedLanguage.length === 0) {
-        newErrors.selectedLanguage = 'Please select at least one language';
-        hasError = true;
-    }
-    if (selectedGenres.length === 0) {
-        newErrors.selectedGenres = 'Please select at least one genre';
-        hasError = true;
-    }
-    if (!description.trim()) {
-        newErrors.description = 'Please enter a description';
-        hasError = true;
-    }
-    if (!quality) {
-        newErrors.quality = 'Please select a quality';
-        hasError = true;
-    }
-    if (!contentType) {
-        newErrors.contentType = 'Please select content type (Movie/Series)';
-        hasError = true;
-    }
-
-    // Content type specific validations
-    if (contentType === "series") {
-        // Validate each season
-        for (let seasonIndex = 0; seasonIndex < numberOfSeasons; seasonIndex++) {
-            const season = seasonsData[seasonIndex] || {};
-
-            // Validate episodes based on selected quality
-            for (let episodeIndex = 0; episodeIndex < (season.numberOfEpisodes || 1); episodeIndex++) {
-                const episode = (season.episodesLinks && season.episodesLinks[episodeIndex]) || {};
-                let missingFields = [];
-
-                // Check required fields based on quality
-                if (quality === "480P" && (!episode.link480P || !episode.size480P)) {
-                    missingFields.push('480P link/size');
-                }
-                if (quality === "720P" && (!episode.link720P || !episode.size720P)) {
-                    missingFields.push('720P link/size');
-                }
-                if (quality === "1080P" && (!episode.link1080P || !episode.size1080P)) {
-                    missingFields.push('1080P link/size');
-                }
-                if (quality === "4K" && (!episode.link4k || !episode.size4k)) {
-                    missingFields.push('4K link/size');
-                }
-
-                if (missingFields.length > 0) {
-                    hasError = true;
-                    await Swal.fire({
-                        icon: 'error',
-                        title: `Validation Error`,
-                        html: `Season ${seasonIndex + 1}, Episode ${episodeIndex + 1} is missing:<br>${missingFields.join('<br>')}`,
-                    });
-                    break;
-                }
-            }
-            if (hasError) break;
-        }
-    } else {
-        // Movie quality validations
-        const missingFields = [];
-        if (quality === "480P" && (!link480P || !size480P)) {
-            missingFields.push('480P link/size');
-        }
-        if (["720P", "1080P", "4K"].includes(quality) && (!link720P || !size720P)) {
-            missingFields.push('720P link/size');
-        }
-        if (["1080P", "4K"].includes(quality) && (!link1080P || !size1080P)) {
-            missingFields.push('1080P link/size');
-        }
-        if (quality === "4K" && (!link4k || !size4k)) {
-            missingFields.push('4K link/size');
-        }
-
-        if (missingFields.length > 0) {
+        // Initialize error tracking
+        let hasError = false;
+        const newErrors = {};
+        
+        // Basic field validations
+        if (!categoryId) {
+            newErrors.categoryId = 'Please select a category';
             hasError = true;
-            await Swal.fire({
-                icon: 'error',
-                title: `Validation Error`,
-                html: `Missing required fields:<br>${missingFields.join('<br>')}`,
-            });
         }
-    }
+        if (!name.trim()) {
+            newErrors.name = 'Please enter a name';
+            hasError = true;
+        }
+        if (!year.trim()) {
+            newErrors.year = 'Please enter a year';
+            hasError = true;
+        }
+        if (!title.trim()) {
+            newErrors.title = 'Please enter a title';
+            hasError = true;
+        }
+        if (selectedLanguage.length === 0) {
+            newErrors.selectedLanguage = 'Please select at least one language';
+            hasError = true;
+        }
+        if (selectedGenres.length === 0) {
+            newErrors.selectedGenres = 'Please select at least one genre';
+            hasError = true;
+        }
+        if (!description.trim()) {
+            newErrors.description = 'Please enter a description';
+            hasError = true;
+        }
+        if (!quality) {
+            newErrors.quality = 'Please select a quality';
+            hasError = true;
+        }
+        if (!contentType) {
+            newErrors.contentType = 'Please select content type (Movie/Series)';
+            hasError = true;
+        }
 
-    // Update errors state
-    setError(newErrors);
+        // Content type specific validations
+        if (contentType === "series") {
+            // Validate each season
+            for (let seasonIndex = 0; seasonIndex < numberOfSeasons; seasonIndex++) {
+                const season = seasonsData[seasonIndex] || {};
 
-    // If no errors, proceed with submission
-    if (!hasError) {
-        try {
-            const formData = new FormData();
-            
-            // Add basic fields
-            formData.append('movieid', movieId);
-            formData.append('categoryid', categoryId);
-            formData.append('name', name);
-            formData.append('year', year);
-            formData.append('title', title);
-            formData.append('language', selectedLanguage.join(', '));
-            formData.append('genre', selectedGenres.join(', '));
-            formData.append('description', description);
-            formData.append('quality', quality);
-            formData.append('content', contentType);
+                // Validate episodes based on selected quality
+                for (let episodeIndex = 0; episodeIndex < (season.numberOfEpisodes || 1); episodeIndex++) {
+                    const episode = (season.episodesLinks && season.episodesLinks[episodeIndex]) || {};
+                    let missingFields = [];
 
-            // Handle image upload
-            if (image.bytes) {
-                formData.append('image', image.bytes);
-            } else if (image.filename && image.filename.startsWith(serverURL)) {
-                // Keep existing image if no new one uploaded
-                const existingImage = image.filename.split('/').pop();
-                formData.append('existingImage', existingImage);
-            }
+                    // Check required fields based on quality
+                    if (quality === "480P" && (!episode.link480P || !episode.size480P)) {
+                        missingFields.push('480P link/size');
+                    }
+                    if (quality === "720P" && (!episode.link720P || !episode.size720P)) {
+                        missingFields.push('720P link/size');
+                    }
+                    if (quality === "1080P" && (!episode.link1080P || !episode.size1080P)) {
+                        missingFields.push('1080P link/size');
+                    }
+                    if (quality === "4K" && (!episode.link4k || !episode.size4k)) {
+                        missingFields.push('4K link/size');
+                    }
 
-            // Handle screenshots
-            const existingScreenshots = screenshot.filter(item => typeof item === 'string');
-            const newScreenshots = screenshot.filter(item => item instanceof File);
-            
-            if (existingScreenshots.length > 0) {
-                formData.append('existingScreenshots', existingScreenshots.join(','));
-            }
-            newScreenshots.forEach(file => {
-                formData.append('screenshot', file);
-            });
-
-            // Handle content type specific data
-            if (contentType === "series") {
-                // Prepare seasons data with zip links
-                const processedSeasons = seasonsData.map((season, index) => ({
-                    seasonNumber: index + 1,
-                    numberOfEpisodes: season.numberOfEpisodes || 1,
-                    zip: season.zip || '',
-                    episodesLinks: (season.episodesLinks || []).map(episode => ({
-                        link480P: episode.link480P || '',
-                        size480P: episode.size480P || '',
-                        link720P: episode.link720P || '',
-                        size720P: episode.size720P || '',
-                        link1080P: episode.link1080P || '',
-                        size1080P: episode.size1080P || '',
-                        link4k: episode.link4k || '',
-                        size4k: episode.size4k || ''
-                    }))
-                }));
-                
-                formData.append('seasonsData', JSON.stringify(processedSeasons));
-                formData.append('numberOfSeasons', numberOfSeasons);
-            } else {
-                // Add movie quality links
-                formData.append('link480p', link480P);
-                formData.append('size480p', size480P);
-                formData.append('link720p', link720P);
-                formData.append('size720p', size720P);
-                formData.append('link1080p', link1080P);
-                formData.append('size1080p', size1080P);
-                formData.append('link4k', link4k);
-                formData.append('size4k', size4k);
-            }
-
-            // Show loading indicator
-            Swal.fire({
-                title: 'Saving...',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
+                    if (missingFields.length > 0) {
+                        hasError = true;
+                        await Swal.fire({
+                            icon: 'error',
+                            title: `Validation Error`,
+                            html: `Season ${seasonIndex + 1}, Episode ${episodeIndex + 1} is missing:<br>${missingFields.join('<br>')}`,
+                        });
+                        break;
+                    }
                 }
-            });
-
-            // Submit to backend
-            const result = await postData('movie/edit_movies', formData);
-            
-            Swal.close();
-            if (result.status) {
-                await Swal.fire({
-                    icon: 'success',
-                    title: 'Success',
-                    text: `${contentType === 'series' ? 'Series' : 'Movie'} updated successfully!`,
-                });
-                fetchAllMovies();
-                setOpen(false);
-            } else {
-                throw new Error(result.message || 'Update failed');
+                if (hasError) break;
             }
-        } catch (error) {
-            console.error('Submission error:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Update Failed',
-                text: error.message || 'An error occurred while saving. Please try again.',
-            });
+        } else {
+            // Movie quality validations
+            const missingFields = [];
+            if (quality === "480P" && (!link480P || !size480P)) {
+                missingFields.push('480P link/size');
+            }
+            if (["720P", "1080P", "4K"].includes(quality) && (!link720P || !size720P)) {
+                missingFields.push('720P link/size');
+            }
+            if (["1080P", "4K"].includes(quality) && (!link1080P || !size1080P)) {
+                missingFields.push('1080P link/size');
+            }
+            if (quality === "4K" && (!link4k || !size4k)) {
+                missingFields.push('4K link/size');
+            }
+
+            if (missingFields.length > 0) {
+                hasError = true;
+                await Swal.fire({
+                    icon: 'error',
+                    title: `Validation Error`,
+                    html: `Missing required fields:<br>${missingFields.join('<br>')}`,
+                });
+            }
         }
-    }
-};
+
+        // Update errors state
+        setError(newErrors);
+
+        // If no errors, proceed with submission
+        if (!hasError) {
+            try {
+                const formData = new FormData();
+                
+                // Add basic fields
+                formData.append('movieid', movieId);
+                formData.append('categoryid', categoryId);
+                formData.append('name', name);
+                formData.append('year', year);
+                formData.append('title', title);
+                formData.append('language', selectedLanguage.join(', '));
+                formData.append('genre', selectedGenres.join(', '));
+                formData.append('description', description);
+                formData.append('quality', quality);
+                formData.append('content', contentType);
+
+                // Handle image upload
+                if (image.bytes) {
+                    formData.append('image', image.bytes);
+                } else if (image.filename && image.filename.startsWith(serverURL)) {
+                    // Keep existing image if no new one uploaded
+                    const existingImage = image.filename.split('/').pop();
+                    formData.append('existingImage', existingImage);
+                }
+
+                // Handle screenshots
+                const existingScreenshots = screenshot.filter(item => typeof item === 'string');
+                const newScreenshots = screenshot.filter(item => item instanceof File);
+                
+                if (existingScreenshots.length > 0) {
+                    formData.append('existingScreenshots', existingScreenshots.join(','));
+                }
+                newScreenshots.forEach(file => {
+                    formData.append('screenshot', file);
+                });
+
+                // Handle content type specific data
+                if (contentType === "series") {
+                    // Prepare seasons data with zip links
+                    const processedSeasons = seasonsData.map((season, index) => ({
+                        seasonNumber: index + 1,
+                        numberOfEpisodes: season.numberOfEpisodes || 1,
+                        zip: season.zip || '',
+                        episodesLinks: (season.episodesLinks || []).map(episode => ({
+                            link480P: episode.link480P || '',
+                            size480P: episode.size480P || '',
+                            link720P: episode.link720P || '',
+                            size720P: episode.size720P || '',
+                            link1080P: episode.link1080P || '',
+                            size1080P: episode.size1080P || '',
+                            link4k: episode.link4k || '',
+                            size4k: episode.size4k || ''
+                        }))
+                    }));
+                    
+                    formData.append('seasonsData', JSON.stringify(processedSeasons));
+                    formData.append('numberOfSeasons', numberOfSeasons);
+                } else {
+                    // Add movie quality links
+                    formData.append('link480p', link480P);
+                    formData.append('size480p', size480P);
+                    formData.append('link720p', link720P);
+                    formData.append('size720p', size720P);
+                    formData.append('link1080p', link1080P);
+                    formData.append('size1080p', size1080P);
+                    formData.append('link4k', link4k);
+                    formData.append('size4k', size4k);
+                }
+
+                // Show loading indicator
+                Swal.fire({
+                    title: 'Saving...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // Submit to backend
+                const result = await postData('movie/edit_movies', formData);
+                
+                Swal.close();
+                if (result.status) {
+                    await Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: `${contentType === 'series' ? 'Series' : 'Movie'} updated successfully!`,
+                    });
+                    fetchAllMovies();
+                    setOpen(false);
+                } else {
+                    throw new Error(result.message || 'Update failed');
+                }
+            } catch (error) {
+                console.error('Submission error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Update Failed',
+                    text: error.message || 'An error occurred while saving. Please try again.',
+                });
+            }
+        }
+    };
 
     const handleReset = () => {
         setCategoryId('');
@@ -541,291 +552,291 @@ export default function DisplayAllMovie() {
     };
 
     const handleQualityInputs = () => {
-    if (contentType === "series") {
-        return (
-            <>
-                <Grid item xs={12}>
-                    <TextField
-                        label="Number of Seasons"
-                        type="number"
-                        value={numberOfSeasons}
-                        onChange={handleNumberOfSeasonsChange}
-                        inputProps={{ min: 1 }}
-                        fullWidth
-                        style={{ marginBottom: 10 }}
-                    />
-                </Grid>
+        if (contentType === "series") {
+            return (
+                <>
+                    <Grid item xs={12}>
+                        <TextField
+                            label="Number of Seasons"
+                            type="number"
+                            value={numberOfSeasons}
+                            onChange={handleNumberOfSeasonsChange}
+                            inputProps={{ min: 1 }}
+                            fullWidth
+                            style={{ marginBottom: 10 }}
+                        />
+                    </Grid>
 
-                {seasonsData.map((season, seasonIndex) => (
-                    <div key={seasonIndex} style={{
-                        width: '100%',
-                        marginBottom: '30px',
-                        border: '2px solid #2196F3',
-                        borderRadius: '8px',
-                        padding: '15px',
-                        backgroundColor: '#f5f5f5'
-                    }}>
-                        <div style={{
-                            fontSize: '18px',
-                            fontWeight: 'bold',
-                            marginBottom: '15px',
-                            color: '#2196F3'
+                    {seasonsData.map((season, seasonIndex) => (
+                        <div key={seasonIndex} style={{
+                            width: '100%',
+                            marginBottom: '30px',
+                            border: '2px solid #2196F3',
+                            borderRadius: '8px',
+                            padding: '15px',
+                            backgroundColor: '#f5f5f5'
                         }}>
-                            Season {seasonIndex + 1}
-                        </div>
+                            <div style={{
+                                fontSize: '18px',
+                                fontWeight: 'bold',
+                                marginBottom: '15px',
+                                color: '#2196F3'
+                            }}>
+                                Season {seasonIndex + 1}
+                            </div>
 
-                        {/* Zip Link Input for the Season */}
-                        <div style={{ marginBottom: '15px' }}>
-                            <TextField
-                                label={`Zip Link for Season ${seasonIndex + 1}`}
-                                value={season.zip || ''}
-                                onChange={(e) => handleSeasonZipChange(seasonIndex, e.target.value)}
-                                fullWidth
-                                style={{ marginBottom: 10 }}
-                                required
-                            />
-                            <TextField
-                                label={`Number of Episodes in Season ${seasonIndex + 1}`}
-                                type="number"
-                                value={season.numberOfEpisodes || 1}
-                                onChange={(e) => handleEpisodesPerSeasonChange(seasonIndex, e.target.value)}
-                                inputProps={{ min: 1 }}
-                                style={{ width: '300px' }}
-                            />
-                        </div>
+                            {/* Zip Link Input for the Season */}
+                            <div style={{ marginBottom: '15px' }}>
+                                <TextField
+                                    label={`Zip Link for Season ${seasonIndex + 1}`}
+                                    value={season.zip || ''}
+                                    onChange={(e) => handleSeasonZipChange(seasonIndex, e.target.value)}
+                                    fullWidth
+                                    style={{ marginBottom: 10 }}
+                                    required
+                                />
+                                <TextField
+                                    label={`Number of Episodes in Season ${seasonIndex + 1}`}
+                                    type="number"
+                                    value={season.numberOfEpisodes || 1}
+                                    onChange={(e) => handleEpisodesPerSeasonChange(seasonIndex, e.target.value)}
+                                    inputProps={{ min: 1 }}
+                                    style={{ width: '300px' }}
+                                />
+                            </div>
 
-                        {Array.from({ length: season.numberOfEpisodes || 1 }, (_, episodeIndex) => {
-                            const fieldsByQuality = {
-                                '480P': ['link480P', 'size480P'],
-                                '720P': ['link480P', 'size480P', 'link720P', 'size720P'],
-                                '1080P': ['link480P', 'size480P', 'link720P', 'size720P', 'link1080P', 'size1080P'],
-                                '4K': ['link480P', 'size480P', 'link720P', 'size720P', 'link1080P', 'size1080P', 'link4k', 'size4k']
-                            };
-                            const fields = fieldsByQuality[quality] || [];
+                            {Array.from({ length: season.numberOfEpisodes || 1 }, (_, episodeIndex) => {
+                                const fieldsByQuality = {
+                                    '480P': ['link480P', 'size480P'],
+                                    '720P': ['link480P', 'size480P', 'link720P', 'size720P'],
+                                    '1080P': ['link480P', 'size480P', 'link720P', 'size720P', 'link1080P', 'size1080P'],
+                                    '4K': ['link480P', 'size480P', 'link720P', 'size720P', 'link1080P', 'size1080P', 'link4k', 'size4k']
+                                };
+                                const fields = fieldsByQuality[quality] || [];
 
-                            return (
-                                <div key={episodeIndex} style={{
-                                    marginBottom: '15px',
-                                    border: '1px solid #ccc',
-                                    borderRadius: '4px',
-                                    padding: '10px',
-                                    backgroundColor: 'white'
-                                }}>
-                                    <div style={{
-                                        fontWeight: 'bold',
-                                        marginBottom: '10px',
-                                        color: '#666'
+                                return (
+                                    <div key={episodeIndex} style={{
+                                        marginBottom: '15px',
+                                        border: '1px solid #ccc',
+                                        borderRadius: '4px',
+                                        padding: '10px',
+                                        backgroundColor: 'white'
                                     }}>
-                                        Season {seasonIndex + 1} - Episode {episodeIndex + 1}:
+                                        <div style={{
+                                            fontWeight: 'bold',
+                                            marginBottom: '10px',
+                                            color: '#666'
+                                        }}>
+                                            Season {seasonIndex + 1} - Episode {episodeIndex + 1}:
+                                        </div>
+                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                                            {fields.map(field => (
+                                                <div key={field} style={{ flex: '1 1 250px', minWidth: '250px' }}>
+                                                    <TextField
+                                                        label={field.replace(/([a-z])([A-Z])/g, '$1 $2').toUpperCase()}
+                                                        value={(season.episodesLinks && season.episodesLinks[episodeIndex] && season.episodesLinks[episodeIndex][field]) || ''}
+                                                        onChange={(e) => handleEpisodeFieldChange(seasonIndex, episodeIndex, field, e.target.value)}
+                                                        fullWidth
+                                                        size="small"
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
-                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                                        {fields.map(field => (
-                                            <div key={field} style={{ flex: '1 1 250px', minWidth: '250px' }}>
-                                                <TextField
-                                                    label={field.replace(/([a-z])([A-Z])/g, '$1 $2').toUpperCase()}
-                                                    value={(season.episodesLinks && season.episodesLinks[episodeIndex] && season.episodesLinks[episodeIndex][field]) || ''}
-                                                    onChange={(e) => handleEpisodeFieldChange(seasonIndex, episodeIndex, field, e.target.value)}
-                                                    fullWidth
-                                                    size="small"
-                                                />
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                ))}
-            </>
-        );
-    }
+                                );
+                            })}
+                        </div>
+                    ))}
+                </>
+            );
+        }
 
-    // For movies, show quality inputs
-    switch (quality) {
-        case "480P":
-            return (
-                <>
-                    <Grid item xs={12}>
-                        <TextField 
-                            value={link480P} 
-                            onChange={e => setLink480P(e.target.value)} 
-                            label="480P Link" 
-                            fullWidth 
-                        />
-                    </Grid>
-                    <Grid item xs={12}>
-                        <TextField 
-                            value={size480P} 
-                            onChange={e => setSize480P(e.target.value)} 
-                            label="480P Size" 
-                            fullWidth 
-                        />
-                    </Grid>
-                </>
-            );
-        case "720P":
-            return (
-                <>
-                    <Grid item xs={6}>
-                        <TextField 
-                            value={link480P} 
-                            onChange={e => setLink480P(e.target.value)} 
-                            label="480P Link" 
-                            fullWidth 
-                        />
-                    </Grid>
-                    <Grid item xs={6}>
-                        <TextField 
-                            value={link720P} 
-                            onChange={e => setLink720P(e.target.value)} 
-                            label="720P Link" 
-                            fullWidth 
-                        />
-                    </Grid>
-                    <Grid item xs={6}>
-                        <TextField 
-                            value={size480P} 
-                            onChange={e => setSize480P(e.target.value)} 
-                            label="480P Size" 
-                            fullWidth 
-                        />
-                    </Grid>
-                    <Grid item xs={6}>
-                        <TextField 
-                            value={size720P} 
-                            onChange={e => setSize720P(e.target.value)} 
-                            label="720P Size" 
-                            fullWidth 
-                        />
-                    </Grid>
-                </>
-            );
-        case "1080P":
-            return (
-                <>
-                    <Grid item xs={4}>
-                        <TextField 
-                            value={link480P} 
-                            onChange={e => setLink480P(e.target.value)} 
-                            label="480P Link" 
-                            fullWidth 
-                        />
-                    </Grid>
-                    <Grid item xs={4}>
-                        <TextField 
-                            value={link720P} 
-                            onChange={e => setLink720P(e.target.value)} 
-                            label="720P Link" 
-                            fullWidth 
-                        />
-                    </Grid>
-                    <Grid item xs={4}>
-                        <TextField 
-                            value={link1080P} 
-                            onChange={e => setLink1080P(e.target.value)} 
-                            label="1080P Link" 
-                            fullWidth 
-                        />
-                    </Grid>
-                    <Grid item xs={4}>
-                        <TextField 
-                            value={size480P} 
-                            onChange={e => setSize480P(e.target.value)} 
-                            label="480P Size" 
-                            fullWidth 
-                        />
-                    </Grid>
-                    <Grid item xs={4}>
-                        <TextField 
-                            value={size720P} 
-                            onChange={e => setSize720P(e.target.value)} 
-                            label="720P Size" 
-                            fullWidth 
-                        />
-                    </Grid>
-                    <Grid item xs={4}>
-                        <TextField 
-                            value={size1080P} 
-                            onChange={e => setSize1080P(e.target.value)} 
-                            label="1080P Size" 
-                            fullWidth 
-                        />
-                    </Grid>
-                </>
-            );
-        case "4K":
-            return (
-                <>
-                    <Grid item xs={3}>
-                        <TextField 
-                            value={link480P} 
-                            onChange={e => setLink480P(e.target.value)} 
-                            label="480P Link" 
-                            fullWidth 
-                        />
-                    </Grid>
-                    <Grid item xs={3}>
-                        <TextField 
-                            value={link720P} 
-                            onChange={e => setLink720P(e.target.value)} 
-                            label="720P Link" 
-                            fullWidth 
-                        />
-                    </Grid>
-                    <Grid item xs={3}>
-                        <TextField 
-                            value={link1080P} 
-                            onChange={e => setLink1080P(e.target.value)} 
-                            label="1080P Link" 
-                            fullWidth 
-                        />
-                    </Grid>
-                    <Grid item xs={3}>
-                        <TextField 
-                            value={link4k} 
-                            onChange={e => setLink4k(e.target.value)} 
-                            label="4K Link" 
-                            fullWidth 
-                        />
-                    </Grid>
-                    <Grid item xs={3}>
-                        <TextField 
-                            value={size480P} 
-                            onChange={e => setSize480P(e.target.value)} 
-                            label="480P Size" 
-                            fullWidth 
-                        />
-                    </Grid>
-                    <Grid item xs={3}>
-                        <TextField 
-                            value={size720P} 
-                            onChange={e => setSize720P(e.target.value)} 
-                            label="720P Size" 
-                            fullWidth 
-                        />
-                    </Grid>
-                    <Grid item xs={3}>
-                        <TextField 
-                            value={size1080P} 
-                            onChange={e => setSize1080P(e.target.value)} 
-                            label="1080P Size" 
-                            fullWidth 
-                        />
-                    </Grid>
-                    <Grid item xs={3}>
-                        <TextField 
-                            value={size4k} 
-                            onChange={e => setSize4k(e.target.value)} 
-                            label="4K Size" 
-                            fullWidth 
-                        />
-                    </Grid>
-                </>
-            );
-        default: 
-            return null;
-    }
-};
+        // For movies, show quality inputs
+        switch (quality) {
+            case "480P":
+                return (
+                    <>
+                        <Grid item xs={12}>
+                            <TextField 
+                                value={link480P} 
+                                onChange={e => setLink480P(e.target.value)} 
+                                label="480P Link" 
+                                fullWidth 
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField 
+                                value={size480P} 
+                                onChange={e => setSize480P(e.target.value)} 
+                                label="480P Size" 
+                                fullWidth 
+                            />
+                        </Grid>
+                    </>
+                );
+            case "720P":
+                return (
+                    <>
+                        <Grid item xs={6}>
+                            <TextField 
+                                value={link480P} 
+                                onChange={e => setLink480P(e.target.value)} 
+                                label="480P Link" 
+                                fullWidth 
+                            />
+                        </Grid>
+                        <Grid item xs={6}>
+                            <TextField 
+                                value={link720P} 
+                                onChange={e => setLink720P(e.target.value)} 
+                                label="720P Link" 
+                                fullWidth 
+                            />
+                        </Grid>
+                        <Grid item xs={6}>
+                            <TextField 
+                                value={size480P} 
+                                onChange={e => setSize480P(e.target.value)} 
+                                label="480P Size" 
+                                fullWidth 
+                            />
+                        </Grid>
+                        <Grid item xs={6}>
+                            <TextField 
+                                value={size720P} 
+                                onChange={e => setSize720P(e.target.value)} 
+                                label="720P Size" 
+                                fullWidth 
+                            />
+                        </Grid>
+                    </>
+                );
+            case "1080P":
+                return (
+                    <>
+                        <Grid item xs={4}>
+                            <TextField 
+                                value={link480P} 
+                                onChange={e => setLink480P(e.target.value)} 
+                                label="480P Link" 
+                                fullWidth 
+                            />
+                        </Grid>
+                        <Grid item xs={4}>
+                            <TextField 
+                                value={link720P} 
+                                onChange={e => setLink720P(e.target.value)} 
+                                label="720P Link" 
+                                fullWidth 
+                            />
+                        </Grid>
+                        <Grid item xs={4}>
+                            <TextField 
+                                value={link1080P} 
+                                onChange={e => setLink1080P(e.target.value)} 
+                                label="1080P Link" 
+                                fullWidth 
+                            />
+                        </Grid>
+                        <Grid item xs={4}>
+                            <TextField 
+                                value={size480P} 
+                                onChange={e => setSize480P(e.target.value)} 
+                                label="480P Size" 
+                                fullWidth 
+                            />
+                        </Grid>
+                        <Grid item xs={4}>
+                            <TextField 
+                                value={size720P} 
+                                onChange={e => setSize720P(e.target.value)} 
+                                label="720P Size" 
+                                fullWidth 
+                            />
+                        </Grid>
+                        <Grid item xs={4}>
+                            <TextField 
+                                value={size1080P} 
+                                onChange={e => setSize1080P(e.target.value)} 
+                                label="1080P Size" 
+                                fullWidth 
+                            />
+                        </Grid>
+                    </>
+                );
+            case "4K":
+                return (
+                    <>
+                        <Grid item xs={3}>
+                            <TextField 
+                                value={link480P} 
+                                onChange={e => setLink480P(e.target.value)} 
+                                label="480P Link" 
+                                fullWidth 
+                            />
+                        </Grid>
+                        <Grid item xs={3}>
+                            <TextField 
+                                value={link720P} 
+                                onChange={e => setLink720P(e.target.value)} 
+                                label="720P Link" 
+                                fullWidth 
+                            />
+                        </Grid>
+                        <Grid item xs={3}>
+                            <TextField 
+                                value={link1080P} 
+                                onChange={e => setLink1080P(e.target.value)} 
+                                label="1080P Link" 
+                                fullWidth 
+                            />
+                        </Grid>
+                        <Grid item xs={3}>
+                            <TextField 
+                                value={link4k} 
+                                onChange={e => setLink4k(e.target.value)} 
+                                label="4K Link" 
+                                fullWidth 
+                            />
+                        </Grid>
+                        <Grid item xs={3}>
+                            <TextField 
+                                value={size480P} 
+                                onChange={e => setSize480P(e.target.value)} 
+                                label="480P Size" 
+                                fullWidth 
+                            />
+                        </Grid>
+                        <Grid item xs={3}>
+                            <TextField 
+                                value={size720P} 
+                                onChange={e => setSize720P(e.target.value)} 
+                                label="720P Size" 
+                                fullWidth 
+                            />
+                        </Grid>
+                        <Grid item xs={3}>
+                            <TextField 
+                                value={size1080P} 
+                                onChange={e => setSize1080P(e.target.value)} 
+                                label="1080P Size" 
+                                fullWidth 
+                            />
+                        </Grid>
+                        <Grid item xs={3}>
+                            <TextField 
+                                value={size4k} 
+                                onChange={e => setSize4k(e.target.value)} 
+                                label="4K Size" 
+                                fullWidth 
+                            />
+                        </Grid>
+                    </>
+                );
+            default: 
+                return null;
+        }
+    };
 
     const openDialog = () => {
         return (
@@ -850,7 +861,7 @@ export default function DisplayAllMovie() {
                 </div>
                 <div style={{ margin: 10 }}>
                     <Grid container spacing={2}>
-                        <Grid size={3}>
+                        <Grid item xs={3}>
                             <FormControl error={error.categoryId} onFocus={() => handleErrorMessage('categoryId', null)} fullWidth>
                                 <InputLabel>Category</InputLabel>
                                 <Select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} label="Category" >
@@ -859,43 +870,60 @@ export default function DisplayAllMovie() {
                                 <FormHelperText>{error.categoryId}</FormHelperText>
                             </FormControl>
                         </Grid>
-                        <Grid size={3}>
-                            <TextField error={error.name} helperText={error.name} onFocus={() => handleErrorMessage('name', null)} label="Name" value={name} onChange={(e) => setName(e.target.value)} fullWidth></TextField>
+                        <Grid item xs={3}>
+                            <TextField error={error.name} helperText={error.name} onFocus={() => handleErrorMessage('name', null)} label="Name" value={name} onChange={(e) => setName(e.target.value)} fullWidth />
                         </Grid>
-                        <Grid size={3}>
-                            <TextField error={error.year} helperText={error.year} onFocus={() => handleErrorMessage('year', null)} label='Year' value={year} onChange={(e) => setYear(e.target.value)} fullWidth></TextField>
+                        <Grid item xs={3}>
+                            <TextField error={error.year} helperText={error.year} onFocus={() => handleErrorMessage('year', null)} label='Year' value={year} onChange={(e) => setYear(e.target.value)} fullWidth />
                         </Grid>
-                        <Grid size={3}>
-                            <TextField error={error.title} helperText={error.title} onFocus={() => handleErrorMessage('title', null)} label='Title' value={title} onChange={(e) => setTitle(e.target.value)} fullWidth></TextField>
+                        <Grid item xs={3}>
+                            <TextField error={error.title} helperText={error.title} onFocus={() => handleErrorMessage('title', null)} label='Title' value={title} onChange={(e) => setTitle(e.target.value)} fullWidth />
                         </Grid>
-                        <Grid size={12}>
+                        <Grid item xs={12}>
                             <FormControl error={error.selectedLanguage} onFocus={() => handleErrorMessage('selectedLanguage', null)} component="fieldset" fullWidth>
                                 <FormLabel component="legend">Language</FormLabel>
                                 <FormGroup row>
-                                    {languageList.map((language) => (
-                                        <FormControlLabel key={language} control={<Checkbox checked={selectedLanguage.includes(language)} onChange={handleLanguageChange} name={language} />}
-                                            label={language} />
+                                    {languagesList.map((item) => (
+                                        <FormControlLabel 
+                                            key={item.languageid}
+                                            control={
+                                                <Checkbox 
+                                                    checked={selectedLanguage.includes(item.language)} 
+                                                    onChange={handleLanguageChange} 
+                                                    name={item.language} 
+                                                />
+                                            }
+                                            label={item.language}
+                                        />
                                     ))}
                                 </FormGroup>
                                 <FormHelperText>{error.selectedLanguage}</FormHelperText>
                             </FormControl>
                         </Grid>
-                        <Grid size={12}>
+                        <Grid item xs={12}>
                             <FormControl error={error.selectedGenres} onFocus={() => handleErrorMessage('selectedGenres', null)} component="fieldset" fullWidth>
                                 <FormLabel component="legend">Genre</FormLabel>
                                 <FormGroup row>
-                                    {genresList.map((genre) => (
-                                        <FormControlLabel key={genre} control={<Checkbox checked={selectedGenres.includes(genre)} onChange={handleGenreChange} name={genre} />}
-                                            label={genre}
+                                    {genreList.map((item) => (
+                                        <FormControlLabel 
+                                            key={item.genreid}
+                                            control={
+                                                <Checkbox 
+                                                    checked={selectedGenres.includes(item.genre)} 
+                                                    onChange={handleGenreChange} 
+                                                    name={item.genre} 
+                                                />
+                                            }
+                                            label={item.genre}
                                         />
                                     ))}
                                 </FormGroup>
                                 <FormHelperText>{error.selectedGenres}</FormHelperText>
                             </FormControl>
                         </Grid>
-                        <Grid size={12} >
+                        <Grid item xs={12}>
                             <FormControl error={error.description} onFocus={() => handleErrorMessage('description', null)} fullWidth>
-                                <FormLabel >Description</FormLabel>
+                                <FormLabel>Description</FormLabel>
                                 <ReactQuill
                                     label="Description"
                                     value={description}
@@ -916,9 +944,8 @@ export default function DisplayAllMovie() {
                                 />
                                 <div className={classes.helperTextStyle}>{error.description}</div>
                             </FormControl>
-
                         </Grid>
-                        <Grid size={4}>
+                        <Grid item xs={4}>
                             <FormControl component="fieldset">
                                 <FormLabel component="legend">Content Type</FormLabel>
                                 <RadioGroup
@@ -932,7 +959,7 @@ export default function DisplayAllMovie() {
                             </FormControl>
                         </Grid>
 
-                        <Grid size={8}>
+                        <Grid item xs={8}>
                             <FormControl error={error.quality} onFocus={() => handleErrorMessage('quality', null)} fullWidth>
                                 <FormLabel>Quality</FormLabel>
                                 <RadioGroup row value={quality} onChange={(e) => setQuality(e.target.value)}>
@@ -948,10 +975,10 @@ export default function DisplayAllMovie() {
                         {/* Render quality inputs based on selected contentType */}
                         {handleQualityInputs()}
 
-                        <Grid size={6}>
+                        <Grid item xs={6}>
                             <Button variant="contained" onClick={handleClick} fullWidth>Submit</Button>
                         </Grid>
-                        <Grid size={6}>
+                        <Grid item xs={6}>
                             <Button variant="contained" onClick={handleReset} fullWidth>Reset</Button>
                         </Grid>
                     </Grid>
@@ -970,10 +997,10 @@ export default function DisplayAllMovie() {
                 </div>
                 <div style={{ margin: 10 }}>
                     <Grid container spacing={2}>
-                        <Grid size={6}  >
+                        <Grid item xs={6}>
                             <img style={{ margin: 0 }} src={image.filename} width={150} alt="preview" />
                         </Grid>
-                        <Grid size={6}  >
+                        <Grid item xs={6}>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 50, flexDirection: 'column' }}>
                                 <Button fullWidth component="label" variant="outlined">
                                     Upload Image
@@ -982,10 +1009,10 @@ export default function DisplayAllMovie() {
                                 <div className={classes.helperTextStyle}>{error.image}</div>
                             </div>
                         </Grid>
-                        <Grid size={6}>
+                        <Grid item xs={6}>
                             <Button variant="contained" onClick={handleClick} fullWidth>Submit</Button>
                         </Grid>
-                        <Grid size={6}>
+                        <Grid item xs={6}>
                             <Button variant="contained" onClick={handleReset} fullWidth>Reset</Button>
                         </Grid>
                     </Grid>
@@ -997,6 +1024,7 @@ export default function DisplayAllMovie() {
     const handleRemoveScreenshot = (index) => {
         setScreenshot(prev => prev.filter((_, i) => i !== index));
     };
+
     const showImage = () => {
         if (screenshot.length === 0) {
             return (
@@ -1039,6 +1067,7 @@ export default function DisplayAllMovie() {
             </ImageList>
         );
     };
+
     const handleScreenshotSave = async () => {
         try {
             if (!movieId) throw new Error('Movie ID is missing');
@@ -1079,6 +1108,7 @@ export default function DisplayAllMovie() {
             });
         }
     };
+
     const screenshotForm = () => {
         return (
             <div className={classes.box2}>
@@ -1215,6 +1245,7 @@ export default function DisplayAllMovie() {
             </div>
         );
     }
+
     return (
         <div>
             <div>
