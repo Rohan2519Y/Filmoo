@@ -56,6 +56,7 @@ export default function Header() {
             .animate-slide-in-right {
                 animation: slideInFromRight 0.3s ease-out forwards;
             }
+
             @keyframes slideOutFromRight {
                 from {
                     transform: translateX(0);
@@ -67,6 +68,31 @@ export default function Header() {
             .animate-slide-out-right {
                 animation: slideOutFromRight 0.3s ease-out forwards;
             }
+
+            @keyframes slidedown {
+                from {
+                    transform: translateY(0);
+                }
+                to {
+                    transform: translateY(100%);
+                }
+            }
+            .animate-slidedown {
+                animation: slidedown 0.3s ease-out forwards;
+            }
+
+            @keyframes slideup {
+                from {
+                    transform: translateY(100%);
+                }
+                to {
+                    transform: translateY(0);
+                }
+            }
+            .animate-slideup {
+                animation: slideup 0.3s ease-out forwards;
+            }
+                
         `}</style>
         <div className="bg-gray-500 border-b border-[#333333] shadow-xl  md:h-[100px] h-[80px] w-full flex relative">
             <div className="h-full md:w-[30%] w-[40%] flex justify-center items-center mr-auto">
