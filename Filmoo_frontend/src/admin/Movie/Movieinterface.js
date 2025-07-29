@@ -315,7 +315,6 @@ export default function MovieInterface() {
                     text: result.message,
                     toast: true
                 });
-                navigate('/displayallmovie')
             }
             else {
                 Swal.fire({
