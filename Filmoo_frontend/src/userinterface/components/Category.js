@@ -13,7 +13,7 @@ export default function Category() {
     }, [])
 
     return (<>
-        <div className="w-full md:min-h-[60px] flex justify-center items-center">
+        <div className="w-full md:min-h-[80px] flex justify-center items-center">
             <div className=" w-[98%] mid:w-[1280px] h-full flex md:justify-between justify-evenly items-center flex-wrap">
                 {categoryList.map((item) => (
                     <div className="h-[50px] md:w-[20%] w-[40%] my-3 md:my-0 

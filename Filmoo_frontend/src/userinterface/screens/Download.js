@@ -15,7 +15,7 @@ export default function Download() {
     }
 
     useEffect(function () {
-        fetchAllMovie()
+        fetchAllMovie() 
     }, [])
 
     return (<>
@@ -23,7 +23,7 @@ export default function Download() {
             <Header />
             <Search />
             <Category />
-            <Title title={movieList[0].title}/>
+            <Title title={movieList[0]}/>
         </div>
     </>)
 }
