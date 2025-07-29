@@ -672,29 +672,7 @@ export default function MovieInterface() {
                                 </FormControl>
                             </Grid>
                             <Grid size={12} >
-                                <FormControl error={error.description} onFocus={() => handleErrorMessage('description', null)} fullWidth>
-                                    <FormLabel >Description</FormLabel>
-                                    <ReactQuill
-                                        label="Description"
-                                        value={description}
-                                        onChange={setDescription}
-                                        modules={{
-                                            toolbar: [
-                                                ['bold', 'italic', 'underline', 'strike'],
-                                                [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-                                                ['link', 'image', 'video'],
-                                                ['clean']
-                                            ],
-                                        }}
-                                        formats={[
-                                            'bold', 'italic', 'underline', 'strike',
-                                            'list', 'bullet',
-                                            'link', 'image'
-                                        ]}
-                                    />
-                                    <div className={classes.helperTextStyle}>{error.description}</div>
-                                </FormControl>
-
+                                <TextField error={error.description} helperText={error.description} onFocus={() => handleErrorMessage('description', null)} label="Description" value={description} onChange={(e) => setDescription(e.target.value)} fullWidth></TextField>
                             </Grid>
                             <Grid size={4}>
                                 <FormControl component="fieldset">

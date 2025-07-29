@@ -1,18 +1,7 @@
 import { useEffect, useState } from "react"
 import { getData, serverURL } from "../../backendservices/FetchNodeServices"
 
-export default function Card() {
-
-    const [movieList, setMovieList] = useState([])
-
-    const fetchAllMovie = async () => {
-        var res = await getData('movie/fetch_movies')
-        setMovieList(res.data)
-    }
-
-    useEffect(function () {
-        fetchAllMovie()
-    }, [])
+export default function Card({movieList}) {
 
     return (<>
         {movieList.map((item) => (
