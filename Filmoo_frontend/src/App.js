@@ -11,7 +11,7 @@ function App() {
           <Route element={<MovieInterface />} path="/movieinterface" />
           <Route element={<DisplayAllMovie />} path="/displayallmovie" />
           <Route element={<Home />} path="/" />
-          <Route element={<Download />} path="/download" />
+          <Route element={<Download />} path="/download/:movieid" />
         </Routes>
       </Router>
     </div>

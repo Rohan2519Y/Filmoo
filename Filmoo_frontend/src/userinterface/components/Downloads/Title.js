@@ -1,4 +1,5 @@
 export default function Title({ title }) {
+    console.log('title',title)
     return (<>
         <div className="w-full min-h-[100px] flex justify-center items-center flex-col">
             <hr className="w-[98%] mid:w-[1280px] my-3 border-slate-600"></hr>
