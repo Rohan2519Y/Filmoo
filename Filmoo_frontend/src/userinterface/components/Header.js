@@ -122,7 +122,7 @@ export default function Header() {
                 </div>
 
                 {menu &&
-                    <div className={`bg-black opacity-[60%] md:hidden fixed z-40 h-full w-[70%] right-0 flex justify-center ${isClosing ? 'animate-slide-out-right' : 'animate-slide-in-right'}`}>
+                    <div className={`bg-black opacity-[70%] md:hidden fixed z-40 h-full w-[70%] right-0 flex justify-center ${isClosing ? 'animate-slide-out-right' : 'animate-slide-in-right'}`}>
                         <CloseIcon onClick={handleClose} style={{ fontSize: '200%' }} className='text-white absolute right-5 top-4 cursor-pointer' />
                         <div className='h-auto w-full flex justify-center items-center flex-col top-[60px] absolute overflow-y-auto'>
                             <hr className='bg-white opacity-[100%] w-[90%]'></hr>
@@ -138,7 +138,7 @@ export default function Header() {
                     </div>}
 
                 {activeMenu === 'category' && (<>
-                    <div className="w-[300px] bg-gradient-to-r from-blue-700 to-cyan-700 fixed top-[8%] right-[34.5%] md:flex hidden flex-wrap shadow-2xl rounded-md animate-slidedown"
+                    <div className="w-[300px] z-50 bg-gradient-to-r from-blue-700 to-cyan-700 fixed top-[8%] right-[34.5%] md:flex hidden flex-wrap shadow-2xl rounded-md animate-slidedown"
                         onMouseEnter={() => setActiveMenu('category')}
                         onMouseLeave={() => setActiveMenu('')}>
                         {categoryList.map((item, index) => (
@@ -147,7 +147,7 @@ export default function Header() {
                             </div>
                         ))}
                     </div>
-                    <div className={`bg-black opacity-[80%] md:hidden fixed z-40 h-full w-full flex justify-center ${closing ? 'animate-slide-out-right' : 'animate-slide-in-right'}`}>
+                    <div className={`bg-black opacity-[90%] md:hidden fixed z-40 h-full w-full flex justify-center ${closing ? 'animate-slide-out-right' : 'animate-slide-in-right'}`}>
                         <CloseIcon onClick={handleMenuClose} style={{ fontSize: '200%' }} className='text-white absolute right-5 top-4 cursor-pointer' />
                         <div className='absolute top-[60px] w-full h-[calc(100vh-60px)] flex justify-center'>
                             <div className='w-full max-h-full overflow-y-auto'>
@@ -168,7 +168,7 @@ export default function Header() {
                 </>)}
 
                 {activeMenu === 'genre' && (<>
-                    <div className="w-[300px] bg-gradient-to-r from-blue-700 to-cyan-700 fixed top-[8%] right-[18.5%] md:flex hidden flex-wrap shadow-2xl rounded-md animate-slidedown"
+                    <div className="w-[300px] bg-gradient-to-r from-blue-700 to-cyan-700 fixed top-[8%] right-[18.5%] md:flex hidden flex-wrap shadow-2xl rounded-md animate-slidedown z-50"
                         onMouseEnter={() => setActiveMenu('genre')}
                         onMouseLeave={() => setActiveMenu('')}>
                         {genreList.map((item, index) => (
@@ -177,7 +177,7 @@ export default function Header() {
                             </div>
                         ))}
                     </div>
-                    <div className={`bg-black opacity-[80%] md:hidden fixed z-40 h-full w-full flex justify-center ${closing ? 'animate-slide-out-right' : 'animate-slide-in-right'}`}>
+                    <div className={`bg-black opacity-[90%] md:hidden fixed z-40 h-full w-full flex justify-center ${closing ? 'animate-slide-out-right' : 'animate-slide-in-right'}`}>
                         <CloseIcon onClick={handleMenuClose} style={{ fontSize: '200%' }} className='text-white absolute right-5 top-4 cursor-pointer' />
                         <div className='absolute top-[60px] w-full h-[calc(100vh-60px)] flex justify-center'>
                             <div className='w-full max-h-full overflow-y-auto'>
@@ -185,7 +185,7 @@ export default function Header() {
                                     <hr className='bg-white w-[90%]' />
                                     {genreList.map((item, index=0) => (
                                         <React.Fragment key={index++}>
-                                            <div className='w-full h-[70px] flex justify-center items-center text-white text-2xl cursor-pointer'>
+                                            <div className='w-full h-[70px] flex justify-center items-center text-white text-lg cursor-pointer'>
                                                 {item.genre}
                                             </div>
                                             <hr className='bg-white w-[90%]' />
@@ -198,7 +198,7 @@ export default function Header() {
                 </>)}
 
                 {activeMenu === 'language' && (<>
-                    <div className="w-[300px] bg-gradient-to-r from-blue-700 to-cyan-700 fixed top-[8%] right-[3.4%] md:flex hidden flex-wrap shadow-2xl rounded-md animate-slidedown"
+                    <div className="w-[300px] z-50 bg-gradient-to-r from-blue-700 to-cyan-700 fixed top-[8%] right-[3.4%] md:flex hidden flex-wrap shadow-2xl rounded-md animate-slidedown"
                         onMouseEnter={() => setActiveMenu('language')}
                         onMouseLeave={() => setActiveMenu('')}>
                         {languageList.map((item, index) => (
@@ -207,7 +207,7 @@ export default function Header() {
                             </div>
                         ))}
                     </div>
-                    <div className={`bg-black opacity-[80%] md:hidden fixed z-40 h-full w-full flex justify-center ${closing ? 'animate-slide-out-right' : 'animate-slide-in-right'}`}>
+                    <div className={`bg-black opacity-[90%] md:hidden fixed z-40 h-full w-full flex justify-center ${closing ? 'animate-slide-out-right' : 'animate-slide-in-right'}`}>
                         <CloseIcon onClick={handleMenuClose} style={{ fontSize: '200%' }} className='text-white absolute right-5 top-4 cursor-pointer' />
                         <div className='absolute top-[60px] w-full h-[calc(100vh-60px)] flex justify-center'>
                             <div className='w-full max-h-full overflow-y-auto'>
@@ -215,7 +215,7 @@ export default function Header() {
                                     <hr className='bg-white w-[90%]' />
                                     {languageList.map((item, index=0) => (
                                         <React.Fragment key={index++}>
-                                            <div className='w-full h-[70px] flex justify-center items-center text-white text-2xl cursor-pointer'>
+                                            <div className='w-full h-[70px] flex justify-center items-center text-white text-lg cursor-pointer'>
                                                 {item.language}
                                             </div>
                                             <hr className='bg-white w-[90%]' />

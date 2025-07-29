@@ -21,6 +21,7 @@ export default function Category() {
                         flex justify-center items-center shadow-3xl
                       text-slate-200 font-medium text-lg 
                       hover:text-slate-100 hover:font-semibold 
+                      transition-all duration-300 transform hover:scale-110
                         hover:bg-gradient-to-r hover:from-blue-400 hover:via-indigo-500 hover:to-purple-500 
                         cursor-pointer rounded-lg ">
                         {item.categoryname}
