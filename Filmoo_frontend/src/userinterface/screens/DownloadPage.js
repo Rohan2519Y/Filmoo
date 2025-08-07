@@ -9,8 +9,9 @@ import Detail from "../components/Downloads/Detail";
 import Description from "../components/Downloads/Description";
 import Screenshot from "../components/Downloads/Screenshot";
 import { useParams } from "react-router-dom";
+import Poster from "../components/Downloads/Poster";
 
-export default function Download() {
+export default function DownloadPage() {
 
   const [movieList, setMovieList] = useState({})
   const params=useParams()
@@ -39,6 +40,7 @@ export default function Download() {
       {movieList.length > 0 && (
         <>
           <Title title={movieList[0]} />
+          <Poster image={movieList[0].image}/>
           <Detail detail={movieList[0]} />
           <Description description={movieList[0]?.description}/>
           <Screenshot screenshot={movieList[0]?.screenshot}/>
