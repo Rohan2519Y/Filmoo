@@ -10,6 +10,7 @@ import Description from "../components/Downloads/Description";
 import Screenshot from "../components/Downloads/Screenshot";
 import { useParams } from "react-router-dom";
 import Poster from "../components/Downloads/Poster";
+import MovieDownload from "../components/Downloads/MovieDownload";
 
 export default function DownloadPage() {
 
@@ -44,6 +45,7 @@ export default function DownloadPage() {
           <Detail detail={movieList[0]} />
           <Description description={movieList[0]?.description}/>
           <Screenshot screenshot={movieList[0]?.screenshot}/>
+          <MovieDownload download={movieList[0]}/>
         </>
       )}
       <Footer/>
