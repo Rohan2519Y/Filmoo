@@ -1,4 +1,5 @@
 import { Button } from "@mui/material";
+import { useNavigate } from "react-router";
 
 export default function MovieDownload({ download }) {
 
@@ -39,8 +40,8 @@ export default function MovieDownload({ download }) {
     //         return console.log(ep.link480P, '480p')
     //     })
     // })
-    console.log('doenload', download.eplinks)
-    console.log('movie', download)
+
+    const navigate=useNavigate()
 
     return (<>
         <div className="w-full min-h-[100px] flex justify-center items-center flex-col">
@@ -83,11 +84,10 @@ export default function MovieDownload({ download }) {
                     <div className="w-full flex justify-center items-center flex-col">
                         {JSON.parse(download.eplinks).map((season) => (
                           <div className='w-full h-[80px] flex justify-center items-center'>
-                            
                             <button className="w-[200px] h-[60%] text-white font-semibold rounded-lg shadow-md transition-all duration-300 
                               bg-gradient-to-r from-indigo-600 via-blue-700 to-indigo-800 
                             hover:from-indigo-900 hover:via-blue-900 hover:to-indigo-900 
-                              active:scale-95 active:shadow-inner">Download Season {season.seasonNumber}</button>
+                              active:scale-95 active:shadow-inner" onClick={()=>navigate(`/series/${download.movieid}/${season.seasonNumber}`)}>Download Season {season.seasonNumber}</button>
                               </div>
                         ))}
                     </div>

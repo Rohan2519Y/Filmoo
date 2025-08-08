@@ -6,7 +6,7 @@ router.get('/fetch_movies', function (req, res, next) {
     try {
         pool.query('select C.*,M.* from category C,movie M where C.categoryid=M.categoryid', function (error, result) {
             if (error) {
-                res.status(200).json({ status: false, message: 'Database Error,Pls Contact Backend Team' })
+                res.status(202).json({ status: false, message: 'Database Error,Pls Contact Backend Team' })
             }
             else {
                 // Process the result to parse episode data for series
@@ -26,14 +26,14 @@ router.get('/fetch_movies', function (req, res, next) {
         })
     }
     catch (e) {
-        res.status(200).json({ status: false, message: 'Critical Error,Pls Contact Server Administrator' })
+        res.status(201).json({ status: false, message: 'Critical Error,Pls Contact Server Administrator' })
     }
 })
 router.post('/fetch_movies_by_id', function (req, res, next) {
     try {
         pool.query('select C.*,M.* from category C,movie M where C.categoryid=M.categoryid and movieid=?', [req.body.movieid],function (error, result) {
             if (error) {
-                res.status(200).json({ status: false, message: 'Database Error,Pls Contact Backend Team' })
+                res.status(300).json({ status: false, message: 'Database Error,Pls Contact Backend Team' })
             }
             else {
                 // Process the result to parse episode data for series
@@ -53,7 +53,7 @@ router.post('/fetch_movies_by_id', function (req, res, next) {
         })
     }
     catch (e) {
-        res.status(200).json({ status: false, message: 'Critical Error,Pls Contact Server Administrator' })
+        res.status(500).json({ status: false, message: 'Critical Error,Pls Contact Server Administrator' })
     }
 })
 

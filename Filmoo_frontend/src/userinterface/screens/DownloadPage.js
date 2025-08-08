@@ -14,10 +14,8 @@ import MovieDownload from "../components/Downloads/MovieDownload";
 
 export default function DownloadPage() {
 
-  const [movieList, setMovieList] = useState({})
+  const [movieList, setMovieList] = useState([])
   const params=useParams()
-  console.log(params)
-  console.log('movie',movieList)
 
   const fetchAllMovie = async () => {
     try {
