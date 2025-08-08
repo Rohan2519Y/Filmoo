@@ -21,8 +21,7 @@ export default function DownloadPage() {
 
   const fetchAllMovie = async () => {
     try {
-      const res = await postData("download/fetch_movies_by_id",{movieid:params.movieid});
-      console.log("Fetched:", res.data)
+      const res = await postData("download/fetch_movies_by_id",{movieid:params.movieid})
       setMovieList(res.data);
     } catch (error) {
       console.error("Failed to fetch:", error);

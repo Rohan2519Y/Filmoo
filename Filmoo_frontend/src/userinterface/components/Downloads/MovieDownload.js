@@ -1,6 +1,47 @@
 import { Button } from "@mui/material";
 
 export default function MovieDownload({ download }) {
+
+    // var data = [
+    //     {
+    //         "seasonNumber": 1, "numberOfEpisodes": 1, "zip": "https://drive.google.com/uc?export=download&id=1UQYUSbLbZq4ZiXIomX515ASMK1yrdr5J", "episodesLinks":
+    //             [
+    //                 {
+    //                     "link480P": "https://drive.google.com/uc?export=download&id=1UQYUSbLbZq4ZiXIomX515ASMK1yrdr5J", "size480P": "200MB",
+    //                     "link720P": "https://drive.google.com/uc?export=download&id=1UQYUSbLbZq4ZiXIomX515ASMK1yrdr5J", "size720P": "400MB",
+    //                     "link1080P": "", "size1080P": "",
+    //                     "link4k": "", "size4k": ""
+    //                 }
+    //             ]
+    //     },
+    //     {
+    //         "seasonNumber": 2, "numberOfEpisodes": 2, "zip": "https://drive.google.com/uc?export=download&id=1UQYUSbLbZq4ZiXIomX515ASMK1yrdr5J", "episodesLinks":
+    //             [
+    //                 {
+    //                     "link480P": "https://drive.google.com/uc?export=download&id=1UQYUSbLbZq4ZiXIomX515ASMK1yrdr5J", "size480P": "200MB",
+    //                     "link720P": "https://drive.google.com/uc?export=download&id=1UQYUSbLbZq4ZiXIomX515ASMK1yrdr5J", "size720P": "400MB",
+    //                     "link1080P": "", "size1080P": "", "link4k": "", "size4k": ""
+    //                 },
+    //                 {
+    //                     "link480P": "https://drive.google.com/uc?export=download&id=1UQYUSbLbZq4ZiXIomX515ASMK1yrdr5J", "size480P": "200MB",
+    //                     "link720P": "https://drive.google.com/uc?export=download&id=1UQYUSbLbZq4ZiXIomX515ASMK1yrdr5J", "size720P": "400MB",
+    //                     "link1080P": "", "size1080P": "",
+    //                     "link4k": "", "size4k": ""
+    //                 }
+    //             ]
+    //     }
+    // ]
+
+    // const data=download.eplinks
+
+    // const seasonNumber = data.map((item, i) => {
+    //     const episode = item.episodesLinks.map((ep) => {
+    //         return console.log(ep.link480P, '480p')
+    //     })
+    // })
+    console.log('doenload', download.eplinks)
+    console.log('movie', download)
+
     return (<>
         <div className="w-full min-h-[100px] flex justify-center items-center flex-col">
             <div className=" w-[98%] mid:w-[1280px] min-h-[150px] flex justify-center items-center flex-col">
@@ -38,7 +79,19 @@ export default function MovieDownload({ download }) {
                             hover:from-indigo-900 hover:via-blue-900 hover:to-indigo-900 
                               active:scale-95 active:shadow-inner">Download Now</button></a>
                     </> : <></>}
-                </> : <></>}
+                </> : <>
+                    <div className="w-full flex justify-center items-center flex-col">
+                        {JSON.parse(download.eplinks).map((season) => (
+                          <div className='w-full h-[80px] flex justify-center items-center'>
+                            
+                            <button className="w-[200px] h-[60%] text-white font-semibold rounded-lg shadow-md transition-all duration-300 
+                              bg-gradient-to-r from-indigo-600 via-blue-700 to-indigo-800 
+                            hover:from-indigo-900 hover:via-blue-900 hover:to-indigo-900 
+                              active:scale-95 active:shadow-inner">Download Season {season.seasonNumber}</button>
+                              </div>
+                        ))}
+                    </div>
+                </>}
             </div>
         </div>
     </>)
