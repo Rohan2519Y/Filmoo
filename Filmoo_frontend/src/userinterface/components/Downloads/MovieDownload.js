@@ -18,7 +18,7 @@ export default function MovieDownload({ download }) {
   return (<>
     <div className="w-full min-h-[100px] flex justify-center items-center flex-col">
       <div className=" w-[98%] mid:w-[1280px] min-h-[150px] flex justify-center items-center flex-col">
-        <div className="w-full h-[60px] flex justify-center items-center text-3xl font-bold text-cyan-500">Downloads</div>
+        <div className="w-full h-[60px] flex justify-center items-center text-xl md:text-3xl font-bold text-cyan-500">Downloads</div>
         {download?.content == 'movie' ? <>
           {download?.link480p?.length > 0 ? <>
             <div className="w-full h-[50px] flex justify-center items-center text-xl font-semibold flex-col">Quality : 480P {`{${download.language}}`} Size : {download.size480p}</div>

@@ -3,7 +3,10 @@ import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import { useEffect, useState } from 'react';
 import { getData } from '../../backendservices/FetchNodeServices';
+import { useNavigate } from 'react-router';
 export default function Header() {
+
+    const navigate = useNavigate()
     const [menu, setMenu] = useState(false);
     const [isClosing, setIsClosing] = useState(false);
     const [closing, setClosing] = useState(false);
@@ -93,7 +96,7 @@ export default function Header() {
                     <img src="https://res.cloudinary.com/dio6iadsq/image/upload/v1753368344/logo_ho4bun.png" className="max-w-[90%] max-h-[80%] cursor-pointer" />
                 </div>
                 <div className="w-[70%] md:flex hidden justify-evenly items-center pr-5">
-                    <div className="text-white w-[15%] flex justify-center items-center text-lg cursor-pointer hover:text-red-500 hover:font-medium">Home</div>
+                    <div onClick={() => { navigate('/') }} className="text-white w-[15%] flex justify-center items-center text-lg cursor-pointer hover:text-red-500 hover:font-medium">Home</div>
                     <div
                         onMouseEnter={() => setActiveMenu('category')}
                         onMouseLeave={() => setActiveMenu('')}
@@ -126,7 +129,7 @@ export default function Header() {
                         <CloseIcon onClick={handleClose} style={{ fontSize: '200%' }} className='text-white absolute right-5 top-4 cursor-pointer' />
                         <div className='h-auto w-full flex justify-center items-center flex-col top-[60px] absolute overflow-y-auto'>
                             <hr className='bg-white opacity-[100%] w-[90%]'></hr>
-                            <div className='w-full h-[60px] flex justify-center items-center text-white text-lg opacity-[100%] cursor-pointer '>Home</div>
+                            <div onClick={() => { navigate('/') }} className='w-full h-[60px] flex justify-center items-center text-white text-lg opacity-[100%] cursor-pointer '>Home</div>
                             <hr className='bg-white opacity-[100%] w-[90%]'></hr>
                             <div onClick={() => handleMenu('category')} className='w-full h-[60px] flex justify-center items-center text-white text-lg opacity-[100%] cursor-pointer '>Category</div>
                             <hr className='bg-white opacity-[100%] w-[90%]'></hr>
@@ -153,7 +156,7 @@ export default function Header() {
                             <div className='w-full max-h-full overflow-y-auto'>
                                 <div className='flex flex-col items-center'>
                                     <hr className='bg-white w-[90%]' />
-                                    {categoryList.map((item, index=0) => (
+                                    {categoryList.map((item, index = 0) => (
                                         <React.Fragment key={index++}>
                                             <div className='w-full h-[60px] flex justify-center items-center text-white text-lg cursor-pointer'>
                                                 {item.categoryname}
@@ -183,7 +186,7 @@ export default function Header() {
                             <div className='w-full max-h-full overflow-y-auto'>
                                 <div className='flex flex-col items-center'>
                                     <hr className='bg-white w-[90%]' />
-                                    {genreList.map((item, index=0) => (
+                                    {genreList.map((item, index = 0) => (
                                         <React.Fragment key={index++}>
                                             <div className='w-full h-[70px] flex justify-center items-center text-white text-lg cursor-pointer'>
                                                 {item.genre}
@@ -213,7 +216,7 @@ export default function Header() {
                             <div className='w-full max-h-full overflow-y-auto'>
                                 <div className='flex flex-col items-center'>
                                     <hr className='bg-white w-[90%]' />
-                                    {languageList.map((item, index=0) => (
+                                    {languageList.map((item, index = 0) => (
                                         <React.Fragment key={index++}>
                                             <div className='w-full h-[70px] flex justify-center items-center text-white text-lg cursor-pointer'>
                                                 {item.language}
