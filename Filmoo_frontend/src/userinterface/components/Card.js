@@ -7,8 +7,9 @@ export default function Card({ movieList }) {
 
   return (
     <>
-      {movieList.slice(0, 20).map((item) => ( // 👈 only first 20
+      {movieList?.map((item) => (
         <div
+          key={item.movieid}
           onClick={() => {
             navigate(`/download/${item.movieid}`);
           }}
@@ -20,6 +21,7 @@ export default function Card({ movieList }) {
               <img
                 src={`${serverURL}/images/${item?.image}`}
                 className="max-w-full max-h-full"
+                alt={item?.title}
               />
             </div>
             <div className="w-full h-[40%] flex justify-center items-center">
