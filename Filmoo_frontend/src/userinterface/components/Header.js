@@ -125,7 +125,7 @@ export default function Header() {
                 </div>
 
                 {menu &&
-                    <div className={`bg-black opacity-[70%] md:hidden fixed z-40 h-full w-[70%] right-0 flex justify-center ${isClosing ? 'animate-slide-out-right' : 'animate-slide-in-right'}`}>
+                    <div className={`bg-black opacity-[70%] md:hidden fixed z-50 h-full w-[70%] right-0 flex justify-center ${isClosing ? 'animate-slide-out-right' : 'animate-slide-in-right'}`}>
                         <CloseIcon onClick={handleClose} style={{ fontSize: '200%' }} className='text-white absolute right-5 top-4 cursor-pointer' />
                         <div className='h-auto w-full flex justify-center items-center flex-col top-[60px] absolute overflow-y-auto'>
                             <hr className='bg-white opacity-[100%] w-[90%]'></hr>
