@@ -216,57 +216,6 @@ export default function MovieInterface() {
                     });
                     break;
                 }
-
-                for (let episodeIndex = 0; episodeIndex < season.numberOfEpisodes; episodeIndex++) {
-                    let episode = season.episodesLinks[episodeIndex] || {};
-                    switch (quality) {
-                        case "480P":
-                            if (!episode.link480P || !episode.size480P) {
-                                err = true;
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: `Season ${seasonIndex + 1}, Episode ${episodeIndex + 1} is missing 480P link or size!`
-                                });
-                                break;
-                            }
-                            break;
-                        case "720P":
-                            if (!episode.link480P || !episode.size480P || !episode.link720P || !episode.size720P) {
-                                err = true;
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: `Season ${seasonIndex + 1}, Episode ${episodeIndex + 1} is missing 480P or 720P link or size!`
-                                });
-                                break;
-                            }
-                            break;
-                        case "1080P":
-                            if (!episode.link480P || !episode.size480P || !episode.link720P || !episode.size720P
-                                || !episode.link1080P || !episode.size1080P) {
-                                err = true;
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: `Season ${seasonIndex + 1}, Episode ${episodeIndex + 1} is missing one or more links or sizes for 480P, 720P or 1080P!`
-                                });
-                                break;
-                            }
-                            break;
-                        case "4K":
-                            if (!episode.link480P || !episode.size480P || !episode.link720P || !episode.size720P
-                                || !episode.link1080P || !episode.size1080P || !episode.link4k || !episode.size4k) {
-                                err = true;
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: `Season ${seasonIndex + 1}, Episode ${episodeIndex + 1} is missing one or more links or sizes for 480P, 720P, 1080P, or 4K!`
-                                });
-                                break;
-                            }
-                            break;
-                        default:
-                            break;
-                    }
-                    if (err) break;
-                }
                 if (err) break;
             }
         }

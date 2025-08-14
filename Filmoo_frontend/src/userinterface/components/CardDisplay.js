@@ -1,23 +1,32 @@
 import Card from "./Card";
 import NextPrev from "./NextPrev";
 import { useEffect, useState } from "react"
-import { getData, serverURL } from "../../backendservices/FetchNodeServices"
+import { getData, serverURL, postData } from "../../backendservices/FetchNodeServices"
+import { useParams } from "react-router-dom";
 
 export default function CardDisplay({ currentPage, onPageChange }) {
     const [movieList, setMovieList] = useState([]);
     const itemsPerPage = 20;
+    const params = useParams()
 
     const fetchAllMovie = async () => {
-        var res = await getData('movie/fetch_movies')
-        setMovieList(res.data)
-    }
+        if (params.text && params.text.trim().length > 0) {
+            const res = await postData('download/fetch_movies_by_search', { searchtext: params.text });
+            setMovieList(res.data);
+        } else {
+            const res = await getData('download/fetch_movies');
+            setMovieList(res.data);
+        }
+    };
 
     useEffect(function () {
         fetchAllMovie()
-    }, [])
+    }, [params])
+
+    console.log(params, movieList)
 
     const totalPages = Math.ceil(movieList.length / itemsPerPage);
-    
+
     const getCurrentPageData = () => {
         const startIndex = (currentPage - 1) * itemsPerPage;
         const endIndex = startIndex + itemsPerPage;
@@ -31,9 +40,9 @@ export default function CardDisplay({ currentPage, onPageChange }) {
                     <Card movieList={getCurrentPageData()} />
                 </div>
             </div>
-            
+
             {totalPages > 1 && (
-                <NextPrev 
+                <NextPrev
                     currentPage={currentPage}
                     totalPages={totalPages}
                     onPageChange={onPageChange}

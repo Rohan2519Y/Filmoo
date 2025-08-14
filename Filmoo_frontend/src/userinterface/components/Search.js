@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react"
-import { postData } from "../../backendservices/FetchNodeServices"
+import { postData, serverURL } from "../../backendservices/FetchNodeServices"
+import { useNavigate } from "react-router"
 
 export default function Search() {
 
+    const navigate=useNavigate()
     const [text, setText] = useState('')
     const [search, setSearch] = useState([])
+
     const fetchSearch = async () => {
         if (!text.trim()) {
             setSearch([])
@@ -21,28 +24,57 @@ export default function Search() {
             }
         }, 2000);
 
-        if (text.length == 0) {
+        if (text.length === 0) {
             setSearch([])
         }
 
         return () => clearTimeout(delay);
     }, [text]);
 
+    const handleSearch = (e) => {
+        if (e.key == 'Enter') {
+            navigate(`/searchpage/${text}`)
+            setText('')
+        }
+    }
 
+    return (
+        <>
+            <div className="w-full bg-slate-900/80 flex justify-center items-center flex-col relative z-50">
+                {/* Search Bar */}
+                <div className="relative w-[98%] mid:w-[1280px] h-[48px] bg-gray-600 flex justify-center items-center rounded-lg">
+                    <input
+                        onChange={(e) => setText(e.target.value)}
+                        onKeyDown={handleSearch}
+                        type="text"
+                        placeholder="Search"
+                        className="md:w-[90%] w-[80%] h-full bg-transparent text-center font-semibold text-white text-xl 
+                                   placeholder:text-center placeholder:text-gray-400 rounded-l-lg focus:outline-none"
+                    />
+                    <button
+                        style={{ textShadow: '2px 2px 3px rgba(0, 0, 0, 0.6)' }}
+                        className="md:w-[10%] w-[20%] h-full bg-blue-500 hover:bg-blue-600 rounded-r-lg font-semibold text-slate-200 text-lg"
+                    >
+                        Search
+                    </button>
 
-    console.log('datdasas', search)
-    return (<>
-        <div className="w-full h-[60px] bg-slate-900/80 flex justify-center items-center flex-col relative">
-            <div className="w-[98%] mid:w-[1280px] h-[80%] bg-gray-600 flex justify-center items-center rounded-lg">
-                <input onChange={(e) => { setText(e.target.value) }} type="text" placeholder="Search" className="md:w-[90%] w-[80%] h-[90%] bg-transparent text-center font-semibold text-white placeholder:text-center placeholder:text-gray-400 rounded-l-lg placeholder:text-xl"></input>
-                <button style={{ textShadow: '2px 2px 3px rgba(0, 0, 0, 0.6)' }} className="md:w-[10%] w-[20%] h-full bg-blue-500 hover:bg-blue-600 rounded-r-lg font-semibold text-slate-200 text-lg">Search</button>
+                    {/* Dropdown */}
+                    {text.length > 0 && search.length > 0 && (
+                        <div className="absolute top-[48px] left-0 w-full bg-slate-700 rounded-b-lg shadow-lg max-h-[300px] overflow-y-auto">
+                            {search.map((item, idx) => (
+                                <div key={idx} onClick={() => navigate(`/download/${item.movieid}`)} className="w-full h-24 hover:bg-slate-600 cursor-pointer text-white flex p-1 box-border"  >
+                                    <div className='w-[30%] flex justify-center items-center p-1 box-border'>
+                                        <img src={`${serverURL}/images/${item?.image}`} className="max-w-full max-h-full" />
+                                    </div>
+                                    <div className="w-[70%] flex justify-center items-center p-1 box-border">
+                                        {item.title}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
-            {text.length > 0 && search.length > 0 ?
-                <div className="w-[98%] mid:w-[1280px] min-h-[50px] sticky md:top-[155px] top-[135px] z-40">
-                    {search.map((item) => (<div className="w-full h-[70px] bg-red-500">
-                        {item.name}
-                    </div>))}
-                </div> : <></>}
-        </div>
-    </>)
+        </>
+    )
 }

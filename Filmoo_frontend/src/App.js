@@ -4,6 +4,7 @@ import DisplayAllMovie from "./admin/Movie/DisplayAllMovie";
 import Home from "./userinterface/screens/Home";
 import DownloadPage from "./userinterface/screens/DownloadPage";
 import Series from "./userinterface/screens/SeriesPage";
+import SearchPage from "./userinterface/screens/SearchPage";
 function App() {
   return (
     <div>
@@ -13,6 +14,7 @@ function App() {
           <Route element={<DisplayAllMovie />} path="/displayallmovie" />
           <Route element={<Home />} path="/" />
           <Route element={<DownloadPage />} path="/download/:movieid" />
+          <Route element={<SearchPage />} path="/searchpage/:text" />
           <Route element={<Series />} path="/series/:movieid/:season" />
         </Routes>
       </Router>
