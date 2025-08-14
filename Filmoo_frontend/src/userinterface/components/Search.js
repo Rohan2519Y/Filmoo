@@ -4,7 +4,7 @@ import { useNavigate } from "react-router"
 
 export default function Search() {
 
-    const navigate=useNavigate()
+    const navigate = useNavigate()
     const [text, setText] = useState('')
     const [search, setSearch] = useState([])
 
@@ -32,15 +32,14 @@ export default function Search() {
     }, [text]);
 
     const handleSearch = (e) => {
-        if (e.key == 'Enter') {
-            navigate(`/searchpage/${text}`)
-            setText('')
+        if (e.key === 'Enter') {
+            navigate(`/searchpage/${text}`, { state: { type: "search" } })
         }
     }
 
     return (
         <>
-            <div className="w-full bg-slate-900/80 flex justify-center items-center flex-col relative z-50">
+            <div className="w-full bg-slate-900/80 flex justify-center items-center flex-col relative z-40 h-[60px] ">
                 {/* Search Bar */}
                 <div className="relative w-[98%] mid:w-[1280px] h-[48px] bg-gray-600 flex justify-center items-center rounded-lg">
                     <input
@@ -52,6 +51,7 @@ export default function Search() {
                                    placeholder:text-center placeholder:text-gray-400 rounded-l-lg focus:outline-none"
                     />
                     <button
+                        onClick={() => navigate(`/searchpage/${text}`, { state: { type: "search" } })}
                         style={{ textShadow: '2px 2px 3px rgba(0, 0, 0, 0.6)' }}
                         className="md:w-[10%] w-[20%] h-full bg-blue-500 hover:bg-blue-600 rounded-r-lg font-semibold text-slate-200 text-lg"
                     >
@@ -62,7 +62,11 @@ export default function Search() {
                     {text.length > 0 && search.length > 0 && (
                         <div className="absolute top-[48px] left-0 w-full bg-slate-700 rounded-b-lg shadow-lg max-h-[300px] overflow-y-auto">
                             {search.map((item, idx) => (
-                                <div key={idx} onClick={() => navigate(`/download/${item.movieid}`)} className="w-full h-24 hover:bg-slate-600 cursor-pointer text-white flex p-1 box-border"  >
+                                <div
+                                    key={idx}
+                                    onClick={() => navigate(`/download/${item.movieid}`)}
+                                    className="w-full h-24 hover:bg-slate-600 cursor-pointer text-white flex p-1 box-border"
+                                >
                                     <div className='w-[30%] flex justify-center items-center p-1 box-border'>
                                         <img src={`${serverURL}/images/${item?.image}`} className="max-w-full max-h-full" />
                                     </div>

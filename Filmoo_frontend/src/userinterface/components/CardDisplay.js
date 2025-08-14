@@ -1,36 +1,42 @@
 import Card from "./Card";
 import NextPrev from "./NextPrev";
-import { useEffect, useState } from "react"
-import { getData, serverURL, postData } from "../../backendservices/FetchNodeServices"
-import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { getData, postData } from "../../backendservices/FetchNodeServices";
+import { useParams, useLocation } from "react-router-dom";
 
 export default function CardDisplay({ currentPage, onPageChange }) {
     const [movieList, setMovieList] = useState([]);
     const itemsPerPage = 20;
-    const params = useParams()
+    const params = useParams();
+    const { state } = useLocation(); // state.type will tell if category or search
 
     const fetchAllMovie = async () => {
-        if (params.text && params.text.trim().length > 0) {
+        if (state?.type === "category") {
+            // category fetch
+            const res = await postData('download/fetch_movies_by_category', { category: params.text });
+            setMovieList(res.data);
+        } 
+        else if (state?.type === "search" && params.text?.trim()) {
+            // search fetch
             const res = await postData('download/fetch_movies_by_search', { searchtext: params.text });
             setMovieList(res.data);
-        } else {
+        } 
+        else {
+            // default fetch
             const res = await getData('download/fetch_movies');
             setMovieList(res.data);
         }
     };
 
-    useEffect(function () {
-        fetchAllMovie()
-    }, [params])
-
-    console.log(params, movieList)
+    useEffect(() => {
+        fetchAllMovie();
+    }, [params, state]);
 
     const totalPages = Math.ceil(movieList.length / itemsPerPage);
 
     const getCurrentPageData = () => {
         const startIndex = (currentPage - 1) * itemsPerPage;
-        const endIndex = startIndex + itemsPerPage;
-        return movieList.slice(startIndex, endIndex);
+        return movieList.slice(startIndex, startIndex + itemsPerPage);
     };
 
     return (
@@ -49,5 +55,5 @@ export default function CardDisplay({ currentPage, onPageChange }) {
                 />
             )}
         </>
-    )
+    );
 }

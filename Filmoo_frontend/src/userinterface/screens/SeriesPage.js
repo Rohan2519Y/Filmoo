@@ -10,7 +10,6 @@ import { postData } from "../../backendservices/FetchNodeServices";
 export default function Series() {
     const [movieList, setMovieList] = useState([]);
     const params = useParams();
-    console.log(params,'parms')
     const fetchAllMovie = async () => {
         try {
             const res = await postData("download/fetch_movies_by_id", { movieid: params.movieid });
@@ -26,7 +25,6 @@ export default function Series() {
             fetchAllMovie();
         }
     }, [params.movieid]);
-    console.log('movieLIst',movieList)
 
     return (
         <div className="bg-gradient-to-b from-gray-800 via-gray-900 to-black min-h-screen w-full text-white">

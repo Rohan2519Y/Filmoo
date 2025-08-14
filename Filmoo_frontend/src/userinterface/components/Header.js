@@ -145,7 +145,7 @@ export default function Header() {
                         onMouseEnter={() => setActiveMenu('category')}
                         onMouseLeave={() => setActiveMenu('')}>
                         {categoryList.map((item, index) => (
-                            <div key={index} className="w-[50%] my-[20px] text-slate-300 flex justify-center items-center font-medium text-lg cursor-pointer hover:text-slate-200 hover:font-semibold">
+                            <div onClick={() => navigate(`/searchpage/${item.categoryname}`, { state: { type: "category" } })} key={index} className="w-[50%] my-[20px] text-slate-300 flex justify-center items-center font-medium text-lg cursor-pointer hover:text-slate-200 hover:font-semibold">
                                 {item.categoryname}
                             </div>
                         ))}
@@ -158,7 +158,7 @@ export default function Header() {
                                     <hr className='bg-white w-[90%]' />
                                     {categoryList.map((item, index = 0) => (
                                         <React.Fragment key={index++}>
-                                            <div className='w-full h-[60px] flex justify-center items-center text-white text-lg cursor-pointer'>
+                                            <div onClick={() => navigate(`/searchpage/${item.categoryname}`, { state: { type: "category" } })} className='w-full h-[60px] flex justify-center items-center text-white text-lg cursor-pointer'>
                                                 {item.categoryname}
                                             </div>
                                             <hr className='bg-white w-[90%]' />
@@ -175,7 +175,7 @@ export default function Header() {
                         onMouseEnter={() => setActiveMenu('genre')}
                         onMouseLeave={() => setActiveMenu('')}>
                         {genreList.map((item, index) => (
-                            <div key={index} className="w-[50%] my-[20px] text-slate-300 flex justify-center items-center font-medium text-lg cursor-pointer hover:text-slate-200 hover:font-semibold">
+                            <div onClick={() => navigate(`/searchpage/${item.genre}`, { state: { type: "category" } })} key={index} className="w-[50%] my-[20px] text-slate-300 flex justify-center items-center font-medium text-lg cursor-pointer hover:text-slate-200 hover:font-semibold">
                                 {item.genre}
                             </div>
                         ))}
@@ -188,7 +188,7 @@ export default function Header() {
                                     <hr className='bg-white w-[90%]' />
                                     {genreList.map((item, index = 0) => (
                                         <React.Fragment key={index++}>
-                                            <div className='w-full h-[70px] flex justify-center items-center text-white text-lg cursor-pointer'>
+                                            <div onClick={() => navigate(`/searchpage/${item.genre}`, { state: { type: "category" } })} className='w-full h-[70px] flex justify-center items-center text-white text-lg cursor-pointer'>
                                                 {item.genre}
                                             </div>
                                             <hr className='bg-white w-[90%]' />
@@ -205,7 +205,7 @@ export default function Header() {
                         onMouseEnter={() => setActiveMenu('language')}
                         onMouseLeave={() => setActiveMenu('')}>
                         {languageList.map((item, index) => (
-                            <div key={index} className="w-[50%] my-[20px] text-slate-300 flex justify-center items-center font-medium text-lg cursor-pointer hover:text-slate-200 hover:font-semibold">
+                            <div onClick={() => navigate(`/searchpage/${item.language}`, { state: { type: "category" } })} key={index} className="w-[50%] my-[20px] text-slate-300 flex justify-center items-center font-medium text-lg cursor-pointer hover:text-slate-200 hover:font-semibold">
                                 {item.language}
                             </div>
                         ))}
@@ -218,7 +218,7 @@ export default function Header() {
                                     <hr className='bg-white w-[90%]' />
                                     {languageList.map((item, index = 0) => (
                                         <React.Fragment key={index++}>
-                                            <div className='w-full h-[70px] flex justify-center items-center text-white text-lg cursor-pointer'>
+                                            <div onClick={() => navigate(`/searchpage/${item.language}`, { state: { type: "category" } })} className='w-full h-[70px] flex justify-center items-center text-white text-lg cursor-pointer'>
                                                 {item.language}
                                             </div>
                                             <hr className='bg-white w-[90%]' />
