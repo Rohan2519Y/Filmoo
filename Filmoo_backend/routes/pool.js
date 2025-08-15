@@ -1,5 +1,5 @@
 require('dotenv').config();
-const mysql = require('mysql2/promise'); // Use promise-based MySQL
+const mysql = require('mysql2'); // use callback-based client
 
 // ✅ Only one pool per serverless instance
 let pool;
@@ -12,10 +12,11 @@ if (!global._mysqlPool) {
     database: process.env.MYSQL_ADDON_DB,
     port: process.env.MYSQL_ADDON_PORT,
     waitForConnections: true,
-    connectionLimit: 2, // reduce connections per pool
+    connectionLimit: 2, // reduce connections per serverless instance
     queueLimit: 0
   });
 
+  console.log('🌟 Created new MySQL pool');
 } else {
   console.log('🔹 Using existing MySQL pool');
 }
