@@ -12,7 +12,7 @@ if (!global._mysqlPool) {
     database: process.env.MYSQL_ADDON_DB,
     port: process.env.MYSQL_ADDON_PORT,
     waitForConnections: true,
-    connectionLimit: 2, // reduce connections per serverless instance
+    connectionLimit: 5, // reduce connections per serverless instance
     queueLimit: 0
   });
 
