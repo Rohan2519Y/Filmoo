@@ -1,8 +1,9 @@
 require('dotenv').config();
-const mysql = require('mysql2');
+const mysql = require('mysql2/promise'); // Use promise-based MySQL
 
-// ✅ Prevent multiple pools in Vercel serverless
+// ✅ Only one pool per serverless instance
 let pool;
+
 if (!global._mysqlPool) {
   global._mysqlPool = mysql.createPool({
     host: process.env.MYSQL_ADDON_HOST,
@@ -11,10 +12,14 @@ if (!global._mysqlPool) {
     database: process.env.MYSQL_ADDON_DB,
     port: process.env.MYSQL_ADDON_PORT,
     waitForConnections: true,
-    connectionLimit: 5, // match Clever Cloud plan
+    connectionLimit: 5, // reduce connections per pool
     queueLimit: 0
   });
+
+} else {
+  console.log('🔹 Using existing MySQL pool');
 }
+
 pool = global._mysqlPool;
 
 module.exports = pool;
