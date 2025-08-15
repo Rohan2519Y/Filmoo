@@ -2,135 +2,120 @@ var express = require('express');
 var router = express.Router();
 var pool = require('./pool')
 
-router.get('/fetch_movies', function (req, res, next) {
-    try {
-        pool.query(
-            'SELECT C.*, M.* FROM category C, movie M WHERE C.categoryid = M.categoryid ORDER BY M.movieid DESC',
-            function (error, result) {
-                if (error) {
-                    console.log(error)
-                    res.status(202).json({ status: false, message: 'Database Error,Pls Contact Backend Team' })
-                }
-                else {
-                    // Process the result to parse episode data for series
-                    const processedResult = result.map(movie => {
-                        if (movie.content === 'series' && movie.eplinks) {
-                            try {
-                                movie.seasonsData = JSON.parse(movie.eplinks);
-                            } catch (e) {
-                                console.log('Error parsing seasons data for movie:', movie.movieid);
-                                movie.seasonsData = null;
-                            }
-                        }
-                        return movie;
-                    });
-                    res.status(200).json({ status: true, message: 'Success..', data: processedResult })
-                }
+// Helper to process series episodes safely
+function processSeries(result) {
+    return result.map(movie => {
+        if (movie.content === 'series' && movie.eplinks) {
+            try {
+                movie.seasonsData = JSON.parse(movie.eplinks);
+            } catch (e) {
+                console.log('Error parsing seasons data for movie:', movie.movieid);
+                movie.seasonsData = null;
             }
-        )
-    }
-    catch (e) {
-        console.log(e)
-        res.status(201).json({ status: false, message: 'Critical Error,Pls Contact Server Administrator' })
-    }
+        }
+        return movie;
+    });
+}
+
+// GET /fetch_movies
+router.get('/fetch_movies', function (req, res) {
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error('DB connection error:', err);
+            return res.status(500).json({ status: false, message: 'Database Connection Failed' });
+        }
+
+        connection.query(
+            'SELECT C.*, M.* FROM category C, movie M WHERE C.categoryid = M.categoryid ORDER BY M.movieid DESC',
+            (error, result) => {
+                connection.release();
+                if (error) {
+                    console.log(error);
+                    return res.status(202).json({ status: false, message: 'Database Error, Pls Contact Backend Team' });
+                }
+                res.status(200).json({ status: true, message: 'Success..', data: processSeries(result) });
+            }
+        );
+    });
 });
 
-router.post('/fetch_movies_by_id', function (req, res, next) {
-    try {
-        pool.query('select C.*,M.* from category C,movie M where C.categoryid=M.categoryid and movieid=? ORDER BY M.movieid DESC', [req.body.movieid], function (error, result) {
-            if (error) {
-                res.status(300).json({ status: false, message: 'Database Error,Pls Contact Backend Team' })
+// POST /fetch_movies_by_id
+router.post('/fetch_movies_by_id', function (req, res) {
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error('DB connection error:', err);
+            return res.status(500).json({ status: false, message: 'Database Connection Failed' });
+        }
+
+        connection.query(
+            'SELECT C.*, M.* FROM category C, movie M WHERE C.categoryid = M.categoryid AND movieid = ? ORDER BY M.movieid DESC',
+            [req.body.movieid],
+            (error, result) => {
+                connection.release();
+                if (error) {
+                    return res.status(300).json({ status: false, message: 'Database Error, Pls Contact Backend Team' });
+                }
+                res.status(200).json({ status: true, message: 'Success..', data: processSeries(result) });
             }
-            else {
-                // Process the result to parse episode data for series
-                const processedResult = result.map(movie => {
-                    if (movie.content === 'series' && movie.eplinks) {
-                        try {
-                            movie.seasonsData = JSON.parse(movie.eplinks);
-                        } catch (e) {
-                            console.log('Error parsing seasons data for movie:', movie.movieid);
-                            movie.seasonsData = null;
-                        }
-                    }
-                    return movie;
-                });
-                res.status(200).json({ status: true, message: 'Success..', data: processedResult })
-            }
-        })
-    }
-    catch (e) {
-        res.status(500).json({ status: false, message: 'Critical Error,Pls Contact Server Administrator' })
-    }
-})
+        );
+    });
+});
 
-router.post('/fetch_movies_by_search', function (req, res, next) {
-    try {
-        let searchText = req.body.searchtext.trim().toLowerCase();
+// POST /fetch_movies_by_search
+router.post('/fetch_movies_by_search', function (req, res) {
+    let searchText = req.body.searchtext.trim().toLowerCase();
+    let normalizedText = `%${searchText.replace(/[.\s]/g, '')}%`;
 
-        // Remove dots and spaces from search text
-        let normalizedText = `%${searchText.replace(/[.\s]/g, '')}%`;
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error('DB connection error:', err);
+            return res.status(500).json({ status: false, message: 'Database Connection Failed' });
+        }
 
-        pool.query(
+        connection.query(
             `SELECT C.*, M.* 
              FROM category C, movie M 
              WHERE C.categoryid = M.categoryid 
-               AND (
-                   REPLACE(REPLACE(LOWER(M.name), '.', ''), ' ', '') LIKE ?
-                   OR M.year LIKE ?
-               ) 
+               AND (REPLACE(REPLACE(LOWER(M.name), '.', ''), ' ', '') LIKE ? OR M.year LIKE ?)
              ORDER BY M.movieid DESC`,
             [normalizedText, `%${searchText}%`],
-            function (error, result) {
+            (error, result) => {
+                connection.release();
                 if (error) {
-                    res.status(300).json({ status: false, message: 'Database Error,Pls Contact Backend Team' });
-                } else {
-                    const processedResult = result.map(movie => {
-                        if (movie.content === 'series' && movie.eplinks) {
-                            try {
-                                movie.seasonsData = JSON.parse(movie.eplinks);
-                            } catch {
-                                console.log('Error parsing seasons data for movie:', movie.movieid);
-                                movie.seasonsData = null;
-                            }
-                        }
-                        return movie;
-                    });
-                    res.status(200).json({ status: true, message: 'Success..', data: processedResult });
+                    return res.status(300).json({ status: false, message: 'Database Error, Pls Contact Backend Team' });
                 }
+                res.status(200).json({ status: true, message: 'Success..', data: processSeries(result) });
             }
         );
-    } catch {
-        res.status(500).json({ status: false, message: 'Critical Error,Pls Contact Server Administrator' });
-    }
+    });
 });
 
-router.post('/fetch_movies_by_category', function (req, res, next) {
-    const text = `%${req.body.category}%`
-    try {
-        pool.query('select C.*,M.* from category C,movie M where C.categoryid=M.categoryid and (C.categoryname like ? or M.language like ? or M.genre like ?) ORDER BY M.movieid DESC', [text, text, text], function (error, result) {
-            if (error) {
-                res.status(300).json({ status: false, message: 'Database Error,Pls Contact Backend Team' })
+// POST /fetch_movies_by_category
+router.post('/fetch_movies_by_category', function (req, res) {
+    const text = `%${req.body.category}%`;
+
+    pool.getConnection((err, connection) => {
+        if (err) {
+            console.error('DB connection error:', err);
+            return res.status(500).json({ status: false, message: 'Database Connection Failed' });
+        }
+
+        connection.query(
+            `SELECT C.*, M.* 
+             FROM category C, movie M 
+             WHERE C.categoryid = M.categoryid 
+               AND (C.categoryname LIKE ? OR M.language LIKE ? OR M.genre LIKE ?)
+             ORDER BY M.movieid DESC`,
+            [text, text, text],
+            (error, result) => {
+                connection.release();
+                if (error) {
+                    return res.status(300).json({ status: false, message: 'Database Error, Pls Contact Backend Team' });
+                }
+                res.status(200).json({ status: true, message: 'Success..', data: processSeries(result) });
             }
-            else {
-                // Process the result to parse episode data for series
-                const processedResult = result.map(movie => {
-                    if (movie.content === 'series' && movie.eplinks) {
-                        try {
-                            movie.seasonsData = JSON.parse(movie.eplinks);
-                        } catch (e) {
-                            console.log('Error parsing seasons data for movie:', movie.movieid);
-                            movie.seasonsData = null;
-                        }
-                    }
-                    return movie;
-                });
-                res.status(200).json({ status: true, message: 'Success..', data: processedResult })
-            }
-        })
-    }
-    catch (e) {
-        res.status(500).json({ status: false, message: 'Critical Error,Pls Contact Server Administrator' })
-    }
-})
+        );
+    });
+});
 
 module.exports = router;
