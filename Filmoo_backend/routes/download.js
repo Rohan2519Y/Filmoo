@@ -8,6 +8,7 @@ router.get('/fetch_movies', function (req, res, next) {
             'SELECT C.*, M.* FROM category C, movie M WHERE C.categoryid = M.categoryid ORDER BY M.movieid DESC',
             function (error, result) {
                 if (error) {
+                    console.log(error)
                     res.status(202).json({ status: false, message: 'Database Error,Pls Contact Backend Team' })
                 }
                 else {
@@ -29,6 +30,7 @@ router.get('/fetch_movies', function (req, res, next) {
         )
     }
     catch (e) {
+        console.log(e)
         res.status(201).json({ status: false, message: 'Critical Error,Pls Contact Server Administrator' })
     }
 });
