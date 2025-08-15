@@ -1,5 +1,5 @@
 import axios from "axios"
-const serverURL='https://filmoobackend.vercel.app'
+const serverURL='http://localhost:5000'
 const postData=async(url,body)=>{
     try{
         var response=await axios.post(`${serverURL}/${url}`,body)
