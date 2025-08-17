@@ -92,8 +92,8 @@ export default function Header() {
             `}</style>
 
             <div className="bg-gray-500 border-b border-[#333333] shadow-xl md:h-[100px] h-[80px] w-full flex relative">
-                <div className="h-full md:w-[30%] w-[40%] flex justify-center items-center mr-auto">
-                    <img src="https://res.cloudinary.com/dio6iadsq/image/upload/v1753368344/logo_ho4bun.png" className="max-w-[90%] max-h-[80%] cursor-pointer" />
+                <div className="h-full md:w-[30%] w-[40%] flex justify-center items-center mr-auto select-none">
+                    <img onClick={() => { navigate('/') }} src="https://res.cloudinary.com/dio6iadsq/image/upload/v1753368344/logo_ho4bun.png" className="max-w-[90%] max-h-[80%] cursor-pointer select-none" />
                 </div>
                 <div className="w-[70%] md:flex hidden justify-evenly items-center pr-5">
                     <div onClick={() => { navigate('/') }} className="text-white w-[15%] flex justify-center items-center text-lg cursor-pointer hover:text-red-500 hover:font-medium">Home</div>
@@ -150,7 +150,7 @@ export default function Header() {
                             </div>
                         ))}
                     </div>
-                    <div className={`bg-black opacity-[90%] md:hidden fixed z-40 h-full w-full flex justify-center ${closing ? 'animate-slide-out-right' : 'animate-slide-in-right'}`}>
+                    <div className={`bg-black opacity-[90%] md:hidden fixed z-50 h-full w-full flex justify-center ${closing ? 'animate-slide-out-right' : 'animate-slide-in-right'}`}>
                         <CloseIcon onClick={handleMenuClose} style={{ fontSize: '200%' }} className='text-white absolute right-5 top-4 cursor-pointer' />
                         <div className='absolute top-[60px] w-full h-[calc(100vh-60px)] flex justify-center'>
                             <div className='w-full max-h-full overflow-y-auto'>
@@ -180,7 +180,7 @@ export default function Header() {
                             </div>
                         ))}
                     </div>
-                    <div className={`bg-black opacity-[90%] md:hidden fixed z-40 h-full w-full flex justify-center ${closing ? 'animate-slide-out-right' : 'animate-slide-in-right'}`}>
+                    <div className={`bg-black opacity-[90%] md:hidden fixed z-50 h-full w-full flex justify-center ${closing ? 'animate-slide-out-right' : 'animate-slide-in-right'}`}>
                         <CloseIcon onClick={handleMenuClose} style={{ fontSize: '200%' }} className='text-white absolute right-5 top-4 cursor-pointer' />
                         <div className='absolute top-[60px] w-full h-[calc(100vh-60px)] flex justify-center'>
                             <div className='w-full max-h-full overflow-y-auto'>
@@ -210,7 +210,7 @@ export default function Header() {
                             </div>
                         ))}
                     </div>
-                    <div className={`bg-black opacity-[90%] md:hidden fixed z-40 h-full w-full flex justify-center ${closing ? 'animate-slide-out-right' : 'animate-slide-in-right'}`}>
+                    <div className={`bg-black opacity-[90%] md:hidden fixed z-50 h-full w-full flex justify-center ${closing ? 'animate-slide-out-right' : 'animate-slide-in-right'}`}>
                         <CloseIcon onClick={handleMenuClose} style={{ fontSize: '200%' }} className='text-white absolute right-5 top-4 cursor-pointer' />
                         <div className='absolute top-[60px] w-full h-[calc(100vh-60px)] flex justify-center'>
                             <div className='w-full max-h-full overflow-y-auto'>

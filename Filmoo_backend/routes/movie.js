@@ -5,41 +5,45 @@ var pool = require('./pool');
 
 router.post('/insert_movies', upload.fields([{ name: 'image', maxCount: 1 }, { name: 'screenshot', maxCount: 100 }]), function (req, res, next) {
     try {
-        // Handle image (single file)
+        // Handle file uploads
         const image = req.files['image'] ? req.files['image'][0].filename : '';
+        const screenshots = req.files['screenshot'] ?
+            req.files['screenshot'].map(file => file.filename) : [];
+        const screenshotString = screenshots.join(', ');
 
-        // Handle screenshots (multiple files)
-        let screenshots = [];
-        if (req.files['screenshot']) {
-            screenshots = req.files['screenshot'].map(file => file.filename);
-        }
-        const screenshotString = screenshots.join(', '); 
-
-        // Handle series data - check if it's series or movie
+        // Initialize variables
         let episodeData = null;
         let numberOfSeasons = null;
         let numberOfEpisodes = null;
+        let zipValue = req.body.zip || null;
 
-        if (req.body.content === 'series') {
-            // For series, we expect seasonsData
-            if (req.body.seasonsData) {
-                episodeData = req.body.seasonsData; // This is already a JSON string
-                numberOfSeasons = req.body.numberOfSeasons;
-                
-                // Calculate total episodes across all seasons
-                const seasons = JSON.parse(req.body.seasonsData);
-                numberOfEpisodes = seasons.reduce((total, season) => total + season.numberOfEpisodes, 0);
+        // Handle series content
+        if (req.body.content === 'series' && req.body.seasonsData) {
+            const seasons = JSON.parse(req.body.seasonsData);
+
+            // For series, use the first season's zip link matching the selected quality
+            if (seasons.length > 0 && req.body.quality) {
+                const firstSeason = seasons[0];
+                if (firstSeason.zipLinks && firstSeason.zipLinks[req.body.quality]) {
+                    zipValue = firstSeason.zipLinks[req.body.quality];
+                }
             }
-        } else {
-            // For movies, keep the old structure if eplinks exists
-            if (req.body.eplinks) {
-                episodeData = req.body.eplinks;
-                numberOfEpisodes = req.body.numberep;
-            }
+
+            episodeData = req.body.seasonsData;
+            numberOfSeasons = req.body.numberOfSeasons;
+            numberOfEpisodes = seasons.reduce((total, season) => total + (season.numberOfEpisodes || 0), 0);
+        }
+        // Handle movie content
+        else if (req.body.eplinks) {
+            episodeData = req.body.eplinks;
+            numberOfEpisodes = req.body.numberep;
         }
 
+        // Insert into database (same query structure as before)
         pool.query(
-            'INSERT INTO movie (categoryid, name, language, year, image, screenshot, genre, description, quality, link480p, link720p, link1080p, link4k, size480p, size720p, size1080p, size4k, title, zip, eplinks, numberep, content, numberOfSeasons) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+            'INSERT INTO movie (categoryid, name, language, year, image, screenshot, genre, description, quality, ' +
+            'link480p, link720p, link1080p, link4k, size480p, size720p, size1080p, size4k, title, zip, eplinks, ' +
+            'numberep, content, numberOfSeasons) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
             [
                 req.body.categoryid,
                 req.body.name,
@@ -59,24 +63,24 @@ router.post('/insert_movies', upload.fields([{ name: 'image', maxCount: 1 }, { n
                 req.body.size1080p || null,
                 req.body.size4k || null,
                 req.body.title,
-                req.body.zip || null,
+                zipValue,
                 episodeData,
                 numberOfEpisodes,
-                req.body.content,
+                req.body.content || 'movie', // Default to 'movie' if not specified
                 numberOfSeasons || null
             ],
             function (error, result) {
                 if (error) {
                     console.error('Database Error:', error);
-                    return res.status(200).json({ status: false, message: 'Database Error, Please Contact Backend Team' });
+                    return res.status(200).json({ status: false, message: 'Database Error' });
                 }
-                res.status(200).json({ status: true, message: 'Movie/Series Added Successfully' });
+                res.status(200).json({ status: true, message: 'Content Added Successfully' });
             }
         );
     }
     catch (e) {
-        console.error('Critical Error:', e);
-        res.status(500).json({ status: false, message: 'Critical Error, Please Contact Server Administrator' });
+        console.error('Error:', e);
+        res.status(500).json({ status: false, message: 'Server Error' });
     }
 });
 
@@ -131,10 +135,10 @@ router.post('/edit_movies', upload.fields([{ name: 'image', maxCount: 1 }, { nam
 
         if (req.body.content === 'series') {
             if (req.body.seasonsData) {
-                const seasonsData = typeof req.body.seasonsData === 'string' 
-                    ? JSON.parse(req.body.seasonsData) 
+                const seasonsData = typeof req.body.seasonsData === 'string'
+                    ? JSON.parse(req.body.seasonsData)
                     : req.body.seasonsData;
-                
+
                 // Process seasons data with zip links
                 const processedSeasons = seasonsData.map(season => ({
                     seasonNumber: season.seasonNumber,
@@ -206,7 +210,7 @@ router.post('/edit_movies', upload.fields([{ name: 'image', maxCount: 1 }, { nam
                 req.body.content,
                 numberOfSeasons,
                 req.body.movieid
-            ], 
+            ],
             function (error, result) {
                 if (error) {
                     console.error('Database Error:', error);
@@ -363,7 +367,7 @@ router.get('/fetch_series_details/:movieid', function (req, res, next) {
 router.get('/fetch_season_details/:movieid/:seasonNumber', function (req, res, next) {
     try {
         const { movieid, seasonNumber } = req.params;
-        
+
         pool.query('SELECT eplinks FROM movie WHERE movieid = ? AND content = "series"', [movieid], function (error, result) {
             if (error) {
                 res.status(200).json({ status: false, message: 'Database Error,Pls Contact Backend Team' })
@@ -375,7 +379,7 @@ router.get('/fetch_season_details/:movieid/:seasonNumber', function (req, res, n
                 try {
                     const seasonsData = JSON.parse(result[0].eplinks);
                     const season = seasonsData.find(s => s.seasonNumber == seasonNumber);
-                    
+
                     if (season) {
                         res.status(200).json({ status: true, message: 'Success..', data: season })
                     } else {

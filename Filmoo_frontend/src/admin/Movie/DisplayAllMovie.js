@@ -331,31 +331,7 @@ export default function DisplayAllMovie() {
                 // Validate episodes based on selected quality
                 for (let episodeIndex = 0; episodeIndex < (season.numberOfEpisodes || 1); episodeIndex++) {
                     const episode = (season.episodesLinks && season.episodesLinks[episodeIndex]) || {};
-                    let missingFields = [];
-
-                    // Check required fields based on quality
-                    if (quality === "480P" && (!episode.link480P || !episode.size480P)) {
-                        missingFields.push('480P link/size');
-                    }
-                    if (quality === "720P" && (!episode.link720P || !episode.size720P)) {
-                        missingFields.push('720P link/size');
-                    }
-                    if (quality === "1080P" && (!episode.link1080P || !episode.size1080P)) {
-                        missingFields.push('1080P link/size');
-                    }
-                    if (quality === "4K" && (!episode.link4k || !episode.size4k)) {
-                        missingFields.push('4K link/size');
-                    }
-
-                    if (missingFields.length > 0) {
-                        hasError = true;
-                        await Swal.fire({
-                            icon: 'error',
-                            title: `Validation Error`,
-                            html: `Season ${seasonIndex + 1}, Episode ${episodeIndex + 1} is missing:<br>${missingFields.join('<br>')}`,
-                        });
-                        break;
-                    }
+                    
                 }
                 if (hasError) break;
             }

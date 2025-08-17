@@ -4,25 +4,24 @@ import { useEffect, useState } from "react";
 import { getData, postData } from "../../backendservices/FetchNodeServices";
 import { useParams, useLocation } from "react-router-dom";
 
-export default function CardDisplay({ currentPage, onPageChange }) {
+export default function CardDisplay({ currentPage, onPageChange,setMovieType }) {
     const [movieList, setMovieList] = useState([]);
     const itemsPerPage = 20;
     const params = useParams();
-    const { state } = useLocation(); // state.type will tell if category or search
+    const { state } = useLocation()
 
     const fetchAllMovie = async () => {
         if (state?.type === "category") {
-            // category fetch
             const res = await postData('download/fetch_movies_by_category', { category: params.text });
+            setMovieType(params.text);
             setMovieList(res.data);
         } 
         else if (state?.type === "search" && params.text?.trim()) {
-            // search fetch
             const res = await postData('download/fetch_movies_by_search', { searchtext: params.text });
+            setMovieType(params.text);
             setMovieList(res.data);
         } 
         else {
-            // default fetch
             const res = await getData('download/fetch_movies');
             setMovieList(res.data);
         }

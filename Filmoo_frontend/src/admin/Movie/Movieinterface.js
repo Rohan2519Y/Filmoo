@@ -109,7 +109,12 @@ export default function MovieInterface() {
                 seasonNumber: seasons.length + 1,
                 numberOfEpisodes: 1,
                 episodesLinks: [{}],
-                zip: ''
+                zipLinks: {
+                    '480P': '',
+                    '720P': '',
+                    '1080P': '',
+                    '4K': ''
+                }
             });
         }
         while (seasons.length > val) {
@@ -152,9 +157,9 @@ export default function MovieInterface() {
     }
 
     // Handle zip link change per season
-    const handleSeasonZipChange = (seasonIndex, value) => {
+    const handleSeasonZipChange = (seasonIndex, quality, value) => {
         let seasons = [...seasonsData];
-        seasons[seasonIndex].zip = value;
+        seasons[seasonIndex].zipLinks[quality] = value;
         setSeasonsData(seasons);
     }
 
@@ -202,17 +207,18 @@ export default function MovieInterface() {
         }
 
         // Validation for series with seasons
+        // In the series validation section:
         if (contentType === "series") {
             for (let seasonIndex = 0; seasonIndex < numberOfSeasons; seasonIndex++) {
                 const season = seasonsData[seasonIndex];
                 if (!season) continue;
 
-                // Validate zip link for season
-                if (!season.zip || season.zip.trim() === '') {
+                // Validate zip link for the selected quality
+                if (!season.zipLinks[quality] || season.zipLinks[quality].trim() === '') {
                     err = true;
                     Swal.fire({
                         icon: 'error',
-                        title: `Zip link is required for Season ${seasonIndex + 1}`
+                        title: `${quality} zip link is required for Season ${seasonIndex + 1}`
                     });
                     break;
                 }
@@ -367,14 +373,92 @@ export default function MovieInterface() {
                                 Season {seasonIndex + 1}
                             </div>
 
+                            // In the season rendering section, replace the zip input part with:
                             <div style={{ marginBottom: '15px' }}>
-                                <TextField
-                                    label={`Zip Link for Season ${seasonIndex + 1}`}
-                                    value={season.zip || ''}
-                                    onChange={(e) => handleSeasonZipChange(seasonIndex, e.target.value)}
-                                    fullWidth
-                                    style={{ marginBottom: 10 }}
-                                />
+                                {quality === '480P' && (
+                                    <TextField
+                                        label={`480P Zip Link for Season ${seasonIndex + 1}`}
+                                        value={season.zipLinks?.['480P'] || ''}
+                                        onChange={(e) => handleSeasonZipChange(seasonIndex, '480P', e.target.value)}
+                                        fullWidth
+                                        style={{ marginBottom: 10 }}
+                                    />
+                                )}
+                                {quality === '720P' && (
+                                    <>
+                                        <TextField
+                                            label={`480P Zip Link for Season ${seasonIndex + 1}`}
+                                            value={season.zipLinks?.['480P'] || ''}
+                                            onChange={(e) => handleSeasonZipChange(seasonIndex, '480P', e.target.value)}
+                                            fullWidth
+                                            style={{ marginBottom: 10 }}
+                                        />
+                                        <TextField
+                                            label={`720P Zip Link for Season ${seasonIndex + 1}`}
+                                            value={season.zipLinks?.['720P'] || ''}
+                                            onChange={(e) => handleSeasonZipChange(seasonIndex, '720P', e.target.value)}
+                                            fullWidth
+                                            style={{ marginBottom: 10 }}
+                                        />
+                                    </>
+                                )}
+                                {quality === '1080P' && (
+                                    <>
+                                        <TextField
+                                            label={`480P Zip Link for Season ${seasonIndex + 1}`}
+                                            value={season.zipLinks?.['480P'] || ''}
+                                            onChange={(e) => handleSeasonZipChange(seasonIndex, '480P', e.target.value)}
+                                            fullWidth
+                                            style={{ marginBottom: 10 }}
+                                        />
+                                        <TextField
+                                            label={`720P Zip Link for Season ${seasonIndex + 1}`}
+                                            value={season.zipLinks?.['720P'] || ''}
+                                            onChange={(e) => handleSeasonZipChange(seasonIndex, '720P', e.target.value)}
+                                            fullWidth
+                                            style={{ marginBottom: 10 }}
+                                        />
+                                        <TextField
+                                            label={`1080P Zip Link for Season ${seasonIndex + 1}`}
+                                            value={season.zipLinks?.['1080P'] || ''}
+                                            onChange={(e) => handleSeasonZipChange(seasonIndex, '1080P', e.target.value)}
+                                            fullWidth
+                                            style={{ marginBottom: 10 }}
+                                        />
+                                    </>
+                                )}
+                                {quality === '4K' && (
+                                    <>
+                                        <TextField
+                                            label={`480P Zip Link for Season ${seasonIndex + 1}`}
+                                            value={season.zipLinks?.['480P'] || ''}
+                                            onChange={(e) => handleSeasonZipChange(seasonIndex, '480P', e.target.value)}
+                                            fullWidth
+                                            style={{ marginBottom: 10 }}
+                                        />
+                                        <TextField
+                                            label={`720P Zip Link for Season ${seasonIndex + 1}`}
+                                            value={season.zipLinks?.['720P'] || ''}
+                                            onChange={(e) => handleSeasonZipChange(seasonIndex, '720P', e.target.value)}
+                                            fullWidth
+                                            style={{ marginBottom: 10 }}
+                                        />
+                                        <TextField
+                                            label={`1080P Zip Link for Season ${seasonIndex + 1}`}
+                                            value={season.zipLinks?.['1080P'] || ''}
+                                            onChange={(e) => handleSeasonZipChange(seasonIndex, '1080P', e.target.value)}
+                                            fullWidth
+                                            style={{ marginBottom: 10 }}
+                                        />
+                                        <TextField
+                                            label={`4K Zip Link for Season ${seasonIndex + 1}`}
+                                            value={season.zipLinks?.['4K'] || ''}
+                                            onChange={(e) => handleSeasonZipChange(seasonIndex, '4K', e.target.value)}
+                                            fullWidth
+                                            style={{ marginBottom: 10 }}
+                                        />
+                                    </>
+                                )}
                                 <TextField
                                     label={`Number of Episodes in Season ${seasonIndex + 1}`}
                                     type="number"
