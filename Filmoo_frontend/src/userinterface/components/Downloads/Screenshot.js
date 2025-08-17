@@ -2,7 +2,7 @@ import { serverURL } from "../../../backendservices/FetchNodeServices"
 
 export default function Screenshot({ screenshot }) {
 
-    const screenshots = screenshot.split(', ')
+    const screenshots = screenshot.split(/\s*,\s*/);
 
     return (<>
         <div className="w-full min-h-[100px] flex justify-center items-center flex-col mt-4">

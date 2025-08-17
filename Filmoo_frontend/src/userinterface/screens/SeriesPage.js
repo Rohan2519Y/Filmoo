@@ -19,7 +19,6 @@ export default function Series() {
         }
     };
 
-    // ✅ Minimal fix: re-run fetch when movieid changes
     useEffect(() => {
         if (params.movieid) {
             fetchAllMovie();

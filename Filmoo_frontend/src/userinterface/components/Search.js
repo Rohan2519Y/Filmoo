@@ -34,6 +34,7 @@ export default function Search() {
     const handleSearch = (e) => {
         if (e.key === 'Enter') {
             navigate(`/searchpage/${text}`, { state: { type: "search" } })
+            setText('')
         }
     }
 
@@ -51,7 +52,7 @@ export default function Search() {
                                    placeholder:text-center select-none placeholder:text-gray-400 rounded-l-lg focus:outline-none"
                     />
                     <button
-                        onClick={() => navigate(`/searchpage/${text}`, { state: { type: "search" } })}
+                        onClick={() => {navigate(`/searchpage/${text}`, { state: { type: "search" } });setText('')}}
                         style={{ textShadow: '2px 2px 3px rgba(0, 0, 0, 0.6)' }}
                         className="md:w-[10%] w-[20%] h-full select-none bg-blue-500 hover:bg-blue-600 rounded-r-lg font-semibold text-slate-200 text-lg"
                     >
@@ -64,7 +65,7 @@ export default function Search() {
                             {search.map((item, idx) => (
                                 <div
                                     key={idx}
-                                    onClick={() => navigate(`/download/${item.movieid}`)}
+                                    onClick={() => {navigate(`/download/${item.movieid}`);setText('')}}
                                     className="w-full h-24 hover:bg-slate-600 cursor-pointer text-white flex p-1 box-border"
                                 >
                                     <div className='w-[30%] flex justify-center items-center p-1 box-border'>
