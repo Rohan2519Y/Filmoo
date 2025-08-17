@@ -178,7 +178,12 @@ export default function DisplayAllMovie() {
                 seasonNumber: seasons.length + 1,
                 numberOfEpisodes: 1,
                 episodesLinks: [{}],
-                zip: ''
+                zipLinks: {
+                    '480P': '',
+                    '720P': '',
+                    '1080P': '',
+                    '4K': ''
+                }
             });
         }
         while (seasons.length > val) {
@@ -227,6 +232,15 @@ export default function DisplayAllMovie() {
         setSeasonsData(seasons);
     }
 
+    const handleSeasonQualityZipChange = (seasonIndex, quality, value) => {
+        let seasons = [...seasonsData];
+        if (!seasons[seasonIndex].zipLinks) {
+            seasons[seasonIndex].zipLinks = {};
+        }
+        seasons[seasonIndex].zipLinks[quality] = value;
+        setSeasonsData(seasons);
+    };
+
     const handleOpenDialog = (rowData, state) => {
         // Parse and set seasonsData if available
         if (rowData.seasonsData) {
@@ -238,7 +252,12 @@ export default function DisplayAllMovie() {
                 // Ensure each season has a zip property
                 seasons = seasons.map(season => ({
                     ...season,
-                    zip: season.zip || '' // Initialize zip if missing
+                    zipLinks: season.zipLinks || {
+                        '480P': '',
+                        '720P': '',
+                        '1080P': '',
+                        '4K': ''
+                    }
                 }));
 
                 if (Array.isArray(seasons)) {
@@ -331,7 +350,7 @@ export default function DisplayAllMovie() {
                 // Validate episodes based on selected quality
                 for (let episodeIndex = 0; episodeIndex < (season.numberOfEpisodes || 1); episodeIndex++) {
                     const episode = (season.episodesLinks && season.episodesLinks[episodeIndex]) || {};
-                    
+
                 }
                 if (hasError) break;
             }
@@ -407,7 +426,12 @@ export default function DisplayAllMovie() {
                     const processedSeasons = seasonsData.map((season, index) => ({
                         seasonNumber: index + 1,
                         numberOfEpisodes: season.numberOfEpisodes || 1,
-                        zip: season.zip || '',
+                        zipLinks: season.zipLinks || {
+                            '480P': '',
+                            '720P': '',
+                            '1080P': '',
+                            '4K': ''
+                        },
                         episodesLinks: (season.episodesLinks || []).map(episode => ({
                             link480P: episode.link480P || '',
                             size480P: episode.size480P || '',
@@ -563,14 +587,90 @@ export default function DisplayAllMovie() {
 
                             {/* Zip Link Input for the Season */}
                             <div style={{ marginBottom: '15px' }}>
-                                <TextField
-                                    label={`Zip Link for Season ${seasonIndex + 1}`}
-                                    value={season.zip || ''}
-                                    onChange={(e) => handleSeasonZipChange(seasonIndex, e.target.value)}
-                                    fullWidth
-                                    style={{ marginBottom: 10 }}
-                                    required
-                                />
+                                {quality === '480P' && (
+                                    <TextField
+                                        label={`480P Zip Link for Season ${seasonIndex + 1}`}
+                                        value={season.zipLinks?.['480P'] || ''}
+                                        onChange={(e) => handleSeasonQualityZipChange(seasonIndex, '480P', e.target.value)}
+                                        fullWidth
+                                        style={{ marginBottom: 10 }}
+                                    />
+                                )}
+                                {quality === '720P' && (
+                                    <>
+                                        <TextField
+                                            label={`480P Zip Link for Season ${seasonIndex + 1}`}
+                                            value={season.zipLinks?.['480P'] || ''}
+                                            onChange={(e) => handleSeasonQualityZipChange(seasonIndex, '480P', e.target.value)}
+                                            fullWidth
+                                            style={{ marginBottom: 10 }}
+                                        />
+                                        <TextField
+                                            label={`720P Zip Link for Season ${seasonIndex + 1}`}
+                                            value={season.zipLinks?.['720P'] || ''}
+                                            onChange={(e) => handleSeasonQualityZipChange(seasonIndex, '720P', e.target.value)}
+                                            fullWidth
+                                            style={{ marginBottom: 10 }}
+                                        />
+                                    </>
+                                )}
+                                {quality === '1080P' && (
+                                    <>
+                                        <TextField
+                                            label={`480P Zip Link for Season ${seasonIndex + 1}`}
+                                            value={season.zipLinks?.['480P'] || ''}
+                                            onChange={(e) => handleSeasonQualityZipChange(seasonIndex, '480P', e.target.value)}
+                                            fullWidth
+                                            style={{ marginBottom: 10 }}
+                                        />
+                                        <TextField
+                                            label={`720P Zip Link for Season ${seasonIndex + 1}`}
+                                            value={season.zipLinks?.['720P'] || ''}
+                                            onChange={(e) => handleSeasonQualityZipChange(seasonIndex, '720P', e.target.value)}
+                                            fullWidth
+                                            style={{ marginBottom: 10 }}
+                                        />
+                                        <TextField
+                                            label={`1080P Zip Link for Season ${seasonIndex + 1}`}
+                                            value={season.zipLinks?.['1080P'] || ''}
+                                            onChange={(e) => handleSeasonQualityZipChange(seasonIndex, '1080P', e.target.value)}
+                                            fullWidth
+                                            style={{ marginBottom: 10 }}
+                                        />
+                                    </>
+                                )}
+                                {quality === '4K' && (
+                                    <>
+                                        <TextField
+                                            label={`480P Zip Link for Season ${seasonIndex + 1}`}
+                                            value={season.zipLinks?.['480P'] || ''}
+                                            onChange={(e) => handleSeasonQualityZipChange(seasonIndex, '480P', e.target.value)}
+                                            fullWidth
+                                            style={{ marginBottom: 10 }}
+                                        />
+                                        <TextField
+                                            label={`720P Zip Link for Season ${seasonIndex + 1}`}
+                                            value={season.zipLinks?.['720P'] || ''}
+                                            onChange={(e) => handleSeasonQualityZipChange(seasonIndex, '720P', e.target.value)}
+                                            fullWidth
+                                            style={{ marginBottom: 10 }}
+                                        />
+                                        <TextField
+                                            label={`1080P Zip Link for Season ${seasonIndex + 1}`}
+                                            value={season.zipLinks?.['1080P'] || ''}
+                                            onChange={(e) => handleSeasonQualityZipChange(seasonIndex, '1080P', e.target.value)}
+                                            fullWidth
+                                            style={{ marginBottom: 10 }}
+                                        />
+                                        <TextField
+                                            label={`4K Zip Link for Season ${seasonIndex + 1}`}
+                                            value={season.zipLinks?.['4K'] || ''}
+                                            onChange={(e) => handleSeasonQualityZipChange(seasonIndex, '4K', e.target.value)}
+                                            fullWidth
+                                            style={{ marginBottom: 10 }}
+                                        />
+                                    </>
+                                )}
                                 <TextField
                                     label={`Number of Episodes in Season ${seasonIndex + 1}`}
                                     type="number"
@@ -1126,15 +1226,14 @@ export default function DisplayAllMovie() {
 
     function DisplayAll() {
         return (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100vw', height: '100vh', marginTop: 10 }}>
-                <div style={{ padding: 10, margin: 10, maxWidth: '95vw' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100vw', height: '100vh', marginTop: 10,overflowX:'hidden' }}>
+                <div style={{ maxWidth: '95%' }}>
                     <MaterialTable
                         title="Movies and Series"
                         columns={[
                             { title: 'ID', field: 'movieid', width: '3%' },
                             { title: 'Category', field: 'categoryname', width: '7%' },
                             { title: 'Name', field: 'name', width: '7%' },
-                            { title: 'Title', field: 'title', width: '12%' },
                             { title: 'Language', field: 'language', width: '10%' },
                             { title: 'Year', field: 'year', width: '5%' },
                             { title: 'Genre', field: 'genre', width: '15%' },

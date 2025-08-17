@@ -86,9 +86,9 @@ router.post('/insert_movies', upload.fields([{ name: 'image', maxCount: 1 }, { n
 
 router.get('/fetch_movies', function (req, res, next) {
     try {
-        pool.query('select C.*,M.* from category C,movie M where C.categoryid=M.categoryid', function (error, result) {
+        pool.query('SELECT C.*, M.* FROM category C, movie M WHERE C.categoryid=M.categoryid', function (error, result) {
             if (error) {
-                res.status(200).json({ status: false, message: 'Database Error,Pls Contact Backend Team' })
+                res.status(200).json({ status: false, message: 'Database Error, Please Contact Backend Team' });
             }
             else {
                 // Process the result to parse episode data for series
@@ -96,23 +96,36 @@ router.get('/fetch_movies', function (req, res, next) {
                     if (movie.content === 'series' && movie.eplinks) {
                         try {
                             movie.seasonsData = JSON.parse(movie.eplinks);
+
+                            // For backward compatibility, set the main zip link based on quality
+                            if (movie.seasonsData && movie.seasonsData.length > 0) {
+                                const firstSeason = movie.seasonsData[0];
+                                if (firstSeason.zipLinks) {
+                                    // Use the highest available quality zip link
+                                    movie.zip = firstSeason.zipLinks['4K'] ||
+                                        firstSeason.zipLinks['1080P'] ||
+                                        firstSeason.zipLinks['720P'] ||
+                                        firstSeason.zipLinks['480P'] ||
+                                        movie.zip;
+                                }
+                            }
                         } catch (e) {
-                            console.log('Error parsing seasons data for movie:', movie.movieid);
+                            console.error('Error parsing seasons data for movie:', movie.movieid);
                             movie.seasonsData = null;
                         }
                     }
                     return movie;
                 });
-                res.status(200).json({ status: true, message: 'Success..', data: processedResult })
+                res.status(200).json({ status: true, message: 'Success', data: processedResult });
             }
-        })
+        });
     }
     catch (e) {
-        res.status(200).json({ status: false, message: 'Critical Error,Pls Contact Server Administrator' })
+        console.error('Server Error:', e);
+        res.status(500).json({ status: false, message: 'Critical Error, Please Contact Server Administrator' });
     }
-})
+});
 
-// Update your edit_movies endpoint
 router.post('/edit_movies', upload.fields([{ name: 'image', maxCount: 1 }, { name: 'screenshot', maxCount: 100 }]), function (req, res, next) {
     try {
         // Handle image update
@@ -132,25 +145,30 @@ router.post('/edit_movies', upload.fields([{ name: 'image', maxCount: 1 }, { nam
         let episodeData = null;
         let numberOfSeasons = null;
         let numberOfEpisodes = null;
+        let zipValue = req.body.zip || null;
 
-        if (req.body.content === 'series') {
-            if (req.body.seasonsData) {
-                const seasonsData = typeof req.body.seasonsData === 'string'
-                    ? JSON.parse(req.body.seasonsData)
-                    : req.body.seasonsData;
+        if (req.body.content === 'series' && req.body.seasonsData) {
+            const seasonsData = typeof req.body.seasonsData === 'string'
+                ? JSON.parse(req.body.seasonsData)
+                : req.body.seasonsData;
 
-                // Process seasons data with zip links
-                const processedSeasons = seasonsData.map(season => ({
-                    seasonNumber: season.seasonNumber,
-                    numberOfEpisodes: season.numberOfEpisodes,
-                    zip: season.zip || '', // Ensure zip exists
-                    episodesLinks: season.episodesLinks || []
-                }));
+            // For series, extract quality links from seasonsData
+            if (seasonsData.length > 0) {
+                const firstSeason = seasonsData[0];
 
-                episodeData = JSON.stringify(processedSeasons);
-                numberOfSeasons = req.body.numberOfSeasons || processedSeasons.length;
-                numberOfEpisodes = processedSeasons.reduce((total, season) => total + (season.numberOfEpisodes || 0), 0);
+                // Set the main zip to the highest available quality link
+                if (firstSeason.zipLinks) {
+                    zipValue = firstSeason.zipLinks['4K'] ||
+                        firstSeason.zipLinks['1080P'] ||
+                        firstSeason.zipLinks['720P'] ||
+                        firstSeason.zipLinks['480P'] ||
+                        zipValue;
+                }
             }
+
+            episodeData = JSON.stringify(seasonsData);
+            numberOfSeasons = req.body.numberOfSeasons || seasonsData.length;
+            numberOfEpisodes = seasonsData.reduce((total, season) => total + (season.numberOfEpisodes || 0), 0);
         } else {
             // Movie handling remains the same
             if (req.body.eplinks) {
@@ -204,7 +222,7 @@ router.post('/edit_movies', upload.fields([{ name: 'image', maxCount: 1 }, { nam
                 req.body.size1080p || null,
                 req.body.size4k || null,
                 req.body.title,
-                req.body.zip || null,
+                zipValue,
                 episodeData,
                 numberOfEpisodes,
                 req.body.content,
