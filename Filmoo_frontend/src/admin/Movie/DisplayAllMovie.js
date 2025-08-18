@@ -1233,7 +1233,7 @@ export default function DisplayAllMovie() {
                         columns={[
                             { title: 'ID', field: 'movieid', width: '3%' },
                             { title: 'Category', field: 'categoryname', width: '7%' },
-                            { title: 'Name', field: 'name', width: '7%' },
+                            { title: 'Name', field: 'name', width: '15%' },
                             { title: 'Language', field: 'language', width: '10%' },
                             { title: 'Year', field: 'year', width: '5%' },
                             { title: 'Genre', field: 'genre', width: '15%' },

@@ -5,9 +5,10 @@ var pool = require('./pool')
 router.get('/fetch_movies', function (req, res, next) {
     try {
         pool.query(
-            'SELECT C.*, M.* FROM category C, movie M WHERE C.categoryid = M.categoryid ORDER BY M.movieid DESC',
+            'SELECT C.*, M.* FROM category C, movie M WHERE C.categoryid = M.categoryid ORDER BY M.updated DESC, M.movieid DESC',
             function (error, result) {
                 if (error) {
+                    console.log(error)
                     res.status(202).json({ status: false, message: 'Database Error,Pls Contact Backend Team' })
                 }
                 else {
@@ -35,7 +36,7 @@ router.get('/fetch_movies', function (req, res, next) {
 
 router.post('/fetch_movies_by_id', function (req, res, next) {
     try {
-        pool.query('select C.*,M.* from category C,movie M where C.categoryid=M.categoryid and movieid=? ORDER BY M.movieid DESC', [req.body.movieid], function (error, result) {
+        pool.query('select C.*,M.* from category C,movie M where C.categoryid=M.categoryid and movieid=? ORDER BY M.updated DESC, M.movieid DESC', [req.body.movieid], function (error, result) {
             if (error) {
                 res.status(300).json({ status: false, message: 'Database Error,Pls Contact Backend Team' })
             }
@@ -76,7 +77,7 @@ router.post('/fetch_movies_by_search', function (req, res, next) {
                    REPLACE(REPLACE(LOWER(M.name), '.', ''), ' ', '') LIKE ?
                    OR M.year LIKE ?
                ) 
-             ORDER BY M.movieid DESC`,
+             ORDER BY M.updated DESC, M.movieid DESC`,
             [normalizedText, `%${searchText}%`],
             function (error, result) {
                 if (error) {
@@ -105,7 +106,7 @@ router.post('/fetch_movies_by_search', function (req, res, next) {
 router.post('/fetch_movies_by_category', function (req, res, next) {
     const text = `%${req.body.category}%`
     try {
-        pool.query('select C.*,M.* from category C,movie M where C.categoryid=M.categoryid and (C.categoryname like ? or M.language like ? or M.genre like ?) ORDER BY M.movieid DESC', [text, text, text], function (error, result) {
+        pool.query('select C.*,M.* from category C,movie M where C.categoryid=M.categoryid and (C.categoryname like ? or M.language like ? or M.genre like ?) ORDER BY M.updated DESC, M.movieid DESC', [text, text, text], function (error, result) {
             if (error) {
                 res.status(300).json({ status: false, message: 'Database Error,Pls Contact Backend Team' })
             }
